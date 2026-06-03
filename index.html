@@ -1,0 +1,387 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>강동수도사업소 현장관리</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{--accent:#22d3ee;--done:#34d399;--wait:#94a3b8;--hold:#f87171;--ink:#0d1117;--line:#e4e8ee;--muted:#64748b;
+    --mono:"IBM Plex Mono",monospace;--sans:"IBM Plex Sans KR",system-ui,sans-serif;}
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;height:100%;font-family:var(--sans)}
+  #app{position:relative;height:100vh;max-width:480px;margin:0 auto;overflow:hidden;background:#0d1117}
+  #map{position:absolute;inset:0}.leaflet-control-attribution{font-size:9px}
+  .top{position:absolute;top:0;left:0;right:0;z-index:1000;padding:10px 13px;background:linear-gradient(180deg,rgba(13,17,23,.92),rgba(13,17,23,.74) 70%,transparent);color:#fff;display:flex;align-items:center;gap:10px;pointer-events:none}
+  .top{flex-wrap:wrap}
+  .top .b{pointer-events:auto}
+  .office-tabs{display:flex;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.22);border-radius:9px;padding:3px}
+  .office-tabs button{font-family:var(--sans);font-size:12px;font-weight:600;color:#cbd5e1;background:none;border:none;padding:6px 12px;border-radius:7px;cursor:pointer}
+  .office-tabs button.on{background:#fff;color:#0d1117}
+  .otag{font-size:10px;font-weight:700;padding:2px 6px;border-radius:6px;vertical-align:1px}
+  .ot-강동{background:#22d3ee;color:#06222a}.ot-동부{background:#f5a623;color:#3a2600}.top h1{font-size:14px;font-weight:600;margin:0;line-height:1.1}.top .sub{font-family:var(--mono);font-size:9.5px;color:#7d8794;letter-spacing:.4px}
+  .kpi{margin-left:auto;text-align:right}.kpi .p{font-family:var(--mono);font-size:18px;font-weight:600;color:var(--accent);line-height:1}.kpi .s{font-size:10px;color:#9aa6b2;margin-top:2px}
+  .layerbtn{position:absolute;top:64px;right:13px;z-index:1000;display:flex;flex-direction:column;background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 3px 12px rgba(0,0,0,.3)}
+  .layerbtn button{border:none;background:#fff;font-size:11px;font-weight:600;color:var(--muted);padding:8px 11px;cursor:pointer;border-bottom:1px solid var(--line);font-family:var(--sans)}
+  .layerbtn button:last-child{border:none}.layerbtn button.on{background:var(--ink);color:#fff}
+  .banner{position:absolute;top:58px;left:13px;right:64px;z-index:1050;color:#06222a;font-size:12.5px;font-weight:600;border-radius:11px;padding:10px 13px;box-shadow:0 4px 16px rgba(0,0,0,.3);display:none;line-height:1.4}
+  .banner.show{display:block}.banner.cut{background:var(--accent)}.banner.tap{background:#fde68a}
+  .banner small{display:block;font-weight:500;font-size:11px;margin-top:2px;opacity:.85}
+  .legend{position:absolute;bottom:14px;left:13px;z-index:900;background:rgba(13,17,23,.82);backdrop-filter:blur(4px);color:#cbd5e1;font-size:10.5px;border-radius:9px;padding:8px 11px;line-height:1.7;pointer-events:none}
+  .legend i{display:inline-block;width:14px;height:4px;border-radius:2px;margin-right:6px;vertical-align:2px}
+  .sheet{position:absolute;left:0;right:0;bottom:0;z-index:1100;background:#fff;border-radius:20px 20px 0 0;box-shadow:0 -6px 30px rgba(0,0,0,.35);transform:translateY(108%);transition:transform .32s cubic-bezier(.32,.72,0,1);max-height:78%;overflow:auto;padding-bottom:18px}
+  .sheet.open{transform:translateY(0)}.grab{width:38px;height:4px;border-radius:3px;background:#cfd6df;margin:9px auto 4px}.sh-pad{padding:6px 18px 0}
+  .sh-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+  .sh-no{font-family:var(--mono);font-size:13px;color:#0891b2;font-weight:600}.sh-line{font-size:16px;font-weight:600;margin-top:1px}
+  .badge{font-family:var(--mono);font-size:11px;font-weight:600;padding:5px 11px;border-radius:20px;white-space:nowrap}
+  .b-wait{background:#eef1f5;color:#64748b}.b-prog{background:#fef3e2;color:#c97a0a}.b-done{background:#e7f9f0;color:#109b6c}.b-hold{background:#fde9e9;color:#dc4545}
+  .warn{margin-top:9px;background:#fff8e6;border:1px solid #f5e0a8;color:#9a6a00;font-size:11.5px;padding:8px 11px;border-radius:9px;line-height:1.5}
+  .prog{margin:14px 0 6px}.prog .nums{display:flex;justify-content:space-between;align-items:baseline;font-size:12px;color:var(--muted)}.prog .nums b{font-family:var(--mono);font-size:20px;color:var(--ink)}
+  .track{height:12px;border-radius:7px;background:#eef1f5;overflow:hidden;margin-top:7px}.track i{display:block;height:100%;background:linear-gradient(90deg,var(--done),#6ee7b7);transition:width .4s}
+  .rem{text-align:right;font-family:var(--mono);font-size:12px;color:#0891b2;margin-top:5px}
+  .modebar{display:flex;gap:8px;margin:14px 0 4px}
+  .modebar button{flex:1;font-family:var(--sans);font-weight:600;font-size:13px;border:1.5px solid var(--line);background:#fff;color:var(--muted);border-radius:11px;padding:11px;cursor:pointer}
+  .modebar button.on{border-color:var(--ink);background:var(--ink);color:#fff}
+  .modebar button.cut.on{background:var(--accent);border-color:var(--accent);color:#06222a}
+  .sec{font-size:12px;color:var(--muted);margin:14px 0 7px;font-weight:500;display:flex;justify-content:space-between}
+  .sec a{color:#0891b2;font-weight:600;text-decoration:none}
+  .segs{display:flex;flex-direction:column;gap:7px}
+  .seg{display:flex;align-items:center;gap:11px;border:1px solid var(--line);border-radius:11px;padding:11px 13px;cursor:pointer;transition:.12s}
+  .seg:active{transform:scale(.99)}
+  .seg.done{background:#ecfdf5;border-color:#a7e8cd}.seg.hold{opacity:.7}
+  .seg .ix{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-family:var(--mono);font-size:11px;font-weight:600;background:#eef1f5;color:#64748b;flex:none}
+  .seg.done .ix{background:var(--done);color:#06251a}
+  .seg .rng{flex:1;font-family:var(--mono);font-size:12.5px;color:#334155}
+  .seg .ln{font-family:var(--mono);font-size:13px;font-weight:600}
+  .seg .st{font-size:11px;font-weight:600;padding:3px 9px;border-radius:14px;background:#eef1f5;color:#64748b}
+  .seg.done .st{background:var(--done);color:#06251a}
+  .log{margin:10px 0;border:1px solid var(--line);border-radius:10px;max-height:108px;overflow:auto}
+  .le{display:flex;justify-content:space-between;padding:9px 12px;font-size:12.5px;border-bottom:1px solid var(--line)}.le:last-child{border:none}
+  .le .d{font-family:var(--mono);color:var(--muted)}.le .seg2{font-family:var(--mono);color:#475569;font-size:11px}.le .v{font-family:var(--mono);color:#109b6c;font-weight:600}
+  .log-empty{padding:14px;text-align:center;color:#94a3b8;font-size:12px}
+  .btn-fill{width:100%;margin-top:11px;background:var(--done);color:#06251a;font-family:var(--sans);font-weight:600;font-size:14px;border:none;border-radius:11px;padding:13px;cursor:pointer}
+  .btn-hold{width:100%;margin-top:11px;background:#fff;border:1px solid #f0b4b4;color:#dc4545;font-family:var(--sans);font-weight:600;font-size:14px;border-radius:11px;padding:12px;cursor:pointer}.btn-hold.on{background:var(--hold);color:#fff;border-color:transparent}
+  .toast{position:absolute;bottom:90px;left:50%;transform:translateX(-50%) translateY(16px);z-index:1300;background:var(--ink);color:#fff;font-size:13px;padding:11px 17px;border-radius:12px;opacity:0;transition:.25s;box-shadow:0 6px 20px rgba(0,0,0,.4);white-space:nowrap}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}.toast b{color:var(--accent)}
+  .cutdot{background:#fff;width:15px;height:15px;border-radius:50%;border:4px solid var(--accent);box-shadow:0 1px 4px rgba(0,0,0,.4)}
+  .pickpin{width:20px;height:20px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:#ef4444;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.45)}
+  .pickaddr{font-family:var(--sans);font-size:12.5px;color:#1f2937;max-width:210px;line-height:1.45}
+  .pickaddr b{display:block;font-size:10.5px;color:#dc2626;font-weight:700;margin-bottom:3px}
+  .datepill{display:flex;align-items:center;gap:8px;margin:12px 0 2px;border:1.5px solid var(--line);background:#f8fafc;border-radius:11px;padding:11px 13px;cursor:pointer}
+  .datepill .lab{font-size:11.5px;color:var(--muted)}.datepill .val{font-family:var(--mono);font-size:14px;font-weight:600;color:var(--ink);margin-left:auto}.datepill .car{color:var(--muted);font-size:11px}
+  .cal-ovl{position:absolute;inset:0;z-index:1400;background:rgba(8,12,18,.5);display:none;align-items:center;justify-content:center;padding:18px}
+  .cal-ovl.show{display:flex}
+  .cal{width:100%;max-width:340px;background:#fff;border-radius:18px;padding:16px 16px 12px;box-shadow:0 12px 40px rgba(0,0,0,.4)}
+  .cal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+  .cal-head #calTitle{font-size:16px;font-weight:700}
+  .cal-head button{border:none;background:#f1f5f9;width:34px;height:34px;border-radius:9px;font-size:18px;color:#475569;cursor:pointer}
+  .cal-wk{display:grid;grid-template-columns:repeat(7,1fr);text-align:center;font-size:11.5px;font-weight:600;color:#64748b;margin-bottom:4px}
+  .cal-wk .sun{color:#dc2626}.cal-wk .sat{color:#2563eb}
+  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+  .cal-grid>div{height:40px}
+  .cal-d{position:relative;height:40px;border:none;background:none;border-radius:10px;font-family:var(--mono);font-size:14px;color:#334155;cursor:pointer}
+  .cal-d.sun{color:#dc2626}.cal-d.sat{color:#2563eb}
+  .cal-d.today{box-shadow:inset 0 0 0 1.5px var(--accent)}
+  .cal-d.sel{background:var(--ink);color:#fff!important}
+  .cal-d i{position:absolute;left:0;right:0;bottom:2px;font-style:normal;font-size:8px;color:#dc2626;line-height:1}
+  .cal-d.sel i{color:#fca5a5}
+  .cal-foot{display:flex;gap:8px;margin-top:12px}
+  .cal-foot button{flex:1;border:1px solid var(--line);background:#fff;border-radius:10px;padding:11px;font-family:var(--sans);font-weight:600;font-size:13.5px;color:#475569;cursor:pointer}
+  .cal-foot #calToday{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .mini-edit{font-family:var(--sans);font-size:10.5px;font-weight:600;color:#0891b2;background:#e0f2fe;border:none;border-radius:6px;padding:3px 8px;margin-left:5px;cursor:pointer;vertical-align:1px}
+  .ed-ovl{position:absolute;inset:0;z-index:1400;background:rgba(8,12,18,.5);display:none;align-items:center;justify-content:center;padding:18px}
+  .ed-ovl.show{display:flex}
+  .ed{width:100%;max-width:340px;background:#fff;border-radius:18px;padding:18px;box-shadow:0 12px 40px rgba(0,0,0,.4)}
+  .ed h3{margin:0 0 14px;font-size:16px}
+  .ed label{display:block;font-size:12px;color:#64748b;margin:0 0 6px}
+  .ed input{width:100%;font-family:var(--sans);font-size:15px;border:1px solid #cfd6df;border-radius:10px;padding:11px 12px;margin-bottom:13px}
+  .ed input:focus{outline:none;border-color:var(--accent)}
+  .ed-acts{display:flex;gap:9px}
+  .ed-acts button{flex:1;border:none;border-radius:10px;padding:12px;font-family:var(--sans);font-weight:600;font-size:14px;cursor:pointer}
+  .ed-acts .save{background:var(--ink);color:#fff}.ed-acts .cancel{background:#eef1f5;color:#475569}
+  .topbtn{font-family:var(--sans);font-size:12px;font-weight:600;color:#fff;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.25);border-radius:9px;padding:7px 12px;cursor:pointer}
+  .srch-ovl{position:absolute;inset:0;z-index:1500;background:#0d1117;display:none;flex-direction:column}
+  .srch-ovl.show{display:flex}
+  .srch-bar{display:flex;gap:9px;padding:14px 13px;border-bottom:1px solid #232b36}
+  .srch-bar input{flex:1;font-family:var(--sans);font-size:15px;background:#1a212b;border:1px solid #2c3542;color:#fff;border-radius:11px;padding:12px 14px}
+  .srch-bar input:focus{outline:none;border-color:var(--accent)}
+  .srch-bar button{background:none;border:none;color:var(--accent);font-family:var(--sans);font-size:14px;font-weight:600;cursor:pointer}
+  .srch-list{flex:1;overflow:auto;padding:6px 0}
+  .srch-item{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:none;border:none;border-bottom:1px solid #1c232e;padding:13px 16px;cursor:pointer}
+  .srch-item:active{background:#161d27}
+  .si-no{font-family:var(--mono);font-size:13px;color:var(--accent);font-weight:600;flex:none;min-width:78px}
+  .si-nm{font-size:13.5px;color:#cbd5e1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .srch-empty{padding:30px;text-align:center;color:#5b6776;font-size:13px}
+  .srch-note{padding:0 16px;font-size:11px;color:#5b6776;min-height:14px}
+  .addr{margin-top:10px;font-size:12.5px;color:#475569;line-height:1.5;display:flex;gap:7px;align-items:flex-start}
+  .addr .pin{flex:none;width:7px;height:7px;border-radius:50%;background:var(--accent);margin-top:5px;box-shadow:0 0 0 3px rgba(34,211,238,.2)}
+  .addr a{color:#0891b2;font-weight:600;text-decoration:none;white-space:nowrap}
+  .nolabel{display:flex;flex-direction:column;gap:1px;background:var(--ink);color:#fff;font-family:var(--sans);padding:5px 9px;border-radius:8px;max-width:220px;box-shadow:0 2px 8px rgba(0,0,0,.5)}
+  .nolabel b{font-family:var(--mono);font-size:12px;color:var(--accent)}
+  .nolabel span{font-size:10.5px;color:#cbd5e1;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  /* PC(관리자): 전체화면 + 우측 사이드 패널 */
+  @media(min-width:760px){
+    #app{max-width:none}
+    .sheet{left:auto;right:0;top:0;bottom:0;width:410px;max-height:100%;border-radius:0;box-shadow:-8px 0 34px rgba(0,0,0,.32);transform:translateX(115%);padding-bottom:24px}
+    .sheet.open{transform:translateX(0)}
+    .grab{display:none}
+    .sh-pad{padding-top:20px}
+    .legend{bottom:auto;top:118px}
+  }
+</style>
+<div id="app">
+  <div id="map"></div>
+  <div class="top"><div class="b"><h1>서울시 상수도 현장관리</h1><div class="sub" id="roleSub">FIELD</div></div>
+    <div class="office-tabs b" id="officeTabs"><button data-o="전체" class="on">전체</button><button data-o="강동">강동</button><button data-o="동부">동부</button></div>
+    <button class="topbtn b" id="srchBtn">검색</button>
+    <div class="kpi b"><div class="p" id="kpiPct">0%</div><div class="s" id="kpiM">0 / 0 m</div></div></div>
+  <div class="layerbtn b"><button id="lyMap" class="on">지도</button><button id="lySat">위성</button></div>
+  <div class="banner" id="banner"></div>
+  <div class="legend"><div><i style="background:#34d399"></i>완료 구간</div><div><i style="background:#f59e0b"></i>미시공</div><div><i style="background:#f87171"></i>보류</div></div>
+  <div class="sheet" id="sheet"><div class="grab"></div><div class="sh-pad" id="sheetBody"></div></div>
+  <div class="toast" id="toast"></div>
+  <div class="cal-ovl" id="calOvl"><div class="cal">
+    <div class="cal-head"><button id="calPrev">‹</button><div id="calTitle"></div><button id="calNext">›</button></div>
+    <div class="cal-wk"><span class="sun">일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span class="sat">토</span></div>
+    <div class="cal-grid" id="calGrid"></div>
+    <div class="cal-foot"><button id="calToday">오늘</button><button id="calClose">닫기</button></div>
+  </div></div>
+  <div class="srch-ovl" id="srchOvl">
+    <div class="srch-bar"><input id="srchInput" placeholder="지시번호 · 공사명 · 주소 검색" autocomplete="off"><button id="srchClose">취소</button></div>
+    <div class="srch-note" id="srchNote"></div>
+    <div class="srch-list" id="srchList"></div>
+  </div>
+  <div class="ed-ovl" id="edOvl"><div class="ed">
+    <h3>공사 정보 수정</h3>
+    <label>공사지시번호</label><input id="eNo" placeholder="예: 강동/134">
+    <label>공사명</label><input id="eName" placeholder="예: 천호동 배수관 교체공사">
+    <label>주소</label><input id="eAddr" placeholder="예: 서울 강동구 천호동 ...">
+    <div class="ed-acts"><button class="cancel" id="edCancel">취소</button><button class="save" id="edSave">저장</button></div>
+  </div></div>
+</div>
+<script>
+const CONFIG={
+  FIREBASE_DB: "https://seoul-waterworks-default-rtdb.asia-southeast1.firebasedatabase.app",   // ← 본인 Realtime Database 주소 (이미 채워둠)
+  PATH: "water"              // Firebase 안의 데이터 경로 (다른 사업과 분리)
+};
+const DB=CONFIG.FIREBASE_DB, KEY=CONFIG.PATH;
+const DATA={"center": [37.527281, 127.126217], "lines": [{"no": "강동/134", "lenM": 21.8, "matchDist": 18.8, "verified": true, "coords": [[37.4927015, 127.1441015], [37.4926527, 127.1443406]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/132", "lenM": 280.0, "matchDist": 17.8, "verified": true, "coords": [[37.4886403, 127.1320746], [37.4904892, 127.1342286]], "cuts": [120, 180], "completed": [[0, 180]], "daily": [{"d": "2026-06-01", "from": 0, "to": 120, "v": 120, "by": "현장"}, {"d": "2026-06-02", "from": 120, "to": 180, "v": 60, "by": "현장"}], "hold": false, "office": "강동"}, {"no": "강동/106", "lenM": 34.9, "matchDist": 100.0, "verified": false, "coords": [[37.5624832, 127.1564853], [37.5627772, 127.156346]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/003", "lenM": 279.8, "matchDist": 16.8, "verified": true, "coords": [[37.5606093, 127.157049], [37.5628598, 127.1571398], [37.5629127, 127.1571787], [37.5629478, 127.1573341], [37.5629477, 127.1574339]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/004", "lenM": 50.0, "matchDist": 13.8, "verified": true, "coords": [[37.555673, 127.1293944], [37.5552385, 127.129245]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/005", "lenM": 64.5, "matchDist": 22.4, "verified": true, "coords": [[37.5569281, 127.1371765], [37.5570869, 127.1378784]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/112", "lenM": 169.5, "matchDist": 17.8, "verified": true, "coords": [[37.5031781, 127.0877834], [37.5037373, 127.0883002], [37.5034647, 127.0892886]], "cuts": [], "completed": [], "daily": [], "hold": true, "office": "강동"}, {"no": "강동/126", "lenM": 245.0, "matchDist": 11.0, "verified": true, "coords": [[37.5139763, 127.1072622], [37.5118762, 127.1081161]], "cuts": [], "completed": [[0, 245]], "daily": [{"d": "2026-05-30", "from": 0, "to": 245, "v": 245, "by": "현장"}], "hold": false, "office": "강동"}, {"no": "강동/016", "lenM": 320.9, "matchDist": 5.5, "verified": true, "coords": [[37.562915, 127.1574493], [37.5628525, 127.1572263], [37.5601519, 127.1570844]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/017", "lenM": 56.0, "matchDist": 105.5, "verified": false, "coords": [[37.5414564, 127.1266986], [37.5419204, 127.1269477]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/018", "lenM": 10.0, "matchDist": 6.4, "verified": true, "coords": [[37.54183, 127.1275609], [37.5417963, 127.1276659]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/030", "lenM": 520.0, "matchDist": 28.0, "verified": false, "coords": [[37.5005528, 127.0826448], [37.4983597, 127.0774483]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/031", "lenM": 664.6, "matchDist": 88.5, "verified": false, "coords": [[37.5041688, 127.0882503], [37.504138, 127.0877998], [37.5018078, 127.0857051], [37.5014943, 127.0845863], [37.501224, 127.0843107], [37.5005603, 127.0826658]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/032", "lenM": 2498.7, "matchDist": 69.0, "verified": false, "coords": [[37.5102184, 127.1123148], [37.5088514, 127.1114772], [37.5072205, 127.1101335], [37.5062032, 127.1090771], [37.5049224, 127.1069107], [37.5034307, 127.1025733], [37.5025732, 127.0992468], [37.5023543, 127.0966847], [37.5026137, 127.0940987], [37.5032822, 127.0914589], [37.504192, 127.088286]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/033", "lenM": 1025.1, "matchDist": 115.7, "verified": false, "coords": [[37.5174048, 127.1129725], [37.5164098, 127.1157528], [37.5160256, 127.1158831], [37.5102647, 127.1123541]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/034", "lenM": 1299.6, "matchDist": 109.8, "verified": false, "coords": [[37.5277166, 127.1194012], [37.5276277, 127.1190582], [37.5249745, 127.1174777], [37.5243621, 127.1173453], [37.5233459, 127.1167241], [37.5232963, 127.1164612], [37.517428, 127.112899]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/035", "lenM": 971.0, "matchDist": 54.5, "verified": false, "coords": [[37.5143798, 127.161128], [37.5156833, 127.1691041], [37.5168561, 127.1713341], [37.5169791, 127.1714031]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/055", "lenM": 654.1, "matchDist": 39.6, "verified": false, "coords": [[37.5120617, 127.0924264], [37.5123575, 127.0959337], [37.513261, 127.0996357]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/056(23년)", "lenM": 38.0, "matchDist": 15.9, "verified": true, "coords": [[37.5122897, 127.0950545], [37.5119497, 127.095103]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/057(23년)", "lenM": 47.8, "matchDist": 12.0, "verified": true, "coords": [[37.5120471, 127.0924056], [37.5116213, 127.0924871]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/064", "lenM": 27.6, "matchDist": 18.6, "verified": true, "coords": [[37.5547641, 127.1291048], [37.5547616, 127.1292748], [37.5546522, 127.1292372]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/076", "lenM": 1518.7, "matchDist": 46.2, "verified": false, "coords": [[37.5159857, 127.0982484], [37.5186766, 127.1049298], [37.5202364, 127.1144219]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/077", "lenM": 764.8, "matchDist": 121.6, "verified": false, "coords": [[37.5187543, 127.0949697], [37.5184993, 127.0956191], [37.5165015, 127.0971746], [37.5163518, 127.0975213], [37.5135077, 127.0996], [37.5132635, 127.0993381], [37.5132272, 127.0993495]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/079", "lenM": 907.5, "matchDist": 120.6, "verified": false, "coords": [[37.5194098, 127.1390198], [37.5272392, 127.1419781]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/080", "lenM": 608.5, "matchDist": 12.7, "verified": true, "coords": [[37.5255413, 127.135586], [37.5250554, 127.1376633], [37.523109, 127.1369399], [37.5235933, 127.1348565]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/081", "lenM": 270.0, "matchDist": 17.0, "verified": true, "coords": [[37.5271918, 127.1424944], [37.5280221, 127.1396233]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/092", "lenM": 2.0, "matchDist": 20.3, "verified": true, "coords": [[37.5384628, 127.1526408], [37.5384462, 127.1526497]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/093", "lenM": 15.0, "matchDist": 7.9, "verified": true, "coords": [[37.538618, 127.1527344], [37.5386063, 127.1529035]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/094", "lenM": 72.7, "matchDist": 94.3, "verified": false, "coords": [[37.5382525, 127.1520078], [37.5383927, 127.1522816], [37.5387688, 127.1524369]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/096", "lenM": 50.0, "matchDist": 81.1, "verified": false, "coords": [[37.539174, 127.1526233], [37.5396022, 127.152799]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/097", "lenM": 17.2, "matchDist": 101.8, "verified": false, "coords": [[37.5401441, 127.1531038], [37.5401038, 127.1532919]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/095", "lenM": 17.2, "matchDist": 217.7, "verified": false, "coords": [[37.5405521, 127.1532963], [37.5405118, 127.1534844]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/098", "lenM": 21.0, "matchDist": 26.6, "verified": false, "coords": [[37.5463253, 127.1559169], [37.5465135, 127.1559407]], "cuts": [80], "completed": [[0, 80]], "daily": [{"d": "2026-06-02", "from": 0, "to": 80, "v": 80, "by": "현장"}], "hold": false, "office": "강동"}, {"no": "강동/103", "lenM": 7.0, "matchDist": 1.9, "verified": true, "coords": [[37.5557541, 127.1296329], [37.5557601, 127.1297118]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/104", "lenM": 721.4, "matchDist": 104.5, "verified": false, "coords": [[37.5618774, 127.1292106], [37.561945, 127.1291201], [37.5588414, 127.1263213], [37.5565289, 127.1248818]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/002", "lenM": 106.0, "matchDist": 177.6, "verified": false, "coords": [[37.5625021, 127.1570863], [37.561548, 127.1570341]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/107", "lenM": 98.4, "matchDist": 119.6, "verified": false, "coords": [[37.5615247, 127.1569909], [37.5606391, 127.1569488]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/108", "lenM": 118.0, "matchDist": 44.6, "verified": false, "coords": [[37.5080747, 127.0864259], [37.507853, 127.0851206]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/109", "lenM": 245.0, "matchDist": 48.0, "verified": false, "coords": [[37.5074272, 127.0909316], [37.5070043, 127.0936512]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/110", "lenM": 152.3, "matchDist": 78.0, "verified": false, "coords": [[37.5034801, 127.0865355], [37.504045, 127.0870212], [37.5041178, 127.0869885], [37.5043179, 127.0862646]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/111", "lenM": 341.1, "matchDist": 28.3, "verified": false, "coords": [[37.5069464, 127.1007492], [37.5084579, 127.1037499], [37.5084035, 127.10398], [37.5084252, 127.1040416]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/113", "lenM": 42.0, "matchDist": 9.8, "verified": true, "coords": [[37.539731, 127.1408699], [37.5393692, 127.1407305]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/114", "lenM": 150.0, "matchDist": 11.7, "verified": true, "coords": [[37.4882175, 127.1351111], [37.4894485, 127.1358111]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/115", "lenM": 50.1, "matchDist": 27.7, "verified": false, "coords": [[37.5537717, 127.1427294], [37.5536229, 127.1430331], [37.553643, 127.1431577], [37.5536496, 127.1432411]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/119", "lenM": 477.0, "matchDist": 7.1, "verified": true, "coords": [[37.5278806, 127.1440204], [37.5239253, 127.1461324]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/120", "lenM": 725.0, "matchDist": 11.1, "verified": true, "coords": [[37.5171049, 127.1438717], [37.5233418, 127.1463095]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/121", "lenM": 739.8, "matchDist": 10.7, "verified": true, "coords": [[37.5041966, 127.1230408], [37.5045381, 127.123043], [37.5049224, 127.122894], [37.5052332, 127.1226551], [37.5077772, 127.1164528]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/122", "lenM": 39.3, "matchDist": 15.6, "verified": true, "coords": [[37.4886351, 127.1320722], [37.4883769, 127.1317677]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/123", "lenM": 70.0, "matchDist": 8.9, "verified": true, "coords": [[37.5005136, 127.1434682], [37.5001888, 127.1441467]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/130", "lenM": 47.0, "matchDist": 117.9, "verified": false, "coords": [[37.560625, 127.1569493], [37.5602018, 127.1569301]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/131", "lenM": 583.0, "matchDist": 11.6, "verified": true, "coords": [[37.5461048, 127.1431801], [37.5410641, 127.1413233]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/133", "lenM": 15.5, "matchDist": 17.6, "verified": true, "coords": [[37.5073886, 127.1287645], [37.5075125, 127.1288463]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/135", "lenM": 10.0, "matchDist": 9.9, "verified": true, "coords": [[37.5370303, 127.1228751], [37.5370026, 127.1229828]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/136", "lenM": 52.4, "matchDist": 10.0, "verified": true, "coords": [[37.4981745, 127.1467908], [37.4979498, 127.1467132], [37.4978012, 127.1469484]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/137", "lenM": 120.0, "matchDist": 5.6, "verified": true, "coords": [[37.4980725, 127.1277655], [37.4973268, 127.1287487]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/058(24년)", "lenM": 7.4, "matchDist": 196.7, "verified": false, "coords": [[37.5119586, 127.0918417], [37.5119391, 127.0918879], [37.5119642, 127.0918932]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/057-1(24년)", "lenM": 7.3, "matchDist": 9.2, "verified": true, "coords": [[37.512417, 127.0854285], [37.5124171, 127.0853459]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/057-2(24년)", "lenM": 7.7, "matchDist": 2.8, "verified": true, "coords": [[37.5163533, 127.0861767], [37.516345, 127.0860906]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/057-3(24년)", "lenM": 7.5, "matchDist": 21.0, "verified": true, "coords": [[37.514863, 127.0912788], [37.514928, 127.0912544]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/056-1(24년)", "lenM": 14.9, "matchDist": 11.2, "verified": true, "coords": [[37.5564507, 127.1565634], [37.5564461, 127.1567322]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/056-2(24년)", "lenM": 5.1, "matchDist": 231.9, "verified": false, "coords": [[37.5568018, 127.1565906], [37.5568037, 127.1565331]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/056-3(24년)", "lenM": 2.3, "matchDist": 226.9, "verified": false, "coords": [[37.5463576, 127.1554634], [37.5463368, 127.1554601]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/056-4(24년)", "lenM": 7.0, "matchDist": 25.5, "verified": false, "coords": [[37.5552188, 127.1556195], [37.5551574, 127.1556384]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/056-5(24년)", "lenM": 4.0, "matchDist": 225.8, "verified": false, "coords": [[37.553485, 127.1563207], [37.5534869, 127.1562752]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/056-6(24년)", "lenM": 23.6, "matchDist": 2.3, "verified": true, "coords": [[37.5535374, 127.1563253], [37.5535331, 127.1565923]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/056-7(24년)", "lenM": 6.2, "matchDist": 10.3, "verified": true, "coords": [[37.5478484, 127.1561649], [37.5478477, 127.1562353]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/056-8(24년)", "lenM": 5.2, "matchDist": 23.0, "verified": true, "coords": [[37.5472702, 127.1561258], [37.547268, 127.1561851]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/059", "lenM": 288.7, "matchDist": 26.0, "verified": false, "coords": [[37.540312, 127.1278811], [37.5400843, 127.1278257], [37.5396494, 127.1276815], [37.539407, 127.1275911], [37.5390966, 127.1274584], [37.5389707, 127.127388], [37.5383856, 127.1269514], [37.5379351, 127.1266255]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/060", "lenM": 243.3, "matchDist": 23.3, "verified": true, "coords": [[37.5418438, 127.1274004], [37.5415849, 127.1283422], [37.5415373, 127.1286717], [37.5413743, 127.1293948], [37.5411799, 127.1300192]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "동부/001", "office": "동부", "name": "면목로 본관 교체", "lenM": 411.3, "matchDist": 0.0, "verified": true, "coords": [[37.5905, 127.082], [37.5912, 127.0848], [37.5921, 127.0861]], "cuts": [120], "completed": [[0, 120]], "daily": [{"d": "2026-06-02", "from": 0, "to": 120, "v": 120, "by": "현장"}], "hold": false}, {"no": "동부/002", "office": "동부", "name": "상봉동 분기관", "lenM": 229.7, "matchDist": 0.0, "verified": true, "coords": [[37.5963, 127.0855], [37.5971, 127.0879]], "cuts": [], "completed": [], "daily": [], "hold": true}, {"no": "동부/003", "office": "동부", "name": "중화동 배수관", "lenM": 418.5, "matchDist": 0.0, "verified": true, "coords": [[37.6021, 127.0791], [37.6009, 127.0815], [37.6004, 127.0833]], "cuts": [], "completed": [], "daily": [], "hold": false}, {"no": "동부/004", "office": "동부", "name": "묵동 노후관 정비", "lenM": 208.4, "matchDist": 0.0, "verified": true, "coords": [[37.6118, 127.0762], [37.6131, 127.0779]], "cuts": [], "completed": [[0, 9999]], "daily": [{"d": "2026-05-31", "from": 0, "to": 160, "v": 160, "by": "현장"}], "hold": false}, {"no": "동부/005", "office": "동부", "name": "신내동 급수전", "lenM": 415.2, "matchDist": 0.0, "verified": false, "coords": [[37.6135, 127.0925], [37.6142, 127.0951], [37.6151, 127.0967]], "cuts": [100], "completed": [[0, 100]], "daily": [{"d": "2026-06-01", "from": 0, "to": 100, "v": 100, "by": "현장"}], "hold": false}]};
+let LINES=[], SEL=null, mode='tap', gLayers={}, nodeMk=[], base, OFFICE='전체';
+const K=6378137*Math.PI/180, fmt=n=>Math.round(n).toLocaleString(), today=()=>new Date().toISOString().slice(0,10);
+function toast(h){const t=document.getElementById('toast');t.innerHTML=h;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2200);}
+const WK=['일','월','화','수','목','금','토'];
+const HOL={'01-01':'신정','03-01':'삼일절','05-05':'어린이날','06-06':'현충일','08-15':'광복절','10-03':'개천절','10-09':'한글날','12-25':'성탄절'};
+function fmtDate(s){const d=new Date(s+'T00:00:00');return `${s} (${WK[d.getDay()]})`;}
+let workDate=today(), calY, calM;
+function openCal(){const d=new Date(workDate+'T00:00:00');calY=d.getFullYear();calM=d.getMonth();renderCal();document.getElementById('calOvl').classList.add('show');}
+function closeCal(){document.getElementById('calOvl').classList.remove('show');}
+function renderCal(){
+  document.getElementById('calTitle').textContent=`${calY}년 ${calM+1}월`;
+  const first=new Date(calY,calM,1).getDay(),days=new Date(calY,calM+1,0).getDate();let html='';
+  for(let i=0;i<first;i++)html+='<div></div>';
+  for(let d=1;d<=days;d++){const dow=new Date(calY,calM,d).getDay();
+    const mmdd=String(calM+1).padStart(2,'0')+'-'+String(d).padStart(2,'0'),ds=`${calY}-${mmdd}`,hol=HOL[mmdd];
+    let cls='cal-d';if(dow===0||hol)cls+=' sun';else if(dow===6)cls+=' sat';
+    if(ds===today())cls+=' today';if(ds===workDate)cls+=' sel';
+    html+=`<button class="${cls}" data-d="${ds}">${d}${hol?'<i>'+hol+'</i>':''}</button>`;}
+  document.getElementById('calGrid').innerHTML=html;
+  [...document.querySelectorAll('#calGrid .cal-d')].forEach(b=>b.onclick=()=>{workDate=b.dataset.d;closeCal();renderSheet();toast('작업일자 '+fmtDate(workDate));});
+}
+document.getElementById('calPrev').onclick=()=>{calM--;if(calM<0){calM=11;calY--;}renderCal();};
+document.getElementById('calNext').onclick=()=>{calM++;if(calM>11){calM=0;calY++;}renderCal();};
+document.getElementById('calToday').onclick=()=>{workDate=today();closeCal();renderSheet();toast('작업일자 '+fmtDate(workDate));};
+document.getElementById('calClose').onclick=closeCal;
+document.getElementById('calOvl').onclick=e=>{if(e.target.id==='calOvl')closeCal();};
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+function openEdit(){const o=LINES[SEL];document.getElementById('eNo').value=o.no||'';document.getElementById('eName').value=o.name||'';document.getElementById('eAddr').value=o.addr||'';document.getElementById('edOvl').classList.add('show');}
+function closeEdit(){document.getElementById('edOvl').classList.remove('show');}
+document.getElementById('edCancel').onclick=closeEdit;
+document.getElementById('edOvl').onclick=e=>{if(e.target.id==='edOvl')closeEdit();};
+// reverse geocoding (OpenStreetMap Nominatim) — cached by 지시번호
+const addrCache={};
+async function reverseGeocode(lat,lng){
+  try{
+    const r=await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&accept-language=ko&zoom=18`,{headers:{'Accept':'application/json'}});
+    const j=await r.json();
+    let parts=(j.display_name||'').split(',').map(s=>s.trim()).filter(s=>s&&!/대한민국|South Korea/.test(s));
+    return parts.length?parts.reverse().join(' '):`좌표 ${(+lat).toFixed(5)}, ${(+lng).toFixed(5)}`;
+  }catch(e){return `좌표 ${(+lat).toFixed(5)}, ${(+lng).toFixed(5)} · 미리보기에서는 자동 주소조회가 제한됩니다 (직접 입력 가능)`;}
+}
+async function fetchAddr(o){
+  if(addrCache[o.no])return addrCache[o.no];
+  const c=o.coords[Math.floor(o.coords.length/2)];
+  addrCache[o.no]=await reverseGeocode(c[0],c[1]);
+  return addrCache[o.no];
+}
+function renderAddr(o){
+  const set=(a,fromFetch)=>{const el=document.getElementById('addrText');
+    if(el&&SEL!==null&&LINES[SEL].no===o.no)el.textContent=a;
+    if(fromFetch&&SEL!==null&&LINES[SEL].no===o.no)drawLines();};
+  if(o.addr)set(o.addr,false);
+  else if(addrCache[o.no])set(addrCache[o.no],false);
+  else{const el=document.getElementById('addrText');if(el)el.textContent='주소 조회 중… (수정에서 직접 입력 가능)';fetchAddr(o).then(a=>set(a,true));}
+}
+// tap any empty spot on the map → show that point's address
+let pickMarker=null, pickPop=null;
+function clearPick(){if(pickMarker){map.removeLayer(pickMarker);pickMarker=null;}if(pickPop){map.closePopup(pickPop);pickPop=null;}}
+async function pickPoint(latlng){
+  clearPick();
+  pickMarker=L.marker(latlng,{icon:L.divIcon({className:'',html:'<div class="pickpin"></div>',iconSize:[20,20],iconAnchor:[10,20]})}).addTo(map);
+  pickPop=L.popup({offset:[0,-18],closeButton:true,autoPan:true}).setLatLng(latlng).setContent('<div class="pickaddr">주소 조회 중…</div>').openOn(map);
+  const a=await reverseGeocode(latlng.lat,latlng.lng);
+  if(pickPop)pickPop.setContent(`<div class="pickaddr"><b>선택 지점</b>${esc(a)}</div>`);
+}
+// search by 지시번호 / 공사명 / 주소
+function openSearch(){document.getElementById('srchOvl').classList.add('show');const i=document.getElementById('srchInput');i.value='';renderSearch('');setTimeout(()=>i.focus(),50);indexAddresses();}
+function closeSearch(){document.getElementById('srchOvl').classList.remove('show');}
+let addrIndexing=false;
+async function indexAddresses(){
+  if(addrIndexing)return;addrIndexing=true;
+  for(const o of LINES){if(!addrCache[o.no]){await fetchAddr(o);await new Promise(r=>setTimeout(r,1100));
+    if(document.getElementById('srchOvl').classList.contains('show'))renderSearch(document.getElementById('srchInput').value);}}
+  const n=document.getElementById('srchNote');if(n)n.textContent='';
+}
+function renderSearch(q){
+  q=(q||'').trim().toLowerCase();const list=document.getElementById('srchList');
+  const done=LINES.filter(o=>o.addr||addrCache[o.no]).length,note=document.getElementById('srchNote');
+  if(note)note.textContent=done<LINES.length?`주소 ${done}/${LINES.length} — 자동조회가 막히면 정보수정에서 직접 입력하세요`:'';
+  if(!q){list.innerHTML='<div class="srch-empty">지시번호 · 공사명 · 주소로 검색</div>';return;}
+  const res=LINES.map((o,i)=>({o,i})).filter(({o})=>(o.no||'').toLowerCase().includes(q)||(o.name||'').toLowerCase().includes(q)||(o.addr||'').toLowerCase().includes(q)||((addrCache[o.no]||'').toLowerCase().includes(q)));
+  if(!res.length){list.innerHTML='<div class="srch-empty">검색 결과 없음</div>';return;}
+  list.innerHTML=res.slice(0,50).map(({o,i})=>{const ad=o.addr||addrCache[o.no];return `<button class="srch-item" data-i="${i}"><span class="si-no">${esc(o.no)}</span><span class="si-nm">${o.name?esc(o.name):'<i style="color:#5b6776">공사명 미입력</i>'}${ad?` <span style="color:#5b6776">· ${esc(ad)}</span>`:''}</span></button>`}).join('');
+  [...list.querySelectorAll('.srch-item')].forEach(b=>b.onclick=()=>{closeSearch();goTo(+b.dataset.i);});
+}
+function goTo(idx){const o=LINES[idx];if(!inOffice(o)){OFFICE='전체';document.querySelectorAll('#officeTabs button').forEach(b=>b.classList.toggle('on',b.dataset.o==='전체'));}clearPick();SEL=idx;mode='tap';drawLines();renderKpi();renderSheet();map.flyToBounds(L.latLngBounds(o.coords).pad(0.4),{maxZoom:19,duration:.6});}
+document.getElementById('srchBtn').onclick=openSearch;
+document.getElementById('srchClose').onclick=closeSearch;
+document.getElementById('srchInput').oninput=e=>renderSearch(e.target.value);
+document.getElementById('edSave').onclick=async()=>{const o=LINES[SEL];const nn=document.getElementById('eNo').value.trim(),nm=document.getElementById('eName').value.trim(),ad=document.getElementById('eAddr').value.trim();
+  if(!nn){toast('공사지시번호를 입력하세요');return;}
+  o.no=nn;o.name=nm;o.addr=ad;o.verified=true;await save();closeEdit();drawLines();renderSheet();toast('수정 저장됨');};
+function mm(a,b){const la=(a[0]+b[0])/2*Math.PI/180;return Math.hypot((b[1]-a[1])*Math.cos(la)*K,(b[0]-a[0])*K);}
+function cumM(c){let s=[0];for(let i=0;i<c.length-1;i++)s.push(s[i]+mm(c[i],c[i+1]));return s;}
+const totalM=c=>cumM(c).slice(-1)[0];
+const LEN=o=>totalM(o.coords);
+function ptAt(c,d){const cum=cumM(c),T=cum[cum.length-1];d=Math.max(0,Math.min(T,d));for(let i=0;i<c.length-1;i++)if(cum[i+1]>=d){const t=(d-cum[i])/((cum[i+1]-cum[i])||1);return[c[i][0]+(c[i+1][0]-c[i][0])*t,c[i][1]+(c[i+1][1]-c[i][1])*t];}return c[c.length-1];}
+function sliceLL(c,a,b){if(b<a)[a,b]=[b,a];const cum=cumM(c),out=[ptAt(c,a)];for(let i=0;i<c.length;i++)if(cum[i]>a&&cum[i]<b)out.push(c[i]);out.push(ptAt(c,b));return out;}
+function snap(c,ll){const lat0=c[0][0],lon0=c[0][1],cl=Math.cos(lat0*Math.PI/180);const xy=p=>[(p[1]-lon0)*cl*K,(p[0]-lat0)*K];const P=xy(ll),cum=cumM(c);let best=null;
+  for(let i=0;i<c.length-1;i++){const A=xy(c[i]),B=xy(c[i+1]),dx=B[0]-A[0],dy=B[1]-A[1],L2=dx*dx+dy*dy;let t=L2?((P[0]-A[0])*dx+(P[1]-A[1])*dy)/L2:0;t=Math.max(0,Math.min(1,t));const pd=Math.hypot(P[0]-(A[0]+t*dx),P[1]-(A[1]+t*dy)),dist=cum[i]+t*(cum[i+1]-cum[i]);if(!best||pd<best.pd)best={pd,dist};}return best.dist;}
+function merge(iv){iv=iv.map(x=>[Math.min(x[0],x[1]),Math.max(x[0],x[1])]).sort((a,b)=>a[0]-b[0]);const o=[];for(const s of iv){if(o.length&&s[0]<=o[o.length-1][1]+.3)o[o.length-1][1]=Math.max(o[o.length-1][1],s[1]);else o.push([...s]);}return o;}
+function addIv(list,iv){return merge([...list,iv]);}
+function subIv(list,a,b){const o=[];for(const[s,e]of list){if(e<=a+.1||s>=b-.1){o.push([s,e]);continue;}if(s<a)o.push([s,a]);if(e>b)o.push([b,e]);}return o;}
+const covered=(list,x)=>list.some(([a,b])=>x>=a-.5&&x<=b+.5);
+const doneM=o=>merge(o.completed).reduce((s,[a,b])=>s+(b-a),0);
+const pct=o=>{const T=LEN(o);return T>0?Math.min(100,Math.round(doneM(o)/T*100)):0;};
+function statusOf(o){if(o.hold)return'보류';const d=doneM(o);const T=LEN(o);if(d<=.5)return'대기';if(d>=T-0.5)return'완료';return'진행중';}
+const SB={'대기':'b-wait','진행중':'b-prog','완료':'b-done','보류':'b-hold'};
+function boundaries(o){const T=totalM(o.coords);const b=[0,...o.cuts.filter(c=>c>1&&c<T-1),T].sort((x,y)=>x-y);const u=[];for(const v of b)if(!u.length||v-u[u.length-1]>1)u.push(v);return u;}
+function segsOf(o){const b=boundaries(o),out=[];for(let i=0;i<b.length-1;i++)out.push([b[i],b[i+1]]);return out;}
+const segDone=(o,a,b)=>covered(merge(o.completed),(a+b)/2);
+
+async function load(){try{const r=await fetch(DB+'/'+KEY+'/lines.json');const d=await r.json();if(Array.isArray(d)&&d.length){LINES=d;}else{LINES=DATA.lines.map(l=>({...l}));await save();}}catch(e){console.error('load',e);LINES=DATA.lines.map(l=>({...l}));}}
+async function save(){try{await fetch(DB+'/'+KEY+'/lines.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(LINES)});}catch(e){console.error('save',e);}}
+
+const map=L.map('map',{zoomControl:false}).setView(DATA.center,14);
+L.control.zoom({position:'bottomright'}).addTo(map);
+const tiles={map:L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'}),sat:L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:19,attribution:'© Esri'})};
+tiles.map.addTo(map);base=tiles.map;
+map.on('click',e=>pickPoint(e.latlng));
+lyMap.onclick=()=>{map.removeLayer(base);base=tiles.map;base.addTo(map);lyMap.classList.add('on');lySat.classList.remove('on');};
+lySat.onclick=()=>{map.removeLayer(base);base=tiles.sat;base.addTo(map);lySat.classList.add('on');lyMap.classList.remove('on');};
+
+function clearNodes(){nodeMk.forEach(m=>map.removeLayer(m));nodeMk=[];}
+function gap(len){return Math.min(len*0.12,3.5);}
+function drawLines(){
+  Object.values(gLayers).forEach(g=>g.forEach(l=>map.removeLayer(l)));gLayers={};clearNodes();
+  LINES.forEach((o,idx)=>{
+    if(OFFICE!=='전체'&&o.office!==OFFICE)return;
+    const sel=SEL===idx,g=[],T=totalM(o.coords);
+    segsOf(o).forEach(([a,b])=>{
+      const gp=sel?gap(b-a):0, A=Math.min(a+gp,b), B=Math.max(b-gp,a);
+      const dn=segDone(o,a,b), path=sliceLL(o.coords,A,B);
+      const col=o.hold&&!dn?'#ef4444':(dn?'#34d399':'#f59e0b');
+      // white casing so the line stays visible on both street and satellite
+      g.push(L.polyline(path,{color:'#ffffff',weight:sel?12:9,opacity:.95}).addTo(map));
+      const pl=L.polyline(path,{color:col,weight:sel?8:6,opacity:1,dashArray:(o.hold&&!dn)?'1 9':null}).addTo(map);
+      pl.on('click',()=>onLineClick(idx,(a+b)/2));g.push(pl);
+    });
+    const hit=L.polyline(o.coords,{color:'#000',weight:24,opacity:0}).addTo(map);
+    hit.bindTooltip(esc(o.no),{sticky:true,direction:'top',opacity:0.95});
+    hit.on('click',e=>onLineClick(idx, snap(o.coords,[e.latlng.lat,e.latlng.lng])));g.push(hit);
+    if(sel){const mid=ptAt(o.coords,totalM(o.coords)/2);
+      const _a=o.addr||addrCache[o.no];
+      const lab=L.marker(mid,{icon:L.divIcon({className:'',html:`<div class="nolabel"><b>[${esc(o.office||'')}] ${esc(o.no)}</b>${_a?`<span>${esc(_a)}</span>`:'<span style="opacity:.6">주소 조회 중…</span>'}</div>`,iconSize:[1,1],iconAnchor:[0,30]}),interactive:false,zIndexOffset:1200}).addTo(map);g.push(lab);}
+    gLayers[idx]=g;
+    if(sel){ // cut nodes
+      o.cuts.filter(c=>c>1&&c<T-1).forEach(c=>{const ll=ptAt(o.coords,c);
+        const mk=L.marker(ll,{icon:L.divIcon({className:'',html:'<div class="cutdot"></div>',iconSize:[15,15],iconAnchor:[7.5,7.5]}),zIndexOffset:1000}).addTo(map);
+        mk.on('click',ev=>{ev.originalEvent.stopPropagation();o.cuts=o.cuts.filter(x=>Math.abs(x-c)>1);save();drawLines();renderSheet();toast('끊은 위치 삭제');});
+        nodeMk.push(mk);});
+    }
+  });
+}
+function onLineClick(idx,dist){
+  if(SEL!==idx){select(idx);return;}
+  const o=LINES[idx];
+  if(mode==='cut'){
+    const T=totalM(o.coords);if(dist<2||dist>T-2){toast('라인 안쪽을 탭하세요');return;}
+    if(o.cuts.some(c=>Math.abs(c-dist)<3)){toast('이미 가까운 끊김이 있어요');return;}
+    o.cuts.push(Math.round(dist*10)/10);save();drawLines();renderSheet();toast(`${fmt(dist)}m 지점 끊김`);
+  }else{
+    const seg=segsOf(o).find(([a,b])=>dist>=a-.5&&dist<=b+.5);if(!seg)return;toggleSeg(idx,seg[0],seg[1]);
+  }
+}
+async function toggleSeg(idx,a,b){
+  const o=LINES[idx];
+  if(segDone(o,a,b)){o.completed=subIv(merge(o.completed),a,b);o.daily=o.daily.filter(e=>!(e.from<b-.5&&e.to>a+.5));toast(`구간 ${fmt(a)}–${fmt(b)}m 완료해제`);}
+  else{o.completed=addIv(o.completed,[a,b]);o.daily.push({d:workDate,from:Math.round(a*10)/10,to:Math.round(b*10)/10,v:Math.round((b-a)*10)/10,by:'현장'});toast(`구간 +${fmt(b-a)}m 완료`);}
+  await save();drawLines();renderKpi();renderSheet();
+}
+async function completeRemaining(idx){
+  const o=LINES[idx],T=LEN(o),m=merge(o.completed);let cur=0;const gaps=[];
+  for(const[a,b]of m){if(a>cur+.5)gaps.push([cur,a]);cur=Math.max(cur,b);}
+  if(cur<T-.5)gaps.push([cur,T]);
+  if(!gaps.length){toast('이미 100%');return;}
+  gaps.forEach(([a,b])=>o.daily.push({d:workDate,from:Math.round(a*10)/10,to:Math.round(b*10)/10,v:Math.round((b-a)*10)/10,by:'현장'}));
+  o.completed=[[0,T]];await save();drawLines();renderKpi();renderSheet();
+  toast(`나머지 +${fmt(gaps.reduce((s,[a,b])=>s+(b-a),0))}m 완료`);
+}
+const inOffice=o=>OFFICE==='전체'||o.office===OFFICE;
+function setOffice(o){OFFICE=o;document.querySelectorAll('#officeTabs button').forEach(b=>b.classList.toggle('on',b.dataset.o===o));SEL=null;clearPick();drawLines();renderKpi();renderSheet();}
+function renderKpi(){const V=LINES.filter(inOffice);const tot=V.reduce((s,o)=>s+LEN(o),0),dn=V.reduce((s,o)=>s+Math.min(doneM(o),LEN(o)),0);kpiPct.textContent=(tot?Math.round(dn/tot*100):0)+'%';kpiM.textContent=fmt(dn)+' / '+fmt(tot)+' m';}
+function setBanner(){const bn=document.getElementById('banner');if(SEL===null){bn.classList.remove('show');return;}
+  if(mode==='cut'){bn.className='banner cut show';bn.innerHTML='끊기 모드 · 라인을 탭해 끊을 위치를 추가<small>점을 다시 탭하면 삭제 · 끝나면 "완료체크"로 전환</small>';}
+  else{bn.className='banner tap show';bn.innerHTML='완료체크 모드 · 완료된 토막을 탭하면 완료<small>다시 탭하면 완료 해제</small>';}}
+function renderSheet(){
+  const sh=document.getElementById('sheet'),body=document.getElementById('sheetBody');
+  if(SEL===null){sh.classList.remove('open');setBanner();return;}
+  const o=LINES[SEL],T=LEN(o),st=statusOf(o),p=pct(o),dn=Math.min(doneM(o),T),segs=segsOf(o);const rem=Math.max(0,T-dn);
+  const segHtml=segs.map(([a,b],i)=>{const d=segDone(o,a,b);return `<div class="seg ${d?'done':''} ${o.hold?'hold':''}" data-a="${a}" data-b="${b}"><div class="ix">${i+1}</div><div class="rng">${fmt(a)} – ${fmt(b)} m</div><div class="ln">${fmt(b-a)}m</div><div class="st">${d?'완료':'미시공'}</div></div>`}).join('');
+  const log=o.daily.length?[...o.daily].reverse().map(e=>`<div class="le"><span class="d">${e.d}</span><span class="seg2">${fmt(e.from)}–${fmt(e.to)}m</span><span class="v">+${fmt(e.v)} m</span></div>`).join(''):'<div class="log-empty">완료 기록 없음</div>';
+  body.innerHTML=`<div class="sh-head"><div style="flex:1;min-width:0"><div class="sh-no"><span class="otag ot-${o.office||''}">${esc(o.office||'')}</span> ${esc(o.no)} <button class="mini-edit" id="editBtn">수정</button></div><div class="sh-line">${o.name?esc(o.name):'<span style="color:#94a3b8;font-weight:500">공사명 입력 →</span>'}</div></div><span class="badge ${SB[st]}">${st}</span></div>
+    ${o.verified?'':`<div class="warn">⚠ 도면 자동매칭(오차 ${o.matchDist}m). 라인↔번호 확인 필요.</div>`}
+    <div class="addr" id="addrRow"><span class="pin"></span><span id="addrText">주소 조회 중…</span></div>
+    <div class="prog"><div class="nums"><span>시공 연장</span><span><b>${fmt(dn)}</b> / ${fmt(T)} m</span></div><div class="track"><i style="width:${p}%"></i></div><div class="rem">${p}% · 잔여 ${rem<0.5?0:fmt(rem)} m</div></div>
+    <div class="datepill" id="datePill"><span class="lab">작업일자</span><span class="val">${fmtDate(workDate)}</span><span class="car">변경 ▾</span></div>
+    <div class="modebar"><button class="cut ${mode==='cut'?'on':''}" id="mCut">✂ 끊기</button><button class="${mode==='tap'?'on':''}" id="mTap">✓ 완료체크</button></div>
+    <div class="sec"><span>구간 (${segs.length}개) — 탭하면 완료/해제</span></div>
+    <div class="segs">${segHtml}</div>
+    <div class="sec"><span>일일 작업일보</span></div><div class="log">${log}</div>
+    ${p>=100?'':`<button class="btn-fill" id="ifill">✓ 나머지 전체 완료 (잔여 ${rem<0.5?0:fmt(rem)}m)</button>`}
+    <button class="btn-hold ${o.hold?'on':''}" id="ihold">${o.hold?'보류 해제':'보류 지정'}</button>`;
+  sh.classList.add('open');setBanner();
+  mCut.onclick=()=>{mode='cut';drawLines();renderSheet();};  mTap.onclick=()=>{mode='tap';drawLines();renderSheet();};
+  document.getElementById('datePill').onclick=openCal;
+  document.getElementById('editBtn').onclick=openEdit;
+  renderAddr(o);
+  [...body.querySelectorAll('.seg')].forEach(el=>el.onclick=()=>toggleSeg(SEL,+el.dataset.a,+el.dataset.b));
+  const fill=document.getElementById('ifill');if(fill)fill.onclick=()=>completeRemaining(SEL);
+  ihold.onclick=async()=>{o.hold=!o.hold;await save();drawLines();renderKpi();renderSheet();toast(`<b>${o.no}</b> ${o.hold?'보류':'보류 해제'}`);};
+}
+function select(idx){clearPick();SEL=idx;mode='tap';drawLines();renderSheet();const o=LINES[idx],lat=o.coords.reduce((s,c)=>s+c[0],0)/o.coords.length,lon=o.coords.reduce((s,c)=>s+c[1],0)/o.coords.length;map.panTo([lat,lon]);}
+document.querySelector('.grab').onclick=()=>{SEL=null;mode='tap';drawLines();renderSheet();};
+setInterval(async()=>{try{const r=await fetch(DB+'/'+KEY+'/lines.json');const f=await r.json();if(Array.isArray(f)&&JSON.stringify(f)!==JSON.stringify(LINES)){LINES=f;drawLines();renderKpi();if(SEL!==null)renderSheet();toast('다른 기기의 변경이 반영됨');}}catch(e){}},3000);
+(async()=>{await load();drawLines();renderKpi();})();
+function setRole(){const el=document.getElementById('roleSub');if(el)el.textContent=(innerWidth>=760?'PC · 관리자 (전체화면)':'모바일 · 현장 사용자');}
+setRole();addEventListener('resize',()=>{setRole();setTimeout(()=>map.invalidateSize(),120);});
+document.querySelectorAll('#officeTabs button').forEach(b=>b.onclick=()=>setOffice(b.dataset.o));
+</script>

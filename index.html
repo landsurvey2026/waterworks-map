@@ -292,7 +292,7 @@ const tiles={map:L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png
 tiles.map.addTo(map);base=tiles.map;
 map.on('click',e=>pickPoint(e.latlng));
 const officeColor={'강동':'#22d3ee','동부':'#f5a623'};
-boundaryLayer=L.geoJSON(BOUNDARIES,{interactive:false,style:f=>({color:officeColor[f.properties.office]||'#888',weight:2,opacity:.75,fillColor:officeColor[f.properties.office]||'#888',fillOpacity:.06,dashArray:'5 5'})}).addTo(map);
+boundaryLayer=L.geoJSON(BOUNDARIES,{interactive:false,style:f=>({color:officeColor[f.properties.office]||'#888',weight:4,opacity:.95,fillColor:officeColor[f.properties.office]||'#888',fillOpacity:.16})}).addTo(map);
 boundaryLayer.eachLayer(l=>{const p=l.feature.properties;l.bindTooltip(p.name+' ['+p.office+']',{permanent:true,direction:'center',className:'gulabel ot-'+p.office});});
 lyMap.onclick=()=>{map.removeLayer(base);base=tiles.map;base.addTo(map);lyMap.classList.add('on');lySat.classList.remove('on');};
 lySat.onclick=()=>{map.removeLayer(base);base=tiles.sat;base.addTo(map);lySat.classList.add('on');lyMap.classList.remove('on');};

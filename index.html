@@ -61,6 +61,7 @@
   .log-empty{padding:14px;text-align:center;color:#94a3b8;font-size:12px}
   .btn-fill{width:100%;margin-top:11px;background:var(--done);color:#06251a;font-family:var(--sans);font-weight:600;font-size:14px;border:none;border-radius:11px;padding:13px;cursor:pointer}
   .btn-hold{width:100%;margin-top:11px;background:#fff;border:1px solid #f0b4b4;color:#dc4545;font-family:var(--sans);font-weight:600;font-size:14px;border-radius:11px;padding:12px;cursor:pointer}.btn-hold.on{background:var(--hold);color:#fff;border-color:transparent}
+  .btn-del{width:100%;margin-top:9px;background:#dc2626;border:none;color:#fff;font-family:var(--sans);font-weight:700;font-size:14px;border-radius:11px;padding:12px;cursor:pointer}
   .toast{position:absolute;bottom:90px;left:50%;transform:translateX(-50%) translateY(16px);z-index:1300;background:var(--ink);color:#fff;font-size:13px;padding:11px 17px;border-radius:12px;opacity:0;transition:.25s;box-shadow:0 6px 20px rgba(0,0,0,.4);white-space:nowrap}
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}.toast b{color:var(--accent)}
   .cutdot{background:#fff;width:15px;height:15px;border-radius:50%;border:4px solid var(--accent);box-shadow:0 1px 4px rgba(0,0,0,.4)}
@@ -563,7 +564,8 @@ function renderSheet(){
     <div class="segs">${segHtml}</div>
     <div class="sec"><span>일일 작업일보</span></div><div class="log">${log}</div>
     ${p>=100?'':`<button class="btn-fill" id="ifill">✓ 나머지 전체 완료 (잔여 ${rem<0.5?0:fmt(rem)}m)</button>`}
-    <button class="btn-hold ${o.hold?'on':''}" id="ihold">${o.hold?'보류 해제':'보류 지정'}</button>`;
+    <button class="btn-hold ${o.hold?'on':''}" id="ihold">${o.hold?'보류 해제':'보류 지정'}</button>
+    ${isAdmin?'<button class="btn-del" id="idel">🗑 이 라인 삭제</button>':''}`;
   sh.classList.add('open');setBanner();
   mCut.onclick=()=>{mode='cut';drawLines();renderSheet();};  mTap.onclick=()=>{mode='tap';drawLines();renderSheet();};
   document.getElementById('datePill').onclick=openCal;
@@ -572,6 +574,7 @@ function renderSheet(){
   [...body.querySelectorAll('.seg')].forEach(el=>el.onclick=()=>toggleSeg(SEL,+el.dataset.a,+el.dataset.b));
   const fill=document.getElementById('ifill');if(fill)fill.onclick=()=>completeRemaining(SEL);
   ihold.onclick=async()=>{o.hold=!o.hold;await save();drawLines();renderKpi();renderSheet();toast(`<b>${o.no}</b> ${o.hold?'보류':'보류 해제'}`);};
+  const _del=document.getElementById('idel');if(_del)_del.onclick=async()=>{const no=o.no,office=o.office;if(!confirm('['+office+'] '+no+' 라인을 삭제할까요?\n(되돌릴 수 없습니다)'))return;await load();LINES=LINES.filter(x=>!(x.no===no&&x.office===office));await save();SEL=null;drawLines();renderKpi();renderSheet();toast('삭제됨 · '+no);};
 }
 function select(idx){clearPick();SEL=idx;mode='tap';drawLines();renderSheet();const o=LINES[idx],lat=o.coords.reduce((s,c)=>s+c[0],0)/o.coords.length,lon=o.coords.reduce((s,c)=>s+c[1],0)/o.coords.length;map.panTo([lat,lon]);}
 document.querySelector('.grab').onclick=()=>{SEL=null;mode='tap';drawLines();renderSheet();};

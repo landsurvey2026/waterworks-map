@@ -129,6 +129,9 @@
   .adm-err{color:#fca5a5;font-size:13px;min-height:18px;margin:8px 0 0}
   .edit-fab{position:absolute;left:13px;bottom:24px;z-index:1200}
   .edit-fab button{background:#0d9488;color:#fff;border:none;border-radius:24px;padding:12px 18px;font-family:var(--sans);font-size:15px;font-weight:700;box-shadow:0 4px 14px rgba(0,0,0,.4);cursor:pointer}
+  .ve-dot{width:16px;height:16px;border-radius:50%;background:#f59e0b;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.55);cursor:move}
+  .btn-edit-geo{width:100%;margin-top:11px;background:#fff;border:1px solid #f5c98a;color:#b45309;font-family:var(--sans);font-weight:600;font-size:14px;border-radius:11px;padding:12px;cursor:pointer}
+
   .draw-bar{position:absolute;left:50%;transform:translateX(-50%);bottom:24px;z-index:1400;display:none;align-items:center;gap:8px;background:#161b22;border:1px solid #30363d;border-radius:30px;padding:8px 10px 8px 16px;box-shadow:0 6px 20px rgba(0,0,0,.5)}
   .draw-bar #drawHint{color:#e6edf3;font-size:13px;margin-right:6px;white-space:nowrap}
   .draw-bar button{background:#21262d;color:#e6edf3;border:1px solid #30363d;border-radius:18px;padding:8px 14px;font-family:var(--sans);font-size:14px;font-weight:600;cursor:pointer}
@@ -178,6 +181,8 @@
   <div class="layerbtn b"><button id="lyMap" class="on">지도</button><button id="lySat">위성</button><button id="lyBound" class="on">경계</button></div>
   <div class="edit-fab" id="editFab" style="display:none"><button id="drawBtn">+ 라인 그리기</button></div>
   <div class="draw-bar" id="drawBar"><span id="drawHint">지도를 탭해 선을 그리세요</span><button id="drawUndo">되돌리기</button><button id="drawDone" class="primary">완료</button><button id="drawCancel">취소</button></div>
+  <div class="draw-bar" id="editBar"><span id="drawHint">꼭짓점 끌어 이동 · 선 중간 탭=추가 · 점 더블탭=삭제</span><button id="editSave" class="primary">저장</button><button id="editCancel">취소</button></div>
+
   <div class="draw-form-ovl" id="drawFormOvl">
     <div class="draw-form">
       <p class="adm-h">새 라인 정보</p>
@@ -320,6 +325,7 @@ let pickMarker=null, pickPop=null;
 function clearPick(){if(pickMarker){map.removeLayer(pickMarker);pickMarker=null;}if(pickPop){map.closePopup(pickPop);pickPop=null;}}
 async function pickPoint(latlng){
   if(mode==='draw'){addVertex(latlng);return;}
+  if(mode==='editgeo')return;
   clearPick();
   pickMarker=L.marker(latlng,{icon:L.divIcon({className:'',html:'<div class="pickpin"></div>',iconSize:[20,20],iconAnchor:[10,20]})}).addTo(map);
   pickPop=L.popup({offset:[0,-18],closeButton:true,autoPan:true}).setLatLng(latlng).setContent('<div class="pickaddr">주소 조회 중…</div>').openOn(map);
@@ -506,7 +512,7 @@ function drawLines(){
     });
     const hit=L.polyline(o.coords,{color:'#000',weight:24,opacity:0}).addTo(map);
     hit.bindTooltip(esc(o.no),{sticky:true,direction:'top',opacity:0.95});
-    hit.on('click',e=>{if(mode==='draw'){addVertex(e.latlng);return;}onLineClick(idx, snap(o.coords,[e.latlng.lat,e.latlng.lng]));});g.push(hit);
+    hit.on('click',e=>{if(mode==='draw'){addVertex(e.latlng);return;}if(mode==='editgeo')return;onLineClick(idx, snap(o.coords,[e.latlng.lat,e.latlng.lng]));});g.push(hit);
     gLayers[idx]=g;
     if(sel){ // cut nodes
       o.cuts.filter(c=>c>1&&c<T-1).forEach(c=>{const ll=ptAt(o.coords,c);
@@ -565,6 +571,7 @@ function renderSheet(){
     <div class="sec"><span>일일 작업일보</span></div><div class="log">${log}</div>
     ${p>=100?'':`<button class="btn-fill" id="ifill">✓ 나머지 전체 완료 (잔여 ${rem<0.5?0:fmt(rem)}m)</button>`}
     <button class="btn-hold ${o.hold?'on':''}" id="ihold">${o.hold?'보류 해제':'보류 지정'}</button>
+    ${isAdmin?`<button class="btn-edit-geo" id="iedit">✎ 선형 변형</button>`:''}
     ${isAdmin?'<button class="btn-del" id="idel">🗑 이 라인 삭제</button>':''}`;
   sh.classList.add('open');setBanner();
   mCut.onclick=()=>{mode='cut';drawLines();renderSheet();};  mTap.onclick=()=>{mode='tap';drawLines();renderSheet();};
@@ -575,6 +582,7 @@ function renderSheet(){
   const fill=document.getElementById('ifill');if(fill)fill.onclick=()=>completeRemaining(SEL);
   ihold.onclick=async()=>{o.hold=!o.hold;await save();drawLines();renderKpi();renderSheet();toast(`<b>${o.no}</b> ${o.hold?'보류':'보류 해제'}`);};
   const _del=document.getElementById('idel');if(_del)_del.onclick=async()=>{const no=o.no,office=o.office;if(!confirm('['+office+'] '+no+' 라인을 삭제할까요?\n(되돌릴 수 없습니다)'))return;await load();LINES=LINES.filter(x=>!(x.no===no&&x.office===office));await save();SEL=null;drawLines();renderKpi();renderSheet();toast('삭제됨 · '+no);};
+  const _ieg=document.getElementById('iedit');if(_ieg)_ieg.onclick=()=>startEditGeo(SEL);
 }
 function select(idx){clearPick();SEL=idx;mode='tap';drawLines();renderSheet();const o=LINES[idx],lat=o.coords.reduce((s,c)=>s+c[0],0)/o.coords.length,lon=o.coords.reduce((s,c)=>s+c[1],0)/o.coords.length;map.panTo([lat,lon]);}
 document.querySelector('.grab').onclick=()=>{SEL=null;mode='tap';drawLines();renderSheet();};
@@ -625,6 +633,54 @@ document.getElementById('drawCancel').onclick=exitDraw;
 document.getElementById('drawDone').onclick=finishDraw;
 document.getElementById('dfCancel').onclick=()=>document.getElementById('drawFormOvl').classList.remove('show');
 document.getElementById('dfSave').onclick=saveNewLine;
+
+
+/* ===== 선형 변형 (관리자 전용) ===== */
+let editingGeo=false, egPts=[], egVtx=[], egLine=null, egNo=null, egOffice=null;
+function clearEG(){egVtx.forEach(m=>map.removeLayer(m));egVtx=[];if(egLine){map.removeLayer(egLine);egLine=null;}}
+function nearestSegIndex(pts,ll){const cl=Math.cos(pts[0][0]*Math.PI/180);const xy=p=>[p[1]*cl,p[0]];const P=xy([ll.lat,ll.lng]);let best=0,bd=1e18;for(let i=0;i<pts.length-1;i++){const A=xy(pts[i]),B=xy(pts[i+1]);const dx=B[0]-A[0],dy=B[1]-A[1],L2=dx*dx+dy*dy;let t=L2?((P[0]-A[0])*dx+(P[1]-A[1])*dy)/L2:0;t=Math.max(0,Math.min(1,t));const px=A[0]+t*dx,py=A[1]+t*dy;const d=(P[0]-px)*(P[0]-px)+(P[1]-py)*(P[1]-py);if(d<bd){bd=d;best=i;}}return best;}
+function renderEG(){
+  clearEG();
+  egLine=L.polyline(egPts,{color:'#f59e0b',weight:5,opacity:.95,dashArray:'4 4'}).addTo(map);
+  egLine.on('click',e=>{const i=nearestSegIndex(egPts,e.latlng);egPts.splice(i+1,0,[e.latlng.lat,e.latlng.lng]);renderEG();L.DomEvent.stop(e);});
+  egPts.forEach((p,i)=>{
+    const m=L.marker(p,{draggable:true,icon:L.divIcon({className:'',html:'<div class="ve-dot"></div>',iconSize:[16,16],iconAnchor:[8,8]}),zIndexOffset:2000}).addTo(map);
+    m.on('drag',ev=>{const ll=ev.target.getLatLng();egPts[i]=[ll.lat,ll.lng];egLine.setLatLngs(egPts);});
+    m.on('dblclick',()=>{if(egPts.length>2){egPts.splice(i,1);renderEG();}else{toast('점은 2개 이상이어야 합니다');}});
+    egVtx.push(m);
+  });
+}
+function startEditGeo(idx){
+  if(!isAdmin)return;
+  const o=LINES[idx];egNo=o.no;egOffice=o.office;
+  editingGeo=true;mode='editgeo';egPts=o.coords.map(c=>[c[0],c[1]]);
+  SEL=null;clearPick();drawLines();renderSheet();
+  map.doubleClickZoom.disable();renderEG();
+  document.getElementById('editBar').style.display='flex';
+  document.getElementById('editFab').style.display='none';
+  toast('선형 변형 · 점을 끌어 이동');
+}
+function exitEditGeo(reselect){
+  editingGeo=false;mode='tap';clearEG();egPts=[];
+  map.doubleClickZoom.enable();
+  document.getElementById('editBar').style.display='none';showFab();
+  if(reselect){const i=LINES.findIndex(l=>l.no===egNo&&l.office===egOffice);if(i>=0)SEL=i;}
+  drawLines();renderKpi();renderSheet();
+}
+async function saveEditGeo(){
+  if(egPts.length<2){toast('점을 2개 이상 찍어주세요');return;}
+  if(!confirm('선형을 변경하면 이 라인의 완료·끊기 기록이 초기화됩니다.\n저장할까요?'))return;
+  await load();
+  const t=LINES.find(l=>l.no===egNo&&l.office===egOffice);
+  if(!t){toast('대상 라인을 찾지 못했습니다');exitEditGeo(false);return;}
+  let lenM=0;for(let i=0;i<egPts.length-1;i++)lenM+=map.distance(egPts[i],egPts[i+1]);
+  t.coords=egPts.slice();t.lenM=Math.round(lenM*10)/10;t.cuts=[];t.completed=[];t.daily=[];
+  await save();
+  toast('선형 저장됨 · '+egNo);
+  exitEditGeo(true);
+}
+document.getElementById('editSave').onclick=saveEditGeo;
+document.getElementById('editCancel').onclick=()=>exitEditGeo(true);
 
 (async()=>{await load();drawLines();renderKpi();
   try{if(LINES.length){const b=L.latLngBounds(LINES.flatMap(o=>o.coords||[]));if(b.isValid())map.fitBounds(b.pad(0.1));}}catch(e){console.error('fit',e);}

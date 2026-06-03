@@ -126,6 +126,18 @@
   .adm-item{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 11px;border-bottom:1px solid #1f2630;font-size:13px}
   .adm-item button{background:#1a1011;border:1px solid #5b2326;color:#fca5a5;border-radius:7px;padding:4px 10px;font-size:12px;cursor:pointer}
   .adm-err{color:#fca5a5;font-size:13px;min-height:18px;margin:8px 0 0}
+  .edit-fab{position:absolute;left:13px;bottom:24px;z-index:1200}
+  .edit-fab button{background:#0d9488;color:#fff;border:none;border-radius:24px;padding:12px 18px;font-family:var(--sans);font-size:15px;font-weight:700;box-shadow:0 4px 14px rgba(0,0,0,.4);cursor:pointer}
+  .draw-bar{position:absolute;left:50%;transform:translateX(-50%);bottom:24px;z-index:1400;display:none;align-items:center;gap:8px;background:#161b22;border:1px solid #30363d;border-radius:30px;padding:8px 10px 8px 16px;box-shadow:0 6px 20px rgba(0,0,0,.5)}
+  .draw-bar #drawHint{color:#e6edf3;font-size:13px;margin-right:6px;white-space:nowrap}
+  .draw-bar button{background:#21262d;color:#e6edf3;border:1px solid #30363d;border-radius:18px;padding:8px 14px;font-family:var(--sans);font-size:14px;font-weight:600;cursor:pointer}
+  .draw-bar button.primary{background:#0d9488;border-color:#0d9488;color:#fff}
+  .draw-form-ovl{position:absolute;inset:0;z-index:1700;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center}
+  .draw-form-ovl.show{display:flex}
+  .draw-form{background:#161b22;border:1px solid #30363d;border-radius:14px;padding:18px;width:330px;max-width:90%}
+  .draw-form .adm-row{display:flex;gap:10px;align-items:center;margin-bottom:10px}
+  .draw-form input,.draw-form select{background:#0d1117;color:#e6edf3;border:1px solid #30363d;border-radius:8px;padding:8px 10px;font-family:var(--sans);font-size:14px;flex:1}
+
 
   .srch-ovl.show{display:flex}
   .srch-bar{display:flex;gap:9px;padding:14px 13px;border-bottom:1px solid #232b36}
@@ -163,6 +175,18 @@
     <button class="topbtn b" id="admBtn">관리자</button>
     <div class="kpi b"><div class="p" id="kpiPct">0%</div><div class="s" id="kpiM">0 / 0 m</div></div></div>
   <div class="layerbtn b"><button id="lyMap" class="on">지도</button><button id="lySat">위성</button><button id="lyBound" class="on">경계</button></div>
+  <div class="edit-fab" id="editFab" style="display:none"><button id="drawBtn">+ 라인 그리기</button></div>
+  <div class="draw-bar" id="drawBar"><span id="drawHint">지도를 탭해 선을 그리세요</span><button id="drawUndo">되돌리기</button><button id="drawDone" class="primary">완료</button><button id="drawCancel">취소</button></div>
+  <div class="draw-form-ovl" id="drawFormOvl">
+    <div class="draw-form">
+      <p class="adm-h">새 라인 정보</p>
+      <div class="adm-row"><label style="width:56px">사업소</label><select id="dfOffice"><option value="강동">강동</option><option value="동부">동부</option></select></div>
+      <div class="adm-row"><label style="width:56px">지시번호</label><input id="dfNo" placeholder="예: 강동/210" autocomplete="off"></div>
+      <div class="adm-row"><label style="width:56px">공사명</label><input id="dfName" placeholder="(선택)" autocomplete="off"></div>
+      <div class="adm-row" style="justify-content:flex-end;gap:8px"><button id="dfCancel" class="adm-btn">취소</button><button id="dfSave" class="adm-btn primary">저장</button></div>
+    </div>
+  </div>
+
   <div class="banner" id="banner"></div>
   <div class="legend"><div><i style="background:#34d399"></i>완료 구간</div><div><i style="background:#f59e0b"></i>미시공</div><div><i style="background:#f87171"></i>보류</div></div>
   <div class="sheet" id="sheet"><div class="grab"></div><div class="sh-pad" id="sheetBody"></div></div>
@@ -294,6 +318,7 @@ function renderAddr(o){
 let pickMarker=null, pickPop=null;
 function clearPick(){if(pickMarker){map.removeLayer(pickMarker);pickMarker=null;}if(pickPop){map.closePopup(pickPop);pickPop=null;}}
 async function pickPoint(latlng){
+  if(mode==='draw'){addVertex(latlng);return;}
   clearPick();
   pickMarker=L.marker(latlng,{icon:L.divIcon({className:'',html:'<div class="pickpin"></div>',iconSize:[20,20],iconAnchor:[10,20]})}).addTo(map);
   pickPop=L.popup({offset:[0,-18],closeButton:true,autoPan:true}).setLatLng(latlng).setContent('<div class="pickaddr">주소 조회 중…</div>').openOn(map);
@@ -330,7 +355,7 @@ function openAdmin(){admOvl.classList.add('show');document.getElementById('admPi
 function closeAdmin(){admOvl.classList.remove('show');}
 document.getElementById('admBtn').onclick=openAdmin;
 document.getElementById('admClose').onclick=closeAdmin;
-function tryPin(){const v=document.getElementById('admPinInput').value;if(v===String(CONFIG.ADMIN_PIN)){isAdmin=true;document.getElementById('admPin').style.display='none';document.getElementById('admPanel').style.display='block';document.getElementById('admPinErr').textContent='';}else{document.getElementById('admPinErr').textContent='PIN이 올바르지 않습니다.';}}
+function tryPin(){const v=document.getElementById('admPinInput').value;if(v===String(CONFIG.ADMIN_PIN)){isAdmin=true;document.getElementById('admPin').style.display='none';document.getElementById('admPanel').style.display='block';document.getElementById('admPinErr').textContent='';document.getElementById('editFab').style.display='block';}else{document.getElementById('admPinErr').textContent='PIN이 올바르지 않습니다.';}}
 document.getElementById('admPinBtn').onclick=tryPin;
 document.getElementById('admPinInput').addEventListener('keydown',e=>{if(e.key==='Enter')tryPin();});
 function admlog(s,clear){const el=document.getElementById('admLog');if(clear)el.textContent='';el.textContent+=(el.textContent&&!clear?'\n':'')+s;el.scrollTop=el.scrollHeight;}
@@ -480,7 +505,7 @@ function drawLines(){
     });
     const hit=L.polyline(o.coords,{color:'#000',weight:24,opacity:0}).addTo(map);
     hit.bindTooltip(esc(o.no),{sticky:true,direction:'top',opacity:0.95});
-    hit.on('click',e=>onLineClick(idx, snap(o.coords,[e.latlng.lat,e.latlng.lng])));g.push(hit);
+    hit.on('click',e=>{if(mode==='draw'){addVertex(e.latlng);return;}onLineClick(idx, snap(o.coords,[e.latlng.lat,e.latlng.lng]));});g.push(hit);
     gLayers[idx]=g;
     if(sel){ // cut nodes
       o.cuts.filter(c=>c>1&&c<T-1).forEach(c=>{const ll=ptAt(o.coords,c);
@@ -551,6 +576,53 @@ function renderSheet(){
 function select(idx){clearPick();SEL=idx;mode='tap';drawLines();renderSheet();const o=LINES[idx],lat=o.coords.reduce((s,c)=>s+c[0],0)/o.coords.length,lon=o.coords.reduce((s,c)=>s+c[1],0)/o.coords.length;map.panTo([lat,lon]);}
 document.querySelector('.grab').onclick=()=>{SEL=null;mode='tap';drawLines();renderSheet();};
 setInterval(async()=>{try{const r=await fetch(DB+'/'+KEY+'/lines.json');let f=await r.json();if(f&&!Array.isArray(f))f=Object.values(f);if(Array.isArray(f)&&f.length){f=normalize(f);if(JSON.stringify(f)!==JSON.stringify(LINES)){LINES=f;drawLines();renderKpi();if(SEL!==null)renderSheet();toast('다른 기기의 변경이 반영됨');}}}catch(e){}},3000);
+
+/* ===== 라인 그리기 (관리자 전용) ===== */
+let drawing=false, drawPts=[], drawTmp=null, drawVtx=[];
+function showFab(){document.getElementById('editFab').style.display=(isAdmin&&!drawing)?'block':'none';}
+function setDrawHint(){const h=document.getElementById('drawHint');if(h)h.textContent='지도를 탭해 선을 그리세요 ('+drawPts.length+'점)';}
+function renderDrawTmp(){
+  if(drawTmp){map.removeLayer(drawTmp);drawTmp=null;}
+  drawVtx.forEach(m=>map.removeLayer(m));drawVtx=[];
+  if(drawPts.length>=2)drawTmp=L.polyline(drawPts,{color:'#22d3ee',weight:5,opacity:.95,dashArray:'6 5',interactive:false}).addTo(map);
+  drawPts.forEach(p=>{const m=L.circleMarker(p,{radius:5,color:'#fff',weight:2,fillColor:'#22d3ee',fillOpacity:1,interactive:false}).addTo(map);drawVtx.push(m);});
+}
+function clearDrawTmp(){if(drawTmp){map.removeLayer(drawTmp);drawTmp=null;}drawVtx.forEach(m=>map.removeLayer(m));drawVtx=[];}
+function addVertex(latlng){if(!drawing)return;drawPts.push([latlng.lat,latlng.lng]);renderDrawTmp();setDrawHint();}
+function startDraw(){
+  if(!isAdmin)return;
+  drawing=true;mode='draw';drawPts=[];SEL=null;clearPick();drawLines();
+  clearDrawTmp();renderDrawTmp();setDrawHint();
+  document.getElementById('drawBar').style.display='flex';
+  document.getElementById('editFab').style.display='none';
+  toast('그리기 모드 · 지도를 탭하세요');
+}
+function exitDraw(){drawing=false;mode='tap';drawPts=[];clearDrawTmp();document.getElementById('drawBar').style.display='none';showFab();drawLines();renderKpi();}
+function undoVertex(){if(drawPts.length){drawPts.pop();renderDrawTmp();setDrawHint();}}
+function finishDraw(){if(drawPts.length<2){toast('점을 2개 이상 찍어주세요');return;}
+  document.getElementById('dfNo').value='';document.getElementById('dfName').value='';
+  document.getElementById('drawFormOvl').classList.add('show');setTimeout(()=>document.getElementById('dfNo').focus(),60);}
+async function saveNewLine(){
+  const office=document.getElementById('dfOffice').value;
+  const no=document.getElementById('dfNo').value.trim();
+  const name=document.getElementById('dfName').value.trim();
+  if(!no){toast('지시번호를 입력하세요');return;}
+  await load();
+  if(LINES.find(l=>l.office===office&&l.no===no)){if(!confirm('같은 번호('+no+')가 이미 있습니다. 그래도 추가할까요?'))return;}
+  let lenM=0;for(let i=0;i<drawPts.length-1;i++)lenM+=map.distance(drawPts[i],drawPts[i+1]);
+  LINES.push({no:no,office:office,name:name,lenM:Math.round(lenM*10)/10,matchDist:0,verified:true,coords:drawPts.slice(),cuts:[],completed:[],daily:[],hold:false});
+  await save();
+  document.getElementById('drawFormOvl').classList.remove('show');
+  exitDraw();
+  toast('라인 추가됨 · '+no);
+}
+document.getElementById('drawBtn').onclick=startDraw;
+document.getElementById('drawUndo').onclick=undoVertex;
+document.getElementById('drawCancel').onclick=exitDraw;
+document.getElementById('drawDone').onclick=finishDraw;
+document.getElementById('dfCancel').onclick=()=>document.getElementById('drawFormOvl').classList.remove('show');
+document.getElementById('dfSave').onclick=saveNewLine;
+
 (async()=>{await load();drawLines();renderKpi();
   try{if(LINES.length){const b=L.latLngBounds(LINES.flatMap(o=>o.coords||[]));if(b.isValid())map.fitBounds(b.pad(0.1));}}catch(e){console.error('fit',e);}
   setTimeout(()=>map.invalidateSize(),200);

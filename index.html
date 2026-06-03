@@ -3,6 +3,7 @@
 <title>강동수도사업소 현장관리</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/proj4@2.11.0/dist/proj4.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
 <style>
   :root{--accent:#22d3ee;--done:#34d399;--wait:#94a3b8;--hold:#f87171;--ink:#0d1117;--line:#e4e8ee;--muted:#64748b;
@@ -104,6 +105,28 @@
   .ed-acts .save{background:var(--ink);color:#fff}.ed-acts .cancel{background:#eef1f5;color:#475569}
   .topbtn{font-family:var(--sans);font-size:12px;font-weight:600;color:#fff;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.25);border-radius:9px;padding:7px 12px;cursor:pointer}
   .srch-ovl{position:absolute;inset:0;z-index:1500;background:#0d1117;display:none;flex-direction:column}
+  .adm-ovl{position:absolute;inset:0;z-index:1600;background:#0d1117;color:#e6edf3;display:none;flex-direction:column}
+  .adm-ovl.show{display:flex}
+  .adm-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid #1f2630;font-size:16px;font-weight:700}
+  .adm-head button{background:#21262d;color:#e6edf3;border:none;border-radius:8px;padding:8px 14px;font-family:var(--sans);font-size:14px;cursor:pointer}
+  .adm-body{padding:16px;overflow:auto;flex:1}
+  .adm-h{font-weight:700;margin:0 0 10px;font-size:14px;color:#9fb0c3}
+  .adm-sec{background:#161b22;border:1px solid #1f2630;border-radius:12px;padding:14px;margin-bottom:14px}
+  .adm-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+  .adm-row label{font-size:13px}
+  .adm-row .rad{display:flex;align-items:center;gap:5px}
+  .adm-ovl select,.adm-ovl input[type=password]{background:#0d1117;color:#e6edf3;border:1px solid #30363d;border-radius:8px;padding:8px 10px;font-family:var(--sans);font-size:14px}
+  .adm-ovl input[type=file]{font-size:13px;margin-bottom:10px;color:#9fb0c3}
+  .adm-btn{background:#21262d;color:#e6edf3;border:1px solid #30363d;border-radius:9px;padding:10px 14px;font-family:var(--sans);font-size:14px;font-weight:600;cursor:pointer}
+  .adm-btn.primary{background:#0d9488;border-color:#0d9488;color:#fff}
+  .adm-btn.danger{color:#fca5a5;border-color:#5b2326;background:#1a1011}
+  .adm-btn:disabled{opacity:.5;cursor:default}
+  .adm-log{background:#0d1117;border:1px solid #1f2630;border-radius:8px;padding:10px;font-family:Consolas,monospace;font-size:12px;white-space:pre-wrap;max-height:170px;overflow:auto;margin-bottom:10px;line-height:1.55}
+  .adm-list{max-height:320px;overflow:auto;border:1px solid #1f2630;border-radius:8px}
+  .adm-item{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 11px;border-bottom:1px solid #1f2630;font-size:13px}
+  .adm-item button{background:#1a1011;border:1px solid #5b2326;color:#fca5a5;border-radius:7px;padding:4px 10px;font-size:12px;cursor:pointer}
+  .adm-err{color:#fca5a5;font-size:13px;min-height:18px;margin:8px 0 0}
+
   .srch-ovl.show{display:flex}
   .srch-bar{display:flex;gap:9px;padding:14px 13px;border-bottom:1px solid #232b36}
   .srch-bar input{flex:1;font-family:var(--sans);font-size:15px;background:#1a212b;border:1px solid #2c3542;color:#fff;border-radius:11px;padding:12px 14px}
@@ -137,6 +160,7 @@
   <div class="top"><div class="b"><h1>서울시 상수도 현장관리</h1><div class="sub" id="roleSub">FIELD</div></div>
     <div class="office-tabs b" id="officeTabs"><button data-o="전체" class="on">전체</button><button data-o="강동">강동</button><button data-o="동부">동부</button></div>
     <button class="topbtn b" id="srchBtn">검색</button>
+    <button class="topbtn b" id="admBtn">관리자</button>
     <div class="kpi b"><div class="p" id="kpiPct">0%</div><div class="s" id="kpiM">0 / 0 m</div></div></div>
   <div class="layerbtn b"><button id="lyMap" class="on">지도</button><button id="lySat">위성</button><button id="lyBound" class="on">경계</button></div>
   <div class="banner" id="banner"></div>
@@ -154,6 +178,43 @@
     <div class="srch-note" id="srchNote"></div>
     <div class="srch-list" id="srchList"></div>
   </div>
+  <div class="adm-ovl" id="admOvl">
+    <div class="adm-head"><span>관리자</span><button id="admClose">닫기</button></div>
+    <div class="adm-body">
+      <div id="admPin">
+        <p class="adm-h">관리자 PIN을 입력하세요</p>
+        <div class="adm-row">
+          <input id="admPinInput" type="password" inputmode="numeric" placeholder="PIN" autocomplete="off" style="width:140px">
+          <button id="admPinBtn" class="adm-btn primary">확인</button>
+        </div>
+        <p class="adm-err" id="admPinErr"></p>
+      </div>
+      <div id="admPanel" style="display:none">
+        <div class="adm-sec">
+          <p class="adm-h">DXF 업로드</p>
+          <div class="adm-row">
+            <label>사업소</label>
+            <select id="admOffice"><option value="강동">강동</option><option value="동부">동부</option></select>
+            <label class="rad"><input type="radio" name="admMode" value="merge" checked> 병합(진행상황 보존)</label>
+            <label class="rad"><input type="radio" name="admMode" value="replace"> 교체(초기화)</label>
+          </div>
+          <input id="admFile" type="file" accept=".dxf">
+          <div class="adm-log" id="admLog">DXF 파일을 선택하면 미리보기가 표시됩니다.</div>
+          <button id="admUpload" class="adm-btn primary" disabled>Firebase에 업로드</button>
+        </div>
+        <div class="adm-sec">
+          <p class="adm-h">라인 관리 / 삭제</p>
+          <div class="adm-row">
+            <button id="admRefresh" class="adm-btn">현재 목록 불러오기</button>
+            <button id="admDelOffice" class="adm-btn danger">이 사업소 전체 삭제</button>
+            <button id="admDelAll" class="adm-btn danger">전체 삭제</button>
+          </div>
+          <div class="adm-list" id="admList"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div class="ed-ovl" id="edOvl"><div class="ed">
     <h3>공사 정보 수정</h3>
     <label>공사지시번호</label><input id="eNo" placeholder="예: 강동/134">
@@ -165,7 +226,11 @@
 <script>
 const CONFIG={
   FIREBASE_DB: "https://seoul-waterworks-default-rtdb.asia-southeast1.firebasedatabase.app",   // ← 본인 Realtime Database 주소 (이미 채워둠)
-  PATH: "water"              // Firebase 안의 데이터 경로 (다른 사업과 분리)
+  PATH: "water",             // Firebase 안의 데이터 경로 (다른 사업과 분리)
+  ADMIN_PIN: "0000",         // ← 관리자 PIN (여기 한 줄만 바꾸면 됩니다)
+  SEED_IF_EMPTY: false,      // 데이터가 비어도 시험용 자동입력 안 함 (운영용). 처음 테스트만 true
+  SRC_EPSG: "EPSG:5186",     // 도면 좌표계(중부원점 2010). 다르면 아래 proj4 정의와 함께 변경
+  SRC_PROJ4: "+proj=tmerc +lat_0=38 +lon_0=127 +k=1 +x_0=200000 +y_0=600000 +ellps=GRS80 +units=m +no_defs"
 };
 const DB=CONFIG.FIREBASE_DB, KEY=CONFIG.PATH;
 const DATA={"center": [37.527281, 127.126217], "lines": [{"no": "강동/134", "lenM": 21.8, "matchDist": 18.8, "verified": true, "coords": [[37.4927015, 127.1441015], [37.4926527, 127.1443406]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/132", "lenM": 280.0, "matchDist": 17.8, "verified": true, "coords": [[37.4886403, 127.1320746], [37.4904892, 127.1342286]], "cuts": [120, 180], "completed": [[0, 180]], "daily": [{"d": "2026-06-01", "from": 0, "to": 120, "v": 120, "by": "현장"}, {"d": "2026-06-02", "from": 120, "to": 180, "v": 60, "by": "현장"}], "hold": false, "office": "강동"}, {"no": "강동/106", "lenM": 34.9, "matchDist": 100.0, "verified": false, "coords": [[37.5624832, 127.1564853], [37.5627772, 127.156346]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/003", "lenM": 279.8, "matchDist": 16.8, "verified": true, "coords": [[37.5606093, 127.157049], [37.5628598, 127.1571398], [37.5629127, 127.1571787], [37.5629478, 127.1573341], [37.5629477, 127.1574339]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/004", "lenM": 50.0, "matchDist": 13.8, "verified": true, "coords": [[37.555673, 127.1293944], [37.5552385, 127.129245]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/005", "lenM": 64.5, "matchDist": 22.4, "verified": true, "coords": [[37.5569281, 127.1371765], [37.5570869, 127.1378784]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/112", "lenM": 169.5, "matchDist": 17.8, "verified": true, "coords": [[37.5031781, 127.0877834], [37.5037373, 127.0883002], [37.5034647, 127.0892886]], "cuts": [], "completed": [], "daily": [], "hold": true, "office": "강동"}, {"no": "강동/126", "lenM": 245.0, "matchDist": 11.0, "verified": true, "coords": [[37.5139763, 127.1072622], [37.5118762, 127.1081161]], "cuts": [], "completed": [[0, 245]], "daily": [{"d": "2026-05-30", "from": 0, "to": 245, "v": 245, "by": "현장"}], "hold": false, "office": "강동"}, {"no": "강동/016", "lenM": 320.9, "matchDist": 5.5, "verified": true, "coords": [[37.562915, 127.1574493], [37.5628525, 127.1572263], [37.5601519, 127.1570844]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/017", "lenM": 56.0, "matchDist": 105.5, "verified": false, "coords": [[37.5414564, 127.1266986], [37.5419204, 127.1269477]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/018", "lenM": 10.0, "matchDist": 6.4, "verified": true, "coords": [[37.54183, 127.1275609], [37.5417963, 127.1276659]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/030", "lenM": 520.0, "matchDist": 28.0, "verified": false, "coords": [[37.5005528, 127.0826448], [37.4983597, 127.0774483]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/031", "lenM": 664.6, "matchDist": 88.5, "verified": false, "coords": [[37.5041688, 127.0882503], [37.504138, 127.0877998], [37.5018078, 127.0857051], [37.5014943, 127.0845863], [37.501224, 127.0843107], [37.5005603, 127.0826658]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/032", "lenM": 2498.7, "matchDist": 69.0, "verified": false, "coords": [[37.5102184, 127.1123148], [37.5088514, 127.1114772], [37.5072205, 127.1101335], [37.5062032, 127.1090771], [37.5049224, 127.1069107], [37.5034307, 127.1025733], [37.5025732, 127.0992468], [37.5023543, 127.0966847], [37.5026137, 127.0940987], [37.5032822, 127.0914589], [37.504192, 127.088286]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/033", "lenM": 1025.1, "matchDist": 115.7, "verified": false, "coords": [[37.5174048, 127.1129725], [37.5164098, 127.1157528], [37.5160256, 127.1158831], [37.5102647, 127.1123541]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/034", "lenM": 1299.6, "matchDist": 109.8, "verified": false, "coords": [[37.5277166, 127.1194012], [37.5276277, 127.1190582], [37.5249745, 127.1174777], [37.5243621, 127.1173453], [37.5233459, 127.1167241], [37.5232963, 127.1164612], [37.517428, 127.112899]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/035", "lenM": 971.0, "matchDist": 54.5, "verified": false, "coords": [[37.5143798, 127.161128], [37.5156833, 127.1691041], [37.5168561, 127.1713341], [37.5169791, 127.1714031]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/055", "lenM": 654.1, "matchDist": 39.6, "verified": false, "coords": [[37.5120617, 127.0924264], [37.5123575, 127.0959337], [37.513261, 127.0996357]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/056(23년)", "lenM": 38.0, "matchDist": 15.9, "verified": true, "coords": [[37.5122897, 127.0950545], [37.5119497, 127.095103]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/057(23년)", "lenM": 47.8, "matchDist": 12.0, "verified": true, "coords": [[37.5120471, 127.0924056], [37.5116213, 127.0924871]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/064", "lenM": 27.6, "matchDist": 18.6, "verified": true, "coords": [[37.5547641, 127.1291048], [37.5547616, 127.1292748], [37.5546522, 127.1292372]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/076", "lenM": 1518.7, "matchDist": 46.2, "verified": false, "coords": [[37.5159857, 127.0982484], [37.5186766, 127.1049298], [37.5202364, 127.1144219]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/077", "lenM": 764.8, "matchDist": 121.6, "verified": false, "coords": [[37.5187543, 127.0949697], [37.5184993, 127.0956191], [37.5165015, 127.0971746], [37.5163518, 127.0975213], [37.5135077, 127.0996], [37.5132635, 127.0993381], [37.5132272, 127.0993495]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/079", "lenM": 907.5, "matchDist": 120.6, "verified": false, "coords": [[37.5194098, 127.1390198], [37.5272392, 127.1419781]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/080", "lenM": 608.5, "matchDist": 12.7, "verified": true, "coords": [[37.5255413, 127.135586], [37.5250554, 127.1376633], [37.523109, 127.1369399], [37.5235933, 127.1348565]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/081", "lenM": 270.0, "matchDist": 17.0, "verified": true, "coords": [[37.5271918, 127.1424944], [37.5280221, 127.1396233]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/092", "lenM": 2.0, "matchDist": 20.3, "verified": true, "coords": [[37.5384628, 127.1526408], [37.5384462, 127.1526497]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/093", "lenM": 15.0, "matchDist": 7.9, "verified": true, "coords": [[37.538618, 127.1527344], [37.5386063, 127.1529035]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/094", "lenM": 72.7, "matchDist": 94.3, "verified": false, "coords": [[37.5382525, 127.1520078], [37.5383927, 127.1522816], [37.5387688, 127.1524369]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/096", "lenM": 50.0, "matchDist": 81.1, "verified": false, "coords": [[37.539174, 127.1526233], [37.5396022, 127.152799]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/097", "lenM": 17.2, "matchDist": 101.8, "verified": false, "coords": [[37.5401441, 127.1531038], [37.5401038, 127.1532919]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/095", "lenM": 17.2, "matchDist": 217.7, "verified": false, "coords": [[37.5405521, 127.1532963], [37.5405118, 127.1534844]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/098", "lenM": 21.0, "matchDist": 26.6, "verified": false, "coords": [[37.5463253, 127.1559169], [37.5465135, 127.1559407]], "cuts": [80], "completed": [[0, 80]], "daily": [{"d": "2026-06-02", "from": 0, "to": 80, "v": 80, "by": "현장"}], "hold": false, "office": "강동"}, {"no": "강동/103", "lenM": 7.0, "matchDist": 1.9, "verified": true, "coords": [[37.5557541, 127.1296329], [37.5557601, 127.1297118]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/104", "lenM": 721.4, "matchDist": 104.5, "verified": false, "coords": [[37.5618774, 127.1292106], [37.561945, 127.1291201], [37.5588414, 127.1263213], [37.5565289, 127.1248818]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/002", "lenM": 106.0, "matchDist": 177.6, "verified": false, "coords": [[37.5625021, 127.1570863], [37.561548, 127.1570341]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/107", "lenM": 98.4, "matchDist": 119.6, "verified": false, "coords": [[37.5615247, 127.1569909], [37.5606391, 127.1569488]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/108", "lenM": 118.0, "matchDist": 44.6, "verified": false, "coords": [[37.5080747, 127.0864259], [37.507853, 127.0851206]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/109", "lenM": 245.0, "matchDist": 48.0, "verified": false, "coords": [[37.5074272, 127.0909316], [37.5070043, 127.0936512]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/110", "lenM": 152.3, "matchDist": 78.0, "verified": false, "coords": [[37.5034801, 127.0865355], [37.504045, 127.0870212], [37.5041178, 127.0869885], [37.5043179, 127.0862646]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/111", "lenM": 341.1, "matchDist": 28.3, "verified": false, "coords": [[37.5069464, 127.1007492], [37.5084579, 127.1037499], [37.5084035, 127.10398], [37.5084252, 127.1040416]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/113", "lenM": 42.0, "matchDist": 9.8, "verified": true, "coords": [[37.539731, 127.1408699], [37.5393692, 127.1407305]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/114", "lenM": 150.0, "matchDist": 11.7, "verified": true, "coords": [[37.4882175, 127.1351111], [37.4894485, 127.1358111]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/115", "lenM": 50.1, "matchDist": 27.7, "verified": false, "coords": [[37.5537717, 127.1427294], [37.5536229, 127.1430331], [37.553643, 127.1431577], [37.5536496, 127.1432411]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/119", "lenM": 477.0, "matchDist": 7.1, "verified": true, "coords": [[37.5278806, 127.1440204], [37.5239253, 127.1461324]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/120", "lenM": 725.0, "matchDist": 11.1, "verified": true, "coords": [[37.5171049, 127.1438717], [37.5233418, 127.1463095]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/121", "lenM": 739.8, "matchDist": 10.7, "verified": true, "coords": [[37.5041966, 127.1230408], [37.5045381, 127.123043], [37.5049224, 127.122894], [37.5052332, 127.1226551], [37.5077772, 127.1164528]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/122", "lenM": 39.3, "matchDist": 15.6, "verified": true, "coords": [[37.4886351, 127.1320722], [37.4883769, 127.1317677]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/123", "lenM": 70.0, "matchDist": 8.9, "verified": true, "coords": [[37.5005136, 127.1434682], [37.5001888, 127.1441467]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/130", "lenM": 47.0, "matchDist": 117.9, "verified": false, "coords": [[37.560625, 127.1569493], [37.5602018, 127.1569301]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/131", "lenM": 583.0, "matchDist": 11.6, "verified": true, "coords": [[37.5461048, 127.1431801], [37.5410641, 127.1413233]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/133", "lenM": 15.5, "matchDist": 17.6, "verified": true, "coords": [[37.5073886, 127.1287645], [37.5075125, 127.1288463]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/135", "lenM": 10.0, "matchDist": 9.9, "verified": true, "coords": [[37.5370303, 127.1228751], [37.5370026, 127.1229828]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/136", "lenM": 52.4, "matchDist": 10.0, "verified": true, "coords": [[37.4981745, 127.1467908], [37.4979498, 127.1467132], [37.4978012, 127.1469484]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/137", "lenM": 120.0, "matchDist": 5.6, "verified": true, "coords": [[37.4980725, 127.1277655], [37.4973268, 127.1287487]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/058(24년)", "lenM": 7.4, "matchDist": 196.7, "verified": false, "coords": [[37.5119586, 127.0918417], [37.5119391, 127.0918879], [37.5119642, 127.0918932]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/057-1(24년)", "lenM": 7.3, "matchDist": 9.2, "verified": true, "coords": [[37.512417, 127.0854285], [37.5124171, 127.0853459]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/057-2(24년)", "lenM": 7.7, "matchDist": 2.8, "verified": true, "coords": [[37.5163533, 127.0861767], [37.516345, 127.0860906]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/057-3(24년)", "lenM": 7.5, "matchDist": 21.0, "verified": true, "coords": [[37.514863, 127.0912788], [37.514928, 127.0912544]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/056-1(24년)", "lenM": 14.9, "matchDist": 11.2, "verified": true, "coords": [[37.5564507, 127.1565634], [37.5564461, 127.1567322]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/056-2(24년)", "lenM": 5.1, "matchDist": 231.9, "verified": false, "coords": [[37.5568018, 127.1565906], [37.5568037, 127.1565331]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/056-3(24년)", "lenM": 2.3, "matchDist": 226.9, "verified": false, "coords": [[37.5463576, 127.1554634], [37.5463368, 127.1554601]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/056-4(24년)", "lenM": 7.0, "matchDist": 25.5, "verified": false, "coords": [[37.5552188, 127.1556195], [37.5551574, 127.1556384]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/056-5(24년)", "lenM": 4.0, "matchDist": 225.8, "verified": false, "coords": [[37.553485, 127.1563207], [37.5534869, 127.1562752]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/056-6(24년)", "lenM": 23.6, "matchDist": 2.3, "verified": true, "coords": [[37.5535374, 127.1563253], [37.5535331, 127.1565923]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/056-7(24년)", "lenM": 6.2, "matchDist": 10.3, "verified": true, "coords": [[37.5478484, 127.1561649], [37.5478477, 127.1562353]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/056-8(24년)", "lenM": 5.2, "matchDist": 23.0, "verified": true, "coords": [[37.5472702, 127.1561258], [37.547268, 127.1561851]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/059", "lenM": 288.7, "matchDist": 26.0, "verified": false, "coords": [[37.540312, 127.1278811], [37.5400843, 127.1278257], [37.5396494, 127.1276815], [37.539407, 127.1275911], [37.5390966, 127.1274584], [37.5389707, 127.127388], [37.5383856, 127.1269514], [37.5379351, 127.1266255]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "강동/060", "lenM": 243.3, "matchDist": 23.3, "verified": true, "coords": [[37.5418438, 127.1274004], [37.5415849, 127.1283422], [37.5415373, 127.1286717], [37.5413743, 127.1293948], [37.5411799, 127.1300192]], "cuts": [], "completed": [], "daily": [], "hold": false, "office": "강동"}, {"no": "동부/001", "office": "동부", "name": "면목로 본관 교체", "lenM": 411.3, "matchDist": 0.0, "verified": true, "coords": [[37.5905, 127.082], [37.5912, 127.0848], [37.5921, 127.0861]], "cuts": [120], "completed": [[0, 120]], "daily": [{"d": "2026-06-02", "from": 0, "to": 120, "v": 120, "by": "현장"}], "hold": false}, {"no": "동부/002", "office": "동부", "name": "상봉동 분기관", "lenM": 229.7, "matchDist": 0.0, "verified": true, "coords": [[37.5963, 127.0855], [37.5971, 127.0879]], "cuts": [], "completed": [], "daily": [], "hold": true}, {"no": "동부/003", "office": "동부", "name": "중화동 배수관", "lenM": 418.5, "matchDist": 0.0, "verified": true, "coords": [[37.6021, 127.0791], [37.6009, 127.0815], [37.6004, 127.0833]], "cuts": [], "completed": [], "daily": [], "hold": false}, {"no": "동부/004", "office": "동부", "name": "묵동 노후관 정비", "lenM": 208.4, "matchDist": 0.0, "verified": true, "coords": [[37.6118, 127.0762], [37.6131, 127.0779]], "cuts": [], "completed": [[0, 9999]], "daily": [{"d": "2026-05-31", "from": 0, "to": 160, "v": 160, "by": "현장"}], "hold": false}, {"no": "동부/005", "office": "동부", "name": "신내동 급수전", "lenM": 415.2, "matchDist": 0.0, "verified": false, "coords": [[37.6135, 127.0925], [37.6142, 127.0951], [37.6151, 127.0967]], "cuts": [100], "completed": [[0, 100]], "daily": [{"d": "2026-06-01", "from": 0, "to": 100, "v": 100, "by": "현장"}], "hold": false}]};
@@ -257,6 +322,106 @@ function renderSearch(q){
 }
 function goTo(idx){const o=LINES[idx];if(!inOffice(o)){OFFICE='전체';document.querySelectorAll('#officeTabs button').forEach(b=>b.classList.toggle('on',b.dataset.o==='전체'));}clearPick();SEL=idx;mode='tap';drawLines();renderKpi();renderSheet();map.flyToBounds(L.latLngBounds(o.coords).pad(0.4),{maxZoom:19,duration:.6});}
 document.getElementById('srchBtn').onclick=openSearch;
+/* ===== 관리자(Admin) — DXF 업로드/삭제 ===== */
+if(typeof proj4!=='undefined'){ proj4.defs(CONFIG.SRC_EPSG, CONFIG.SRC_PROJ4); }
+let isAdmin=false, admParsed=null;
+const admOvl=document.getElementById('admOvl');
+function openAdmin(){admOvl.classList.add('show');document.getElementById('admPin').style.display=isAdmin?'none':'block';document.getElementById('admPanel').style.display=isAdmin?'block':'none';if(!isAdmin)setTimeout(()=>document.getElementById('admPinInput').focus(),60);}
+function closeAdmin(){admOvl.classList.remove('show');}
+document.getElementById('admBtn').onclick=openAdmin;
+document.getElementById('admClose').onclick=closeAdmin;
+function tryPin(){const v=document.getElementById('admPinInput').value;if(v===String(CONFIG.ADMIN_PIN)){isAdmin=true;document.getElementById('admPin').style.display='none';document.getElementById('admPanel').style.display='block';document.getElementById('admPinErr').textContent='';}else{document.getElementById('admPinErr').textContent='PIN이 올바르지 않습니다.';}}
+document.getElementById('admPinBtn').onclick=tryPin;
+document.getElementById('admPinInput').addEventListener('keydown',e=>{if(e.key==='Enter')tryPin();});
+function admlog(s,clear){const el=document.getElementById('admLog');if(clear)el.textContent='';el.textContent+=(el.textContent&&!clear?'\n':'')+s;el.scrollTop=el.scrollHeight;}
+
+function parseDXF(text){
+  const ls=text.split(/\r\n|\r|\n/);const pr=[];
+  for(let i=0;i+1<ls.length;i+=2)pr.push([parseInt((ls[i]||'').trim(),10),ls[i+1]]);
+  const ents=[];let i=0;
+  while(i<pr.length&&!(pr[i][0]===2&&(pr[i][1]||'').trim()==='ENTITIES'))i++;i++;
+  let cur=null;const push=()=>{if(cur)ents.push(cur);cur=null;};
+  for(;i<pr.length;i++){const code=pr[i][0],val=pr[i][1];
+    if(code===0){const t=(val||'').trim();if(t==='ENDSEC'){push();break;}push();cur={type:t,x:[],y:[],text:'',ix:null,iy:null,sx:null,sy:null,ex:null,ey:null};}
+    else if(cur){const v=(val||'').trim();
+      if(cur.type==='LWPOLYLINE'){if(code===10)cur.x.push(parseFloat(v));else if(code===20)cur.y.push(parseFloat(v));}
+      else if(cur.type==='LINE'){if(code===10)cur.sx=parseFloat(v);else if(code===20)cur.sy=parseFloat(v);else if(code===11)cur.ex=parseFloat(v);else if(code===21)cur.ey=parseFloat(v);}
+      else if(cur.type==='TEXT'||cur.type==='MTEXT'){if(code===1||code===3)cur.text+=v;else if(code===10)cur.ix=parseFloat(v);else if(code===20)cur.iy=parseFloat(v);}
+    }}
+  const polys=[],texts=[];
+  for(const e of ents){
+    if(e.type==='LWPOLYLINE'&&e.x.length>=2)polys.push(e.x.map((x,k)=>[x,e.y[k]]));
+    else if(e.type==='LINE'&&e.sx!=null&&e.ex!=null)polys.push([[e.sx,e.sy],[e.ex,e.ey]]);
+    else if((e.type==='TEXT'||e.type==='MTEXT')&&e.ix!=null){let t=e.text.replace(/\\[A-Za-z][^;]*;/g,'').replace(/[{}]/g,'').trim();texts.push({no:t,x:e.ix,y:e.iy});}
+  }
+  return {polys,texts};
+}
+function toLL(x,y){const r=proj4(CONFIG.SRC_EPSG,'WGS84',[x,y]);return [Math.round(r[1]*1e7)/1e7,Math.round(r[0]*1e7)/1e7];}
+function _segD(px,py,ax,ay,bx,by){const dx=bx-ax,dy=by-ay,L2=dx*dx+dy*dy;if(L2===0)return Math.hypot(px-ax,py-ay);let t=((px-ax)*dx+(py-ay)*dy)/L2;t=Math.max(0,Math.min(1,t));return Math.hypot(px-(ax+t*dx),py-(ay+t*dy));}
+function _ptPolyD(px,py,pts){if(pts.length<2)return Math.hypot(px-pts[0][0],py-pts[0][1]);let m=1e18;for(let i=0;i<pts.length-1;i++)m=Math.min(m,_segD(px,py,pts[i][0],pts[i][1],pts[i+1][0],pts[i+1][1]));return m;}
+function _plenLL(c){let s=0;for(let i=0;i<c.length-1;i++)s+=map.distance(c[i],c[i+1]);return s;}
+function dxfToLines(text,office){
+  const {polys,texts}=parseDXF(text);
+  const pairs=[];
+  polys.forEach((p,pi)=>texts.forEach((t,ti)=>pairs.push([_ptPolyD(t.x,t.y,p),pi,ti])));
+  pairs.sort((a,b)=>a[0]-b[0]);
+  const usedP=new Set(),usedT=new Set(),match={};
+  for(const a of pairs){const d=a[0],pi=a[1],ti=a[2];if(usedP.has(pi)||usedT.has(ti))continue;usedP.add(pi);usedT.add(ti);match[pi]=[ti,d];}
+  const OK=25;
+  return polys.map((p,pi)=>{const m=match[pi];const ti=m?m[0]:null,d=m?m[1]:null;const coords=p.map(xy=>toLL(xy[0],xy[1]));
+    return {no:ti!=null?texts[ti].no:('미매칭-'+(pi+1)),office:office,name:'',lenM:Math.round(_plenLL(coords)*10)/10,matchDist:d!=null?Math.round(d*10)/10:999.9,verified:(d!=null&&d<OK),coords:coords,cuts:[],completed:[],daily:[],hold:false};});
+}
+
+document.getElementById('admFile').addEventListener('change',async function(){
+  const f=this.files[0];if(!f)return;
+  if(typeof proj4==='undefined'){admlog('좌표변환 라이브러리(proj4)를 불러오지 못했습니다. 인터넷 연결 확인 후 새로고침하세요.',true);return;}
+  admlog('읽는 중: '+f.name,true);
+  try{
+    const buf=await f.arrayBuffer();let text;
+    try{text=new TextDecoder('euc-kr').decode(new Uint8Array(buf));}catch(e){text=new TextDecoder('utf-8').decode(new Uint8Array(buf));}
+    const office=document.getElementById('admOffice').value;
+    admParsed=dxfToLines(text,office);
+    const n=admParsed.length,ok=admParsed.filter(l=>l.verified).length;
+    const tot=Math.round(admParsed.reduce((s,l)=>s+l.lenM,0));
+    admlog('라인 '+n+'개 · 자동검수 '+ok+' · 검수필요 '+(n-ok)+' · 총 '+tot.toLocaleString()+'m');
+    admParsed.slice(0,8).forEach(l=>admlog('  '+l.no+'  '+l.lenM+'m  오차'+l.matchDist+'m  '+(l.verified?'OK':'검수')));
+    if(n===0)admlog('※ 라인을 못 찾았습니다. DXF에 LWPOLYLINE/LINE이 있는지 확인하세요.');
+    document.getElementById('admUpload').disabled=(n===0);
+  }catch(e){admlog('DXF 읽기 오류: '+e.message,true);console.error(e);}
+});
+
+document.getElementById('admUpload').onclick=async function(){
+  if(!admParsed||!admParsed.length)return;
+  const office=document.getElementById('admOffice').value;
+  const mode=document.querySelector('input[name=admMode]:checked').value;
+  const msg=mode==='merge'?(office+'수도사업소에 '+admParsed.length+'개 병합.\n같은 번호는 진행상황 보존, 새 번호만 추가됩니다.'):(office+'수도사업소를 새 DXF '+admParsed.length+'개로 교체.\n※ 이 사업소의 진행상황이 초기화됩니다.');
+  if(!confirm(msg))return;
+  this.disabled=true;
+  try{
+    await load();
+    if(mode==='replace'){LINES=LINES.filter(l=>l.office!==office).concat(admParsed);admlog('교체 완료.');}
+    else{let upd=0,add=0;admParsed.forEach(nl=>{const ex=LINES.find(l=>l.office===office&&l.no===nl.no);if(ex){ex.coords=nl.coords;ex.lenM=nl.lenM;ex.matchDist=nl.matchDist;if(!ex.verified)ex.verified=nl.verified;upd++;}else{LINES.push(nl);add++;}});admlog('병합: 갱신 '+upd+' / 추가 '+add);}
+    await save();drawLines();renderKpi();
+    try{const b=L.latLngBounds(LINES.flatMap(o=>o.coords||[]));if(b.isValid())map.fitBounds(b.pad(0.1));}catch(e){}
+    toast('업로드 완료 · 전체 '+LINES.length+'개');admlog('업로드 완료. 전체 '+LINES.length+'개. 현장 앱에 반영됩니다.');
+    admRefresh();
+  }catch(e){admlog('업로드 오류: '+e.message,true);console.error(e);}
+  this.disabled=false;
+};
+
+function admRefresh(){const el=document.getElementById('admList');el.innerHTML='';
+  if(!LINES.length){el.innerHTML='<div class="adm-item">목록이 비어 있습니다.</div>';return;}
+  LINES.forEach(l=>{const d=document.createElement('div');d.className='adm-item';
+    const done=(l.completed&&l.completed.length)?'완료/진행':'대기';
+    const sp=document.createElement('span');sp.textContent='['+(l.office||'')+'] '+l.no+' · '+Math.round(LEN(l))+'m · '+done;
+    const b=document.createElement('button');b.textContent='삭제';
+    b.onclick=async()=>{if(!confirm('['+l.office+'] '+l.no+' 삭제할까요?'))return;await load();LINES=LINES.filter(x=>!(x.no===l.no&&x.office===l.office));await save();drawLines();renderKpi();admRefresh();toast('삭제됨');};
+    d.appendChild(sp);d.appendChild(b);el.appendChild(d);});
+}
+document.getElementById('admRefresh').onclick=admRefresh;
+document.getElementById('admDelOffice').onclick=async function(){const office=document.getElementById('admOffice').value;if(!confirm(office+'수도사업소의 모든 라인을 삭제할까요?'))return;await load();LINES=LINES.filter(l=>l.office!==office);await save();drawLines();renderKpi();admRefresh();toast(office+' 전체 삭제');};
+document.getElementById('admDelAll').onclick=async function(){if(!confirm('모든 사업소의 라인을 전부 삭제할까요?'))return;if(!confirm('정말 전체 삭제하시겠습니까? 되돌릴 수 없습니다.'))return;LINES=[];await save();drawLines();renderKpi();admRefresh();toast('전체 삭제됨');};
+
 document.getElementById('srchClose').onclick=closeSearch;
 document.getElementById('srchInput').oninput=e=>renderSearch(e.target.value);
 document.getElementById('edSave').onclick=async()=>{const o=LINES[SEL];const nn=document.getElementById('eNo').value.trim(),nm=document.getElementById('eName').value.trim(),ad=document.getElementById('eAddr').value.trim();
@@ -283,7 +448,7 @@ function segsOf(o){const b=boundaries(o),out=[];for(let i=0;i<b.length-1;i++)out
 const segDone=(o,a,b)=>covered(merge(o.completed),(a+b)/2);
 
 function normalize(arr){return (arr||[]).filter(Boolean).map(o=>({...o,cuts:o.cuts||[],completed:o.completed||[],daily:o.daily||[],coords:o.coords||[]}));}
-async function load(){try{const r=await fetch(DB+'/'+KEY+'/lines.json');let d=await r.json();if(d&&!Array.isArray(d))d=Object.values(d);if(Array.isArray(d)&&d.length){LINES=normalize(d);}else{LINES=DATA.lines.map(l=>({...l}));await save();}}catch(e){console.error('load',e);LINES=DATA.lines.map(l=>({...l}));}}
+async function load(){try{const r=await fetch(DB+'/'+KEY+'/lines.json');let d=await r.json();if(d&&!Array.isArray(d))d=Object.values(d);if(Array.isArray(d)&&d.length){LINES=normalize(d);}else if(CONFIG.SEED_IF_EMPTY){LINES=DATA.lines.map(l=>({...l}));await save();}else{LINES=[];}}catch(e){console.error('load',e);LINES=[];}}
 async function save(){try{await fetch(DB+'/'+KEY+'/lines.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(LINES)});}catch(e){console.error('save',e);}}
 
 const map=L.map('map',{zoomControl:false}).setView(DATA.center,14);

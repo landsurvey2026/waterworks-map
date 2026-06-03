@@ -100,6 +100,8 @@
   .ed h3{margin:0 0 14px;font-size:16px}
   .ed label{display:block;font-size:12px;color:#64748b;margin:0 0 6px}
   .ed input{width:100%;font-family:var(--sans);font-size:15px;border:1px solid #cfd6df;border-radius:10px;padding:11px 12px;margin-bottom:13px}
+  .ed select,.ed textarea{width:100%;font-family:var(--sans);font-size:15px;border:1px solid #cfd6df;border-radius:10px;padding:11px 12px;margin-bottom:13px;background:#fff;color:#0f172a;resize:vertical}
+  .ed input[type=date]{margin-bottom:13px}
   .ed input:focus{outline:none;border-color:var(--accent)}
   .ed-acts{display:flex;gap:9px}
   .ed-acts button{flex:1;border:none;border-radius:10px;padding:12px;font-family:var(--sans);font-weight:600;font-size:14px;cursor:pointer}
@@ -156,6 +158,10 @@
   .srch-empty{padding:30px;text-align:center;color:#5b6776;font-size:13px}
   .srch-note{padding:0 16px;font-size:11px;color:#5b6776;min-height:14px}
   .addr{margin-top:10px;font-size:12.5px;color:#475569;line-height:1.5;display:flex;gap:7px;align-items:flex-start}
+  .infbox{background:#f1f5f9;border-radius:11px;padding:8px 12px;margin:11px 0 2px}
+  .inf{display:flex;gap:10px;font-size:13px;padding:4px 0}
+  .inf span{color:#64748b;min-width:66px;flex-shrink:0}
+  .inf b{color:#0f172a;font-weight:600;flex:1;word-break:break-word}
   .addr .pin{flex:none;width:7px;height:7px;border-radius:50%;background:var(--accent);margin-top:5px;box-shadow:0 0 0 3px rgba(34,211,238,.2)}
   .addr a{color:#0891b2;font-weight:600;text-decoration:none;white-space:nowrap}
   .nolabel{display:flex;flex-direction:column;gap:1px;background:var(--ink);color:#fff;font-family:var(--sans);padding:5px 9px;border-radius:8px;max-width:220px;box-shadow:0 2px 8px rgba(0,0,0,.5)}
@@ -250,6 +256,14 @@
     <label>공사지시번호</label><input id="eNo" placeholder="예: 강동/134">
     <label>공사명</label><input id="eName" placeholder="예: 천호동 배수관 교체공사">
     <label>주소</label><input id="eAddr" placeholder="예: 서울 강동구 천호동 ...">
+    <label>공사소장 / 연락처</label>
+    <div style="display:flex;gap:8px"><input id="eMgr" placeholder="공사소장" style="margin-bottom:13px"><input id="ePhone" placeholder="연락처" inputmode="tel" style="margin-bottom:13px"></div>
+    <label>공사기간 (시작 / 완료)</label>
+    <div style="display:flex;gap:8px"><input id="eStart" type="date"><input id="eEnd" type="date"></div>
+    <label>주야 구분</label>
+    <select id="eShift"><option value="">선택 안 함</option><option value="주간">주간</option><option value="야간">야간</option><option value="주야간">주야간</option></select>
+    <label>비고 <span id="eNoteCnt" style="color:#94a3b8">(0/100)</span></label>
+    <textarea id="eNote" maxlength="100" rows="3" placeholder="최대 100자"></textarea>
     <div class="ed-acts"><button class="cancel" id="edCancel">취소</button><button class="save" id="edSave">저장</button></div>
   </div></div>
 </div>
@@ -292,8 +306,10 @@ document.getElementById('calToday').onclick=()=>{workDate=today();closeCal();ren
 document.getElementById('calClose').onclick=closeCal;
 document.getElementById('calOvl').onclick=e=>{if(e.target.id==='calOvl')closeCal();};
 function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
-function openEdit(){const o=LINES[SEL];document.getElementById('eNo').value=o.no||'';document.getElementById('eName').value=o.name||'';document.getElementById('eAddr').value=o.addr||'';document.getElementById('edOvl').classList.add('show');}
+function openEdit(){const o=LINES[SEL];document.getElementById('eNo').value=o.no||'';document.getElementById('eName').value=o.name||'';document.getElementById('eAddr').value=o.addr||'';document.getElementById('eMgr').value=o.manager||'';document.getElementById('ePhone').value=o.phone||'';document.getElementById('eStart').value=o.startDate||'';document.getElementById('eEnd').value=o.endDate||'';document.getElementById('eShift').value=o.shift||'';document.getElementById('eNote').value=o.note||'';updateNoteCnt();document.getElementById('edOvl').classList.add('show');}
 function closeEdit(){document.getElementById('edOvl').classList.remove('show');}
+function updateNoteCnt(){const t=document.getElementById('eNote'),c=document.getElementById('eNoteCnt');if(t&&c)c.textContent='('+t.value.length+'/100)';}
+document.getElementById('eNote').addEventListener('input',updateNoteCnt);
 document.getElementById('edCancel').onclick=closeEdit;
 document.getElementById('edOvl').onclick=e=>{if(e.target.id==='edOvl')closeEdit();};
 // reverse geocoding (OpenStreetMap Nominatim) — cached by 지시번호
@@ -458,7 +474,7 @@ document.getElementById('srchClose').onclick=closeSearch;
 document.getElementById('srchInput').oninput=e=>renderSearch(e.target.value);
 document.getElementById('edSave').onclick=async()=>{const o=LINES[SEL];const nn=document.getElementById('eNo').value.trim(),nm=document.getElementById('eName').value.trim(),ad=document.getElementById('eAddr').value.trim();
   if(!nn){toast('공사지시번호를 입력하세요');return;}
-  o.no=nn;o.name=nm;o.addr=ad;o.verified=true;await save();closeEdit();drawLines();renderSheet();toast('수정 저장됨');};
+  o.no=nn;o.name=nm;o.addr=ad;o.manager=document.getElementById('eMgr').value.trim();o.phone=document.getElementById('ePhone').value.trim();o.startDate=document.getElementById('eStart').value;o.endDate=document.getElementById('eEnd').value;o.shift=document.getElementById('eShift').value;o.note=document.getElementById('eNote').value.trim();o.verified=true;await save();closeEdit();drawLines();renderSheet();toast('수정 저장됨');};
 function mm(a,b){const la=(a[0]+b[0])/2*Math.PI/180;return Math.hypot((b[1]-a[1])*Math.cos(la)*K,(b[0]-a[0])*K);}
 function cumM(c){let s=[0];for(let i=0;i<c.length-1;i++)s.push(s[i]+mm(c[i],c[i+1]));return s;}
 const totalM=c=>cumM(c).slice(-1)[0];
@@ -560,9 +576,11 @@ function renderSheet(){
   const o=LINES[SEL],T=LEN(o),st=statusOf(o),p=pct(o),dn=Math.min(doneM(o),T),segs=segsOf(o);const rem=Math.max(0,T-dn);
   const segHtml=segs.map(([a,b],i)=>{const d=segDone(o,a,b);return `<div class="seg ${d?'done':''} ${o.hold?'hold':''}" data-a="${a}" data-b="${b}"><div class="ix">${i+1}</div><div class="rng">${fmt(a)} – ${fmt(b)} m</div><div class="ln">${fmt(b-a)}m</div><div class="st">${d?'완료':'미시공'}</div></div>`}).join('');
   const log=o.daily.length?[...o.daily].reverse().map(e=>`<div class="le"><span class="d">${e.d}</span><span class="seg2">${fmt(e.from)}–${fmt(e.to)}m</span><span class="v">+${fmt(e.v)} m</span></div>`).join(''):'<div class="log-empty">완료 기록 없음</div>';
+  const _inf=[];if(o.manager||o.phone)_inf.push(`<div class="inf"><span>공사소장</span><b>${esc(o.manager||'-')}${o.phone?' · '+esc(o.phone):''}</b></div>`);if(o.startDate||o.endDate)_inf.push(`<div class="inf"><span>공사기간</span><b>${esc(o.startDate||'-')} ~ ${esc(o.endDate||'-')}</b></div>`);if(o.shift)_inf.push(`<div class="inf"><span>주야 구분</span><b>${esc(o.shift)}</b></div>`);if(o.note)_inf.push(`<div class="inf"><span>비고</span><b>${esc(o.note)}</b></div>`);const infoHtml=_inf.length?`<div class="infbox">${_inf.join('')}</div>`:'';
   body.innerHTML=`<div class="sh-head"><div style="flex:1;min-width:0"><div class="sh-no"><span class="otag ot-${o.office||''}">${esc(o.office||'')}</span> ${esc(o.no)} <button class="mini-edit" id="editBtn">수정</button></div><div class="sh-line">${o.name?esc(o.name):'<span style="color:#94a3b8;font-weight:500">공사명 입력 →</span>'}</div></div><span class="badge ${SB[st]}">${st}</span></div>
     ${o.verified?'':`<div class="warn">⚠ 도면 자동매칭(오차 ${o.matchDist}m). 라인↔번호 확인 필요.</div>`}
     <div class="addr" id="addrRow"><span class="pin"></span><span id="addrText">주소 조회 중…</span></div>
+    ${infoHtml}
     <div class="prog"><div class="nums"><span>시공 연장</span><span><b>${fmt(dn)}</b> / ${fmt(T)} m</span></div><div class="track"><i style="width:${p}%"></i></div><div class="rem">${p}% · 잔여 ${rem<0.5?0:fmt(rem)} m</div></div>
     <div class="datepill" id="datePill"><span class="lab">작업일자</span><span class="val">${fmtDate(workDate)}</span><span class="car">변경 ▾</span></div>
     <div class="modebar"><button class="cut ${mode==='cut'?'on':''}" id="mCut">✂ 끊기</button><button class="${mode==='tap'?'on':''}" id="mTap">✓ 완료체크</button></div>

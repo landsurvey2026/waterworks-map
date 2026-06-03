@@ -277,7 +277,8 @@ function boundaries(o){const T=totalM(o.coords);const b=[0,...o.cuts.filter(c=>c
 function segsOf(o){const b=boundaries(o),out=[];for(let i=0;i<b.length-1;i++)out.push([b[i],b[i+1]]);return out;}
 const segDone=(o,a,b)=>covered(merge(o.completed),(a+b)/2);
 
-async function load(){try{const r=await fetch(DB+'/'+KEY+'/lines.json');let d=await r.json();if(d&&!Array.isArray(d))d=Object.values(d);if(Array.isArray(d)&&d.length){LINES=d.filter(Boolean);}else{LINES=DATA.lines.map(l=>({...l}));await save();}}catch(e){console.error('load',e);LINES=DATA.lines.map(l=>({...l}));}}
+function normalize(arr){return (arr||[]).filter(Boolean).map(o=>({...o,cuts:o.cuts||[],completed:o.completed||[],daily:o.daily||[],coords:o.coords||[]}));}
+async function load(){try{const r=await fetch(DB+'/'+KEY+'/lines.json');let d=await r.json();if(d&&!Array.isArray(d))d=Object.values(d);if(Array.isArray(d)&&d.length){LINES=normalize(d);}else{LINES=DATA.lines.map(l=>({...l}));await save();}}catch(e){console.error('load',e);LINES=DATA.lines.map(l=>({...l}));}}
 async function save(){try{await fetch(DB+'/'+KEY+'/lines.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(LINES)});}catch(e){console.error('save',e);}}
 
 const map=L.map('map',{zoomControl:false}).setView(DATA.center,14);
@@ -379,7 +380,7 @@ function renderSheet(){
 }
 function select(idx){clearPick();SEL=idx;mode='tap';drawLines();renderSheet();const o=LINES[idx],lat=o.coords.reduce((s,c)=>s+c[0],0)/o.coords.length,lon=o.coords.reduce((s,c)=>s+c[1],0)/o.coords.length;map.panTo([lat,lon]);}
 document.querySelector('.grab').onclick=()=>{SEL=null;mode='tap';drawLines();renderSheet();};
-setInterval(async()=>{try{const r=await fetch(DB+'/'+KEY+'/lines.json');let f=await r.json();if(f&&!Array.isArray(f))f=Object.values(f).filter(Boolean);if(Array.isArray(f)&&f.length&&JSON.stringify(f)!==JSON.stringify(LINES)){LINES=f;drawLines();renderKpi();if(SEL!==null)renderSheet();toast('다른 기기의 변경이 반영됨');}}catch(e){}},3000);
+setInterval(async()=>{try{const r=await fetch(DB+'/'+KEY+'/lines.json');let f=await r.json();if(f&&!Array.isArray(f))f=Object.values(f);if(Array.isArray(f)&&f.length){f=normalize(f);if(JSON.stringify(f)!==JSON.stringify(LINES)){LINES=f;drawLines();renderKpi();if(SEL!==null)renderSheet();toast('다른 기기의 변경이 반영됨');}}}catch(e){}},3000);
 (async()=>{await load();drawLines();renderKpi();
   try{if(LINES.length){const b=L.latLngBounds(LINES.flatMap(o=>o.coords||[]));if(b.isValid())map.fitBounds(b.pad(0.1));}}catch(e){console.error('fit',e);}
   setTimeout(()=>map.invalidateSize(),200);

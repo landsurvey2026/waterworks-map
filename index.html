@@ -68,6 +68,7 @@
   .btn-fill{width:100%;margin-top:11px;background:var(--done);color:#06251a;font-family:var(--sans);font-weight:600;font-size:14px;border:none;border-radius:11px;padding:13px;cursor:pointer}
   .btn-hold{width:100%;margin-top:11px;background:#fff;border:1px solid #f0b4b4;color:#dc4545;font-family:var(--sans);font-weight:600;font-size:14px;border-radius:11px;padding:12px;cursor:pointer}.btn-hold.on{background:var(--hold);color:#fff;border-color:transparent}
   .btn-del{width:100%;margin-top:9px;background:#dc2626;border:none;color:#fff;font-family:var(--sans);font-weight:700;font-size:14px;border-radius:11px;padding:12px;cursor:pointer}
+  .btn-reset{width:100%;margin-top:9px;background:#fff;border:1px solid #cbd5e1;color:#475569;font-family:var(--sans);font-weight:600;font-size:14px;border-radius:11px;padding:12px;cursor:pointer}
   .toast{position:absolute;bottom:90px;left:50%;transform:translateX(-50%) translateY(16px);z-index:1300;background:var(--ink);color:#fff;font-size:13px;padding:11px 17px;border-radius:12px;opacity:0;transition:.25s;box-shadow:0 6px 20px rgba(0,0,0,.4);white-space:nowrap}
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}.toast b{color:var(--accent)}
   .cutdot{background:#fff;width:15px;height:15px;border-radius:50%;border:4px solid var(--accent);box-shadow:0 1px 4px rgba(0,0,0,.4)}
@@ -137,8 +138,9 @@
   .adm-err{color:#fca5a5;font-size:13px;min-height:18px;margin:8px 0 0}
   .stat-tbl{width:100%;border-collapse:collapse;font-size:13px;margin:4px 0 16px}
   .stat-tbl caption{text-align:left;font-weight:700;color:#9fb0c3;padding:4px 0 6px}
-  .stat-tbl th,.stat-tbl td{border-bottom:1px solid #1f2630;padding:7px 8px;text-align:right;white-space:nowrap}
-  .stat-tbl th:first-child,.stat-tbl td:first-child{text-align:left}
+  .stat-tbl td{border-bottom:1px solid #1f2630;padding:8px 8px;text-align:right;white-space:nowrap;color:#e6edf3;font-weight:600}
+  .stat-tbl th{border-bottom:1px solid #1f2630;padding:8px 8px;text-align:right;white-space:nowrap}
+  .stat-tbl th:first-child,.stat-tbl td:first-child{text-align:left;color:#cbd5e1}
   .stat-tbl thead th{color:#9fb0c3;font-weight:600}
   .stat-tbl .tot td{font-weight:700;color:#fff;border-top:1px solid #30363d;background:#10161d}
   .edit-fab{position:absolute;left:13px;bottom:24px;z-index:1200}
@@ -542,11 +544,11 @@ function drawLines(){
       const dn=segDone(o,a,b), path=sliceLL(o.coords,A,B);
       const col=o.hold&&!dn?'#ef4444':(dn?'#34d399':'#f59e0b');
       // white casing so the line stays visible on both street and satellite
-      g.push(L.polyline(path,{color:'#ffffff',weight:sel?12:9,opacity:.95}).addTo(map));
-      const pl=L.polyline(path,{color:col,weight:sel?8:6,opacity:1,dashArray:(o.hold&&!dn)?'1 9':null}).addTo(map);
-      pl.on('click',()=>onLineClick(idx,(a+b)/2));g.push(pl);
+      g.push(L.polyline(path,{color:'#ffffff',weight:sel?12:9,opacity:.95,interactive:false}).addTo(map));
+      const pl=L.polyline(path,{color:col,weight:sel?8:6,opacity:1,dashArray:(o.hold&&!dn)?'1 9':null,interactive:false}).addTo(map);
+      g.push(pl);
     });
-    const hit=L.polyline(o.coords,{color:'#000',weight:24,opacity:0}).addTo(map);
+    const hit=L.polyline(o.coords,{color:'#000',weight:34,opacity:0}).addTo(map);
     hit.bindTooltip(esc(o.no),{sticky:true,direction:'top',opacity:0.95});
     hit.on('click',e=>{if(mode==='draw'){addVertex(e.latlng);return;}if(mode==='editgeo')return;onLineClick(idx, snap(o.coords,[e.latlng.lat,e.latlng.lng]));});g.push(hit);
     gLayers[idx]=g;
@@ -612,18 +614,20 @@ function renderSheet(){
     <div class="sec"><span>일일 작업일보</span></div><div class="log">${log}</div>
     ${p>=100?'':`<button class="btn-fill" id="ifill">✓ 나머지 전체 완료 (잔여 ${rem<0.5?0:fmt(rem)}m)</button>`}
     <button class="btn-hold ${o.hold?'on':''}" id="ihold">${o.hold?'보류 해제':'보류 지정'}</button>
+    ${doneM(o)>0.5?`<button class="btn-reset" id="ireset">↺ 이 라인 완료 전체 취소</button>`:''}
     ${isAdmin?`<button class="btn-edit-geo" id="iedit">✎ 선형 변형</button>`:''}
     ${isAdmin?'<button class="btn-del" id="idel">🗑 이 라인 삭제</button>':''}`;
   sh.classList.add('open');
   if(sheetCollapsed){sh.classList.add('collapsed');_tab.classList.add('show');}else{sh.classList.remove('collapsed');_tab.classList.remove('show');}
   setBanner();
-  mCut.onclick=()=>{mode=(mode==='cut'?'view':'cut');drawLines();renderSheet();};  mTap.onclick=()=>{mode=(mode==='tap'?'view':'tap');drawLines();renderSheet();};
+  mCut.onclick=()=>{mode=(mode==='cut'?'view':'cut');if(window.innerWidth<760)sheetCollapsed=(mode!=='view');drawLines();renderSheet();};  mTap.onclick=()=>{mode=(mode==='tap'?'view':'tap');if(window.innerWidth<760)sheetCollapsed=(mode!=='view');drawLines();renderSheet();};
   document.getElementById('datePill').onclick=openCal;
   document.getElementById('editBtn').onclick=openEdit;
   renderAddr(o);
   [...body.querySelectorAll('.seg')].forEach(el=>el.onclick=()=>{if(mode!=='tap'){toast('완료하려면 아래 [✓ 완료체크]를 먼저 누르세요');return;}toggleSeg(SEL,+el.dataset.a,+el.dataset.b);});
   const fill=document.getElementById('ifill');if(fill)fill.onclick=()=>completeRemaining(SEL);
   ihold.onclick=async()=>{o.hold=!o.hold;await save();drawLines();renderKpi();renderSheet();toast(`<b>${o.no}</b> ${o.hold?'보류':'보류 해제'}`);};
+  const _rst=document.getElementById('ireset');if(_rst)_rst.onclick=async()=>{if(!confirm('이 라인의 완료를 모두 취소할까요?\n(끊기 점은 유지됩니다)'))return;o.completed=[];o.daily=[];await save();drawLines();renderKpi();renderSheet();toast('완료 취소됨 · '+o.no);};
   const _del=document.getElementById('idel');if(_del)_del.onclick=async()=>{const no=o.no,office=o.office;if(!confirm('['+office+'] '+no+' 라인을 삭제할까요?\n(되돌릴 수 없습니다)'))return;await load();LINES=LINES.filter(x=>!(x.no===no&&x.office===office));await save();SEL=null;drawLines();renderKpi();renderSheet();toast('삭제됨 · '+no);};
   const _ieg=document.getElementById('iedit');if(_ieg)_ieg.onclick=()=>startEditGeo(SEL);
 }

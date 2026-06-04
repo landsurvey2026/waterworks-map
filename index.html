@@ -277,6 +277,15 @@
       </div>
       <div id="admPanel" style="display:none">
         <div class="adm-sec">
+          <p class="adm-h">현장 공유 링크</p>
+          <p style="color:#9fb0c3;font-size:12.5px;margin:0 0 8px">현장팀에게 이 주소를 보내세요. 누구나 보기·완료체크를 할 수 있습니다.</p>
+          <div class="adm-row" style="flex-wrap:nowrap">
+            <input id="shareUrl" readonly style="flex:1;background:#0d1117;color:#e6edf3;border:1px solid #30363d;border-radius:8px;padding:9px 10px;font-family:var(--sans);font-size:13px">
+            <button id="shareCopy" class="adm-btn primary">복사</button>
+            <button id="shareSend" class="adm-btn">공유</button>
+          </div>
+        </div>
+        <div class="adm-sec">
           <p class="adm-h">DXF 업로드</p>
           <div class="adm-row">
             <label>사업소</label>
@@ -459,7 +468,7 @@ function openAdmin(){admOvl.classList.add('show');document.getElementById('admPi
 function closeAdmin(){admOvl.classList.remove('show');}
 document.getElementById('admBtn').onclick=openAdmin;
 document.getElementById('admClose').onclick=closeAdmin;
-function tryPin(){const v=document.getElementById('admPinInput').value;if(v===String(CONFIG.ADMIN_PIN)){isAdmin=true;document.getElementById('admPin').style.display='none';document.getElementById('admPanel').style.display='block';document.getElementById('admPinErr').textContent='';document.getElementById('editFab').style.display='block';renderStats();loadWorkers().then(renderRoster);document.getElementById('wkAdd').onclick=addWorker;}else{document.getElementById('admPinErr').textContent='PIN이 올바르지 않습니다.';}}
+function tryPin(){const v=document.getElementById('admPinInput').value;if(v===String(CONFIG.ADMIN_PIN)){isAdmin=true;document.getElementById('admPin').style.display='none';document.getElementById('admPanel').style.display='block';document.getElementById('admPinErr').textContent='';document.getElementById('editFab').style.display='block';renderStats();loadWorkers().then(renderRoster);document.getElementById('wkAdd').onclick=addWorker;setupShare();}else{document.getElementById('admPinErr').textContent='PIN이 올바르지 않습니다.';}}
 document.getElementById('admPinBtn').onclick=tryPin;
 document.getElementById('admPinInput').addEventListener('keydown',e=>{if(e.key==='Enter')tryPin();});
 function admlog(s,clear){const el=document.getElementById('admLog');if(clear)el.textContent='';el.textContent+=(el.textContent&&!clear?'\n':'')+s;el.scrollTop=el.scrollHeight;}
@@ -934,6 +943,12 @@ function highlightDate(ds){
   toast(ds+' · '+lines.length+'개 라인 표시');
 }
 
+function setupShare(){
+  const url=location.origin+location.pathname;
+  const inp=document.getElementById('shareUrl');if(inp)inp.value=url;
+  const cp=document.getElementById('shareCopy');if(cp)cp.onclick=async()=>{try{await navigator.clipboard.writeText(url);toast('링크가 복사되었습니다');}catch(e){inp.select();document.execCommand('copy');toast('링크가 복사되었습니다');}};
+  const sd=document.getElementById('shareSend');if(sd)sd.onclick=async()=>{if(navigator.share){try{await navigator.share({title:'서울시 상수도 현장관리',url:url});}catch(e){}}else{try{await navigator.clipboard.writeText(url);toast('이 기기는 공유 미지원 · 링크 복사됨');}catch(e){toast('링크: '+url);}}};
+}
 (async()=>{await loadWorkers();await load();drawLines();renderKpi();
   try{if(LINES.length){const b=L.latLngBounds(LINES.flatMap(o=>o.coords||[]));if(b.isValid())map.fitBounds(b.pad(0.1));}}catch(e){console.error('fit',e);}
   setTimeout(()=>map.invalidateSize(),200);

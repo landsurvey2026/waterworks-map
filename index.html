@@ -509,7 +509,7 @@ function goTo(idx){const o=LINES[idx];if(!inOffice(o)){OFFICE='전체';document.
 document.getElementById('srchBtn').onclick=openSearch;
 /* ===== 관리자(Admin) — DXF 업로드/삭제 ===== */
 if(typeof proj4!=='undefined'){ proj4.defs(CONFIG.SRC_EPSG, CONFIG.SRC_PROJ4); }
-let isAdmin=false, admParsed=null;
+let isAdmin=false, admParsed=null, admReport=null;
 const admOvl=document.getElementById('admOvl');
 function openAdmin(){admOvl.classList.add('show');document.getElementById('admPin').style.display=isAdmin?'none':'block';document.getElementById('admPanel').style.display=isAdmin?'block':'none';if(!isAdmin)setTimeout(()=>document.getElementById('admPinInput').focus(),60);}
 function closeAdmin(){admOvl.classList.remove('show');}
@@ -553,8 +553,13 @@ function dxfToLines(text,office){
   const usedP=new Set(),usedT=new Set(),match={};
   for(const a of pairs){const d=a[0],pi=a[1],ti=a[2];if(usedP.has(pi)||usedT.has(ti))continue;usedP.add(pi);usedT.add(ti);match[pi]=[ti,d];}
   const OK=25;
-  return polys.map((p,pi)=>{const m=match[pi];const ti=m?m[0]:null,d=m?m[1]:null;const coords=p.map(xy=>toLL(xy[0],xy[1]));
-    return {no:ti!=null?texts[ti].no:('미매칭-'+(pi+1)),office:office,name:'',lenM:Math.round(_plenLL(coords)*10)/10,matchDist:d!=null?Math.round(d*10)/10:999.9,verified:(d!=null&&d<OK),coords:coords,cuts:[],completed:[],daily:[],hold:false};});
+  const lines=polys.map((p,pi)=>{const m=match[pi];const ti=m?m[0]:null,d=m?m[1]:null;const coords=p.map(xy=>toLL(xy[0],xy[1]));const hasNo=(ti!=null&&texts[ti].no);
+    return {no:hasNo?texts[ti].no:('미매칭-'+(pi+1)),office:office,name:'',lenM:Math.round(_plenLL(coords)*10)/10,matchDist:d!=null?Math.round(d*10)/10:999.9,verified:(d!=null&&d<OK&&!!hasNo),coords:coords,cuts:[],completed:[],daily:[],hold:false,_ti:ti};});
+  const unusedTexts=texts.filter((t,ti)=>!usedT.has(ti)).map(t=>t.no||'(빈 번호)');
+  const farTexts=lines.filter(l=>l._ti!=null&&l.matchDist>=OK).map(l=>({no:texts[l._ti].no||'(빈 번호)',d:l.matchDist}));
+  const noNumLines=lines.filter(l=>l._ti==null||!texts[l._ti].no).map(l=>l.lenM);
+  lines.forEach(l=>delete l._ti);
+  return {lines,report:{nText:texts.length,nPoly:polys.length,unusedTexts,farTexts,noNumLines}};
 }
 
 document.getElementById('admFile').addEventListener('change',async function(){
@@ -565,11 +570,17 @@ document.getElementById('admFile').addEventListener('change',async function(){
     const buf=await f.arrayBuffer();let text;
     try{text=new TextDecoder('euc-kr').decode(new Uint8Array(buf));}catch(e){text=new TextDecoder('utf-8').decode(new Uint8Array(buf));}
     const office=document.getElementById('admOffice').value;
-    admParsed=dxfToLines(text,office);
-    const n=admParsed.length,ok=admParsed.filter(l=>l.verified).length;
+    const _res=dxfToLines(text,office);admParsed=_res.lines;admReport=_res.report;
+    const n=admParsed.length,ok=admParsed.filter(l=>l.verified).length,R=admReport;
     const tot=Math.round(admParsed.reduce((s,l)=>s+l.lenM,0));
-    admlog('라인 '+n+'개 · 자동검수 '+ok+' · 검수필요 '+(n-ok)+' · 총 '+tot.toLocaleString()+'m');
-    admParsed.slice(0,8).forEach(l=>admlog('  '+l.no+'  '+l.lenM+'m  오차'+l.matchDist+'m  '+(l.verified?'OK':'검수')));
+    admlog('라인(폴리라인) '+R.nPoly+'개 · 지시번호(TEXT) '+R.nText+'개 · 총 '+tot.toLocaleString()+'m');
+    admlog('자동매칭 OK '+ok+' · 확인필요 '+(n-ok));
+    const probs=[];
+    if(R.unusedTexts.length){admlog('⚠ 라인에 못 붙은 지시번호 '+R.unusedTexts.length+'개: '+R.unusedTexts.join(', '));probs.push('라인에 못 붙은 번호 '+R.unusedTexts.length+'개');}
+    if(R.noNumLines.length){admlog('⚠ 번호 없는 라인 '+R.noNumLines.length+'개 (길이 '+R.noNumLines.slice(0,12).map(v=>v+'m').join(', ')+(R.noNumLines.length>12?' …':'')+')');probs.push('번호 없는 라인 '+R.noNumLines.length+'개');}
+    if(R.farTexts.length){admlog('⚠ 라인에서 떨어진 번호 '+R.farTexts.length+'개: '+R.farTexts.map(x=>x.no+'('+x.d+'m)').join(', '));probs.push('떨어진 번호 '+R.farTexts.length+'개');}
+    if(!probs.length&&n>0)admlog('✓ 모든 라인과 지시번호가 일치합니다.');
+    admReport.probs=probs;
     if(n===0)admlog('※ 라인을 못 찾았습니다. DXF에 LWPOLYLINE/LINE이 있는지 확인하세요.');
     document.getElementById('admUpload').disabled=(n===0);
   }catch(e){admlog('DXF 읽기 오류: '+e.message,true);console.error(e);}
@@ -579,7 +590,8 @@ document.getElementById('admUpload').onclick=async function(){
   if(!admParsed||!admParsed.length)return;
   const office=document.getElementById('admOffice').value;
   const mode=document.querySelector('input[name=admMode]:checked').value;
-  const msg=mode==='merge'?(office+'수도사업소에 '+admParsed.length+'개 병합.\n같은 번호는 진행상황 보존, 새 번호만 추가됩니다.'):(office+'수도사업소를 새 DXF '+admParsed.length+'개로 교체.\n※ 이 사업소의 진행상황이 초기화됩니다.');
+  let msg=mode==='merge'?(office+'수도사업소에 '+admParsed.length+'개 병합.\n같은 번호는 진행상황 보존, 새 번호만 추가됩니다.'):(office+'수도사업소를 새 DXF '+admParsed.length+'개로 교체.\n※ 이 사업소의 진행상황이 초기화됩니다.');
+  if(admReport&&admReport.probs&&admReport.probs.length)msg='⚠ 일치하지 않는 항목이 있습니다:\n· '+admReport.probs.join('\n· ')+'\n\n그래도 업로드할까요?\n\n'+msg;
   if(!confirm(msg))return;
   this.disabled=true;
   try{

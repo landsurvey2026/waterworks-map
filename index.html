@@ -41,6 +41,23 @@
   .sh-no{font-family:var(--mono);font-size:13px;color:#0891b2;font-weight:600}.sh-line{font-size:16px;font-weight:600;margin-top:1px}
   .badge{font-family:var(--mono);font-size:11px;font-weight:600;padding:5px 11px;border-radius:20px;white-space:nowrap}
   .b-wait{background:#eef1f5;color:#64748b}.b-prog{background:#fef3e2;color:#c97a0a}.b-done{background:#e7f9f0;color:#109b6c}.b-hold{background:#fde9e9;color:#dc4545}.b-survey{background:#e3edff;color:#2f6fed}
+  @keyframes dlblink{0%,100%{opacity:1}50%{opacity:.25}}
+  @keyframes dlpulse{0%,100%{background:#b91c1c}50%{background:#ef4444}}
+  .dl-bar{position:absolute;left:0;right:0;top:54px;z-index:1250;display:none;align-items:center;gap:10px;justify-content:center;padding:11px 14px;color:#fff;font-family:var(--sans);font-weight:800;font-size:14px;cursor:pointer;box-shadow:0 3px 12px rgba(0,0,0,.35)}
+  .dl-bar.show{display:flex}
+  .dl-bar.lv-경고{background:#ca8a04}
+  .dl-bar.lv-주의{background:#ea580c}
+  .dl-bar.lv-위험{animation:dlpulse 1s infinite}
+  .dl-pop-ovl{position:absolute;inset:0;z-index:1900;background:rgba(120,0,0,.55);display:none;align-items:center;justify-content:center;padding:20px}
+  .dl-pop-ovl.show{display:flex}
+  .dl-pop{background:#fff;border:3px solid #ef4444;border-radius:16px;max-width:360px;width:100%;padding:20px;box-shadow:0 12px 50px rgba(0,0,0,.5)}
+  .dl-pop h2{margin:0 0 6px;color:#b91c1c;font-size:20px;display:flex;align-items:center;gap:8px;animation:dlblink 1.1s infinite}
+  .dl-pop p{margin:4px 0 12px;color:#475569;font-size:13.5px}
+  .dl-pop .it{display:flex;justify-content:space-between;padding:8px 4px;border-bottom:1px solid #eef1f5;font-size:14px}
+  .dl-pop .it b{color:#b91c1c}
+  .dl-pop .it.warn b{color:#ea580c}
+  .dl-pop button{margin-top:14px;width:100%;background:#dc2626;color:#fff;border:none;border-radius:11px;padding:13px;font-family:var(--sans);font-size:15px;font-weight:800;cursor:pointer}
+
   .btn-survey{width:100%;margin-top:11px;background:#2f6fed;border:none;color:#fff;font-family:var(--sans);font-weight:700;font-size:14px;border-radius:11px;padding:12px;cursor:pointer}.btn-survey.on{background:#fff;color:#2f6fed;border:1px solid #b9cdf6}
   .survey-info{margin-top:11px;background:#e3edff;color:#1e40af;border-radius:11px;padding:10px 12px;font-size:13px;font-weight:600}
   .survey-note{margin-top:11px;color:#94a3b8;font-size:12.5px;text-align:center}
@@ -252,6 +269,9 @@
   </div>
 
   <div class="banner" id="banner"></div>
+  <div class="dl-bar" id="dlBar"></div>
+  <div class="dl-pop-ovl" id="dlPopOvl"><div class="dl-pop"><h2>🚨 위험 — 시스템로딩 마감 초과</h2><p>준공도 인수 후 14일이 지난 지시건입니다. 즉시 시스템로딩을 완료하세요.</p><div id="dlPopList"></div><button id="dlPopClose">확인했습니다</button></div></div>
+
   <div class="legend"><div><i style="background:#34d399"></i>완료 구간</div><div><i style="background:#2f6fed"></i>측량완료</div><div><i style="background:#f59e0b"></i>미시공</div><div><i style="background:#f87171"></i>보류</div></div>
   <div class="sheet" id="sheet"><div class="sheet-top"><div class="grab" id="grabBar"></div><button class="s-close" id="sheetClose">✕</button></div><div class="sh-pad" id="sheetBody"></div></div>
   <button class="sheet-tab" id="sheetTab">정보 보기</button>
@@ -340,6 +360,10 @@
     <select id="eShift"><option value="">선택 안 함</option><option value="주간">주간</option><option value="야간">야간</option><option value="주야간">주야간</option></select>
     <label>비고 <span id="eNoteCnt" style="color:#94a3b8">(0/100)</span></label>
     <textarea id="eNote" maxlength="100" rows="3" placeholder="최대 100자"></textarea>
+    <label>준공도 인수</label>
+    <div style="display:flex;gap:10px;align-items:center;margin-bottom:13px"><label style="display:flex;gap:6px;align-items:center;font-size:14px;white-space:nowrap"><input type="checkbox" id="eAcc" style="width:18px;height:18px"> 인수완료</label><input id="eAccDate" type="date" style="flex:1;margin:0"></div>
+    <label>시스템로딩(후속공정) 완료</label>
+    <div style="display:flex;gap:10px;align-items:center;margin-bottom:13px"><label style="display:flex;gap:6px;align-items:center;font-size:14px;white-space:nowrap"><input type="checkbox" id="eLoad" style="width:18px;height:18px"> 완료</label><input id="eLoadDate" type="date" style="flex:1;margin:0"></div>
     <div class="ed-acts"><button class="cancel" id="edCancel">취소</button><button class="save" id="edSave">저장</button></div>
   </div></div>
 
@@ -400,7 +424,7 @@ document.getElementById('calToday').onclick=()=>{workDate=today();closeCal();ren
 document.getElementById('calClose').onclick=closeCal;
 document.getElementById('calOvl').onclick=e=>{if(e.target.id==='calOvl')closeCal();};
 function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
-function openEdit(){const o=LINES[SEL];document.getElementById('eNo').value=o.no||'';document.getElementById('eName').value=o.name||'';document.getElementById('eAddr').value=o.addr||'';document.getElementById('eMgr').value=o.manager||'';document.getElementById('ePhone').value=o.phone||'';document.getElementById('eStart').value=o.startDate||'';document.getElementById('eEnd').value=o.endDate||'';document.getElementById('eShift').value=o.shift||'';document.getElementById('eNote').value=o.note||'';updateNoteCnt();document.getElementById('edOvl').classList.add('show');}
+function openEdit(){const o=LINES[SEL];document.getElementById('eNo').value=o.no||'';document.getElementById('eName').value=o.name||'';document.getElementById('eAddr').value=o.addr||'';document.getElementById('eMgr').value=o.manager||'';document.getElementById('ePhone').value=o.phone||'';document.getElementById('eStart').value=o.startDate||'';document.getElementById('eEnd').value=o.endDate||'';document.getElementById('eShift').value=o.shift||'';document.getElementById('eNote').value=o.note||'';document.getElementById('eAcc').checked=!!o.accepted;document.getElementById('eAccDate').value=o.acceptDate||'';document.getElementById('eLoad').checked=!!o.loaded;document.getElementById('eLoadDate').value=o.loadDate||'';updateNoteCnt();document.getElementById('edOvl').classList.add('show');}
 function closeEdit(){document.getElementById('edOvl').classList.remove('show');}
 function updateNoteCnt(){const t=document.getElementById('eNote'),c=document.getElementById('eNoteCnt');if(t&&c)c.textContent='('+t.value.length+'/100)';}
 document.getElementById('eNote').addEventListener('input',updateNoteCnt);
@@ -568,7 +592,7 @@ document.getElementById('srchClose').onclick=closeSearch;
 document.getElementById('srchInput').oninput=e=>renderSearch(e.target.value);
 document.getElementById('edSave').onclick=async()=>{const o=LINES[SEL];const nn=document.getElementById('eNo').value.trim(),nm=document.getElementById('eName').value.trim(),ad=document.getElementById('eAddr').value.trim();
   if(!nn){toast('공사지시번호를 입력하세요');return;}
-  o.no=nn;o.name=nm;o.addr=ad;o.manager=document.getElementById('eMgr').value.trim();o.phone=document.getElementById('ePhone').value.trim();o.startDate=document.getElementById('eStart').value;o.endDate=document.getElementById('eEnd').value;o.shift=document.getElementById('eShift').value;o.note=document.getElementById('eNote').value.trim();o.verified=true;await save();closeEdit();drawLines();renderSheet();toast('수정 저장됨');};
+  o.no=nn;o.name=nm;o.addr=ad;o.manager=document.getElementById('eMgr').value.trim();o.phone=document.getElementById('ePhone').value.trim();o.startDate=document.getElementById('eStart').value;o.endDate=document.getElementById('eEnd').value;o.shift=document.getElementById('eShift').value;o.note=document.getElementById('eNote').value.trim();o.accepted=document.getElementById('eAcc').checked;o.acceptDate=document.getElementById('eAccDate').value||(o.accepted?today():'');o.loaded=document.getElementById('eLoad').checked;o.loadDate=document.getElementById('eLoadDate').value||(o.loaded?today():'');o.verified=true;await save();closeEdit();drawLines();renderSheet();toast('수정 저장됨');};
 function mm(a,b){const la=(a[0]+b[0])/2*Math.PI/180;return Math.hypot((b[1]-a[1])*Math.cos(la)*K,(b[0]-a[0])*K);}
 function cumM(c){let s=[0];for(let i=0;i<c.length-1;i++)s.push(s[i]+mm(c[i],c[i+1]));return s;}
 const totalM=c=>cumM(c).slice(-1)[0];
@@ -660,7 +684,7 @@ async function completeRemaining(idx){
 }
 const inOffice=o=>OFFICE==='전체'||o.office===OFFICE;
 function setOffice(o){OFFICE=o;document.querySelectorAll('#officeTabs button').forEach(b=>b.classList.toggle('on',b.dataset.o===o));SEL=null;clearPick();drawLines();renderKpi();renderSheet();}
-function renderKpi(){const V=LINES.filter(inOffice);const tot=V.reduce((s,o)=>s+LEN(o),0),dn=V.reduce((s,o)=>s+Math.min(doneM(o),LEN(o)),0);kpiPct.textContent=(tot?Math.round(dn/tot*100):0)+'%';kpiM.textContent=fmt(dn)+' / '+fmt(tot)+' m';}
+function renderKpi(){const V=LINES.filter(inOffice);const tot=V.reduce((s,o)=>s+LEN(o),0),dn=V.reduce((s,o)=>s+Math.min(doneM(o),LEN(o)),0);kpiPct.textContent=(tot?Math.round(dn/tot*100):0)+'%';kpiM.textContent=fmt(dn)+' / '+fmt(tot)+' m';if(typeof refreshDeadlines==='function')refreshDeadlines();}
 function setBanner(){const bn=document.getElementById('banner');if(SEL===null){bn.classList.remove('show');return;}
   if(mode==='cut'){bn.className='banner cut show';bn.innerHTML='끊기 모드 · 라인을 탭해 끊을 위치를 추가<small>점을 다시 탭하면 삭제 · 끝나면 "완료체크"로 전환</small>';}
   else if(mode==='tap'){bn.className='banner tap show';bn.innerHTML='완료체크 모드 · 완료된 토막을 탭하면 완료<small>다시 탭하면 완료 해제 · 끝나면 다시 눌러 종료</small>';}
@@ -673,7 +697,7 @@ function renderSheet(){
   const o=LINES[SEL],T=LEN(o),st=statusOf(o),p=pct(o),dn=Math.min(doneM(o),T),segs=segsOf(o);const rem=Math.max(0,T-dn);
   const segHtml=segs.map(([a,b],i)=>{const d=segDone(o,a,b);return `<div class="seg ${d?'done':''} ${o.hold?'hold':''}" data-a="${a}" data-b="${b}"><div class="ix">${i+1}</div><div class="rng">${fmt(a)} – ${fmt(b)} m</div><div class="ln">${fmt(b-a)}m</div><div class="st">${d?'완료':'미시공'}</div></div>`}).join('');
   const log=o.daily.length?[...o.daily].reverse().map(e=>`<div class="le"><span class="d">${e.d}</span><span class="seg2">${fmt(e.from)}–${fmt(e.to)}m</span><span class="v">+${fmt(e.v)} m</span>${byText(e.by)?`<span class="by">${esc(byText(e.by))}</span>`:''}</div>`).join(''):'<div class="log-empty">완료 기록 없음</div>';
-  const _inf=[];if(o.manager||o.phone)_inf.push(`<div class="inf"><span>공사소장</span><b>${esc(o.manager||'-')}${o.phone?' · '+esc(o.phone):''}</b></div>`);if(o.startDate||o.endDate)_inf.push(`<div class="inf"><span>공사기간</span><b>${esc(o.startDate||'-')} ~ ${esc(o.endDate||'-')}</b></div>`);if(o.shift)_inf.push(`<div class="inf"><span>주야 구분</span><b>${esc(o.shift)}</b></div>`);if(o.note)_inf.push(`<div class="inf"><span>비고</span><b>${esc(o.note)}</b></div>`);const infoHtml=_inf.length?`<div class="infbox">${_inf.join('')}</div>`:'';
+  const _inf=[];if(o.manager||o.phone)_inf.push(`<div class="inf"><span>공사소장</span><b>${esc(o.manager||'-')}${o.phone?' · '+esc(o.phone):''}</b></div>`);if(o.startDate||o.endDate)_inf.push(`<div class="inf"><span>공사기간</span><b>${esc(o.startDate||'-')} ~ ${esc(o.endDate||'-')}</b></div>`);if(o.shift)_inf.push(`<div class="inf"><span>주야 구분</span><b>${esc(o.shift)}</b></div>`);if(o.note)_inf.push(`<div class="inf"><span>비고</span><b>${esc(o.note)}</b></div>`);if(o.accepted)_inf.push(`<div class="inf"><span>준공도 인수</span><b>${esc(o.acceptDate||'완료')}</b></div>`);if(o.loaded)_inf.push(`<div class="inf"><span>시스템로딩</span><b>완료${o.loadDate?' · '+esc(o.loadDate):''}</b></div>`);{const _dl=dlLevel(o);if(_dl)_inf.push(`<div class="inf"><span>로딩 마감</span><b style="color:#dc2626;font-weight:800">${_dl.lv} · ${_dl.left<0?('초과 '+(-_dl.left)+'일'):('D-'+_dl.left)}</b></div>`);}const infoHtml=_inf.length?`<div class="infbox">${_inf.join('')}</div>`:'';
   const _full=LEN(o)>0&&doneM(o)>=LEN(o)-0.5; const _sv=o.survey&&o.survey.done;
   let surveyHtml; if(_sv){surveyHtml=`<div class="survey-info">📐 측량완료 · ${esc(o.survey.d||'')}${(o.survey.by&&o.survey.by.length)?' · '+esc(o.survey.by.join(', ')):''}</div><button class="btn-survey on" id="isurvey">측량완료 취소</button>`;}
   else if(_full){surveyHtml=`<button class="btn-survey" id="isurvey">📐 측량완료</button>`;}
@@ -961,10 +985,47 @@ function setupShare(){
   const cp=document.getElementById('shareCopy');if(cp)cp.onclick=async()=>{try{await navigator.clipboard.writeText(url);toast('링크가 복사되었습니다');}catch(e){inp.select();document.execCommand('copy');toast('링크가 복사되었습니다');}};
   const sd=document.getElementById('shareSend');if(sd)sd.onclick=async()=>{if(navigator.share){try{await navigator.share({title:'서울시 상수도 현장관리',url:url});}catch(e){}}else{try{await navigator.clipboard.writeText(url);toast('이 기기는 공유 미지원 · 링크 복사됨');}catch(e){toast('링크: '+url);}}};
 }
+
+/* ===== 준공도 인수 → 시스템로딩 마감(14일) 경고 ===== */
+function _dleft(o){
+  if(!o.accepted||o.loaded||!o.acceptDate)return null;
+  const acc=new Date(o.acceptDate+'T00:00:00');if(isNaN(acc))return null;
+  const dl=new Date(acc);dl.setDate(dl.getDate()+14);
+  const now=new Date();now.setHours(0,0,0,0);
+  return Math.round((dl-now)/86400000);
+}
+function dlLevel(o){const L=_dleft(o);if(L===null)return null;if(L<0)return{lv:'위험',left:L};if(L<=3)return{lv:'주의',left:L};if(L<=7)return{lv:'경고',left:L};return null;}
+const DLC={'경고':'#eab308','주의':'#f97316','위험':'#ef4444'};
+let dlLayers=[], dlBlink=null;
+function atRisk(){const out=[];LINES.forEach(o=>{const d=dlLevel(o);if(d)out.push({o,d});});return out;}
+function refreshDeadlines(){
+  dlLayers.forEach(l=>map.removeLayer(l));dlLayers=[];
+  if(dlBlink){clearInterval(dlBlink);dlBlink=null;}
+  const risks=atRisk();
+  // 지도 하이라이트
+  risks.forEach(({o,d})=>{if((o.coords||[]).length<2)return;
+    const pl=L.polyline(o.coords,{color:DLC[d.lv],weight:11,opacity:.95,interactive:false,className:'dl-line'}).addTo(map);
+    dlLayers.push(pl);});
+  if(dlLayers.length){let on=true;dlBlink=setInterval(()=>{on=!on;dlLayers.forEach(l=>l.setStyle({opacity:on?.95:.2}));},600);}
+  // 상단 배너
+  const bar=document.getElementById('dlBar');
+  const cV=risks.filter(r=>r.d.lv==='위험').length,cC=risks.filter(r=>r.d.lv==='주의').length,cW=risks.filter(r=>r.d.lv==='경고').length;
+  bar.className='dl-bar';
+  if(cV){bar.classList.add('show','lv-위험');bar.innerHTML='🚨 시스템로딩 마감 <u>초과 '+cV+'건</u> — 즉시 처리하세요!'+(cC+cW?' (주의 '+cC+' · 경고 '+cW+')':'');}
+  else if(cC){bar.classList.add('show','lv-주의');bar.innerHTML='⚠ 시스템로딩 마감 임박(3일 이내) '+cC+'건'+(cW?' · 경고 '+cW+'건':'');}
+  else if(cW){bar.classList.add('show','lv-경고');bar.innerHTML='⏰ 시스템로딩 마감 주의(7일 이내) '+cW+'건';}
+}
+function dlListHtml(){const risks=atRisk().sort((a,b)=>a.d.left-b.d.left);
+  return risks.map(({o,d})=>'<div class="it'+(d.lv!=='위험'?' warn':'')+'"><span>['+(o.office||'')+'] '+esc(o.no)+'</span><b>'+(d.left<0?('마감초과 '+(-d.left)+'일'):(d.lv+' · D-'+d.left))+'</b></div>').join('')||'<div class="it"><span>해당 없음</span></div>';}
+document.getElementById('dlBar').onclick=()=>{document.getElementById('dlPopList').innerHTML=dlListHtml();document.getElementById('dlPopOvl').classList.add('show');};
+document.getElementById('dlPopClose').onclick=()=>document.getElementById('dlPopOvl').classList.remove('show');
+function dlStartup(){const v=atRisk().filter(r=>r.d.lv==='위험');if(v.length){document.getElementById('dlPopList').innerHTML=dlListHtml();document.getElementById('dlPopOvl').classList.add('show');}}
+
 (async()=>{await loadWorkers();await load();drawLines();renderKpi();
   try{if(LINES.length){const b=L.latLngBounds(LINES.flatMap(o=>o.coords||[]));if(b.isValid())map.fitBounds(b.pad(0.1));}}catch(e){console.error('fit',e);}
   setTimeout(()=>map.invalidateSize(),200);
   toast('라인 '+LINES.length+'개 불러옴');
+  setTimeout(dlStartup,800);
 })();
 function setRole(){const el=document.getElementById('roleSub');if(el)el.textContent=(innerWidth>=760?'PC · 관리자 (전체화면)':'모바일 · 현장 사용자');}
 setRole();addEventListener('resize',()=>{setRole();setTimeout(()=>map.invalidateSize(),120);});

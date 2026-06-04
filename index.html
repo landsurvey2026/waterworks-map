@@ -57,6 +57,13 @@
   .dl-pop .it b{color:#b91c1c}
   .dl-pop .it.warn b{color:#ea580c}
   .dl-pop button{margin-top:14px;width:100%;background:#dc2626;color:#fff;border:none;border-radius:11px;padding:13px;font-family:var(--sans);font-size:15px;font-weight:800;cursor:pointer}
+  .dl-pop.lv-주의{border-color:#f97316}.dl-pop.lv-주의 h2{color:#ea580c;animation:none}.dl-pop.lv-주의 button{background:#ea580c}
+  .dl-pop.lv-경고{border-color:#eab308}.dl-pop.lv-경고 h2{color:#ca8a04;animation:none}.dl-pop.lv-경고 button{background:#ca8a04}
+  .dl-chip{position:absolute;left:13px;bottom:56px;z-index:901;display:none;align-items:center;gap:8px;background:rgba(13,17,23,.92);border:1.5px solid #888;border-radius:9px;padding:7px 9px 7px 11px;color:#fff;font-family:var(--sans);font-size:12px;font-weight:700;box-shadow:0 3px 12px rgba(0,0,0,.45)}
+  .dl-chip.show{display:flex}
+  .dl-chip.lv-경고{border-color:#eab308}.dl-chip.lv-주의{border-color:#f97316}.dl-chip.lv-위험{border-color:#ef4444;animation:dlblink 1.1s infinite}
+  .dl-chip #dlChipTxt{cursor:pointer}
+  .dl-chip #dlChipX{background:none;border:none;color:#9fb0c3;font-size:14px;font-weight:700;cursor:pointer;padding:0 2px;line-height:1}
 
   .btn-survey{width:100%;margin-top:11px;background:#2f6fed;border:none;color:#fff;font-family:var(--sans);font-weight:700;font-size:14px;border-radius:11px;padding:12px;cursor:pointer}.btn-survey.on{background:#fff;color:#2f6fed;border:1px solid #b9cdf6}
   .survey-info{margin-top:11px;background:#e3edff;color:#1e40af;border-radius:11px;padding:10px 12px;font-size:13px;font-weight:600}
@@ -243,6 +250,7 @@
     .grab{display:none}
     .sh-pad{padding-top:20px}
     .legend{bottom:auto;top:118px}
+    .dl-chip{bottom:auto;top:84px}
   }
 </style>
 <div id="app">
@@ -273,6 +281,7 @@
   <div class="dl-pop-ovl" id="dlPopOvl"><div class="dl-pop"><h2>🚨 위험 — 시스템로딩 마감 초과</h2><p>준공도 인수 후 14일이 지난 지시건입니다. 즉시 시스템로딩을 완료하세요.</p><div id="dlPopList"></div><button id="dlPopClose">확인했습니다</button></div></div>
 
   <div class="legend"><div><i style="background:#34d399"></i>완료 구간</div><div><i style="background:#2f6fed"></i>측량완료</div><div><i style="background:#f59e0b"></i>미시공</div><div><i style="background:#f87171"></i>보류</div></div>
+  <div class="dl-chip" id="dlChip"><span id="dlChipTxt"></span><button id="dlChipX">✕</button></div>
   <div class="sheet" id="sheet"><div class="sheet-top"><div class="grab" id="grabBar"></div><button class="s-close" id="sheetClose">✕</button></div><div class="sh-pad" id="sheetBody"></div></div>
   <button class="sheet-tab" id="sheetTab">정보 보기</button>
   <div class="toast" id="toast"></div>
@@ -697,7 +706,7 @@ function renderSheet(){
   const o=LINES[SEL],T=LEN(o),st=statusOf(o),p=pct(o),dn=Math.min(doneM(o),T),segs=segsOf(o);const rem=Math.max(0,T-dn);
   const segHtml=segs.map(([a,b],i)=>{const d=segDone(o,a,b);return `<div class="seg ${d?'done':''} ${o.hold?'hold':''}" data-a="${a}" data-b="${b}"><div class="ix">${i+1}</div><div class="rng">${fmt(a)} – ${fmt(b)} m</div><div class="ln">${fmt(b-a)}m</div><div class="st">${d?'완료':'미시공'}</div></div>`}).join('');
   const log=o.daily.length?[...o.daily].reverse().map(e=>`<div class="le"><span class="d">${e.d}</span><span class="seg2">${fmt(e.from)}–${fmt(e.to)}m</span><span class="v">+${fmt(e.v)} m</span>${byText(e.by)?`<span class="by">${esc(byText(e.by))}</span>`:''}</div>`).join(''):'<div class="log-empty">완료 기록 없음</div>';
-  const _inf=[];if(o.manager||o.phone)_inf.push(`<div class="inf"><span>공사소장</span><b>${esc(o.manager||'-')}${o.phone?' · '+esc(o.phone):''}</b></div>`);if(o.startDate||o.endDate)_inf.push(`<div class="inf"><span>공사기간</span><b>${esc(o.startDate||'-')} ~ ${esc(o.endDate||'-')}</b></div>`);if(o.shift)_inf.push(`<div class="inf"><span>주야 구분</span><b>${esc(o.shift)}</b></div>`);if(o.note)_inf.push(`<div class="inf"><span>비고</span><b>${esc(o.note)}</b></div>`);if(o.accepted)_inf.push(`<div class="inf"><span>준공도 인수</span><b>${esc(o.acceptDate||'완료')}</b></div>`);if(o.loaded)_inf.push(`<div class="inf"><span>시스템로딩</span><b>완료${o.loadDate?' · '+esc(o.loadDate):''}</b></div>`);{const _dl=dlLevel(o);if(_dl)_inf.push(`<div class="inf"><span>로딩 마감</span><b style="color:#dc2626;font-weight:800">${_dl.lv} · ${_dl.left<0?('초과 '+(-_dl.left)+'일'):('D-'+_dl.left)}</b></div>`);}const infoHtml=_inf.length?`<div class="infbox">${_inf.join('')}</div>`:'';
+  const _inf=[];if(o.manager||o.phone)_inf.push(`<div class="inf"><span>공사소장</span><b>${esc(o.manager||'-')}${o.phone?' · '+esc(o.phone):''}</b></div>`);if(o.startDate||o.endDate)_inf.push(`<div class="inf"><span>공사기간</span><b>${esc(o.startDate||'-')} ~ ${esc(o.endDate||'-')}</b></div>`);if(o.shift)_inf.push(`<div class="inf"><span>주야 구분</span><b>${esc(o.shift)}</b></div>`);if(o.note)_inf.push(`<div class="inf"><span>비고</span><b>${esc(o.note)}</b></div>`);if(o.accepted)_inf.push(`<div class="inf"><span>준공도 인수</span><b>${esc(o.acceptDate||'완료')}</b></div>`);if(o.loaded)_inf.push(`<div class="inf"><span>시스템로딩</span><b>완료${o.loadDate?' · '+esc(o.loadDate):''}</b></div>`);if(o.accepted&&!o.loaded)_inf.push(`<div class="inf"><span>로딩 마감일</span><b>${dlDeadline(o)}</b></div>`);{const _dl=dlLevel(o);if(_dl)_inf.push(`<div class="inf"><span>마감 상태</span><b style="color:#dc2626;font-weight:800">${_dl.lv} · ${_dl.left<0?('초과 '+(-_dl.left)+'일'):('D-'+_dl.left)}</b></div>`);}const infoHtml=_inf.length?`<div class="infbox">${_inf.join('')}</div>`:'';
   const _full=LEN(o)>0&&doneM(o)>=LEN(o)-0.5; const _sv=o.survey&&o.survey.done;
   let surveyHtml; if(_sv){surveyHtml=`<div class="survey-info">📐 측량완료 · ${esc(o.survey.d||'')}${(o.survey.by&&o.survey.by.length)?' · '+esc(o.survey.by.join(', ')):''}</div><button class="btn-survey on" id="isurvey">측량완료 취소</button>`;}
   else if(_full){surveyHtml=`<button class="btn-survey" id="isurvey">📐 측량완료</button>`;}
@@ -996,7 +1005,8 @@ function _dleft(o){
 }
 function dlLevel(o){const L=_dleft(o);if(L===null)return null;if(L<0)return{lv:'위험',left:L};if(L<=3)return{lv:'주의',left:L};if(L<=7)return{lv:'경고',left:L};return null;}
 const DLC={'경고':'#eab308','주의':'#f97316','위험':'#ef4444'};
-let dlLayers=[], dlBlink=null;
+function dlDeadline(o){if(!o.acceptDate)return'-';const a=new Date(o.acceptDate+'T00:00:00');if(isNaN(a))return'-';a.setDate(a.getDate()+14);return a.toISOString().slice(0,10);}
+let dlLayers=[], dlBlink=null, dlChipHidden=false, dlPopTimer=null;
 function atRisk(){const out=[];LINES.forEach(o=>{const d=dlLevel(o);if(d)out.push({o,d});});return out;}
 function refreshDeadlines(){
   dlLayers.forEach(l=>map.removeLayer(l));dlLayers=[];
@@ -1007,19 +1017,32 @@ function refreshDeadlines(){
     const pl=L.polyline(o.coords,{color:DLC[d.lv],weight:11,opacity:.95,interactive:false,className:'dl-line'}).addTo(map);
     dlLayers.push(pl);});
   if(dlLayers.length){let on=true;dlBlink=setInterval(()=>{on=!on;dlLayers.forEach(l=>l.setStyle({opacity:on?.95:.2}));},600);}
-  // 상단 배너
-  const bar=document.getElementById('dlBar');
+  // 범례 위 작은 칩
+  const chip=document.getElementById('dlChip'),txt=document.getElementById('dlChipTxt');
+  if(!risks.length){chip.classList.remove('show');return;}
   const cV=risks.filter(r=>r.d.lv==='위험').length,cC=risks.filter(r=>r.d.lv==='주의').length,cW=risks.filter(r=>r.d.lv==='경고').length;
-  bar.className='dl-bar';
-  if(cV){bar.classList.add('show','lv-위험');bar.innerHTML='🚨 시스템로딩 마감 <u>초과 '+cV+'건</u> — 즉시 처리하세요!'+(cC+cW?' (주의 '+cC+' · 경고 '+cW+')':'');}
-  else if(cC){bar.classList.add('show','lv-주의');bar.innerHTML='⚠ 시스템로딩 마감 임박(3일 이내) '+cC+'건'+(cW?' · 경고 '+cW+'건':'');}
-  else if(cW){bar.classList.add('show','lv-경고');bar.innerHTML='⏰ 시스템로딩 마감 주의(7일 이내) '+cW+'건';}
+  const parts=[];if(cV)parts.push('초과 '+cV);if(cC)parts.push('주의 '+cC);if(cW)parts.push('경고 '+cW);
+  txt.textContent=(cV?'🚨 ':cC?'⚠ ':'⏰ ')+'로딩 '+parts.join(' · ');
+  chip.className='dl-chip '+(cV?'lv-위험':cC?'lv-주의':'lv-경고')+(dlChipHidden?'':' show');
 }
 function dlListHtml(){const risks=atRisk().sort((a,b)=>a.d.left-b.d.left);
-  return risks.map(({o,d})=>'<div class="it'+(d.lv!=='위험'?' warn':'')+'"><span>['+(o.office||'')+'] '+esc(o.no)+'</span><b>'+(d.left<0?('마감초과 '+(-d.left)+'일'):(d.lv+' · D-'+d.left))+'</b></div>').join('')||'<div class="it"><span>해당 없음</span></div>';}
-document.getElementById('dlBar').onclick=()=>{document.getElementById('dlPopList').innerHTML=dlListHtml();document.getElementById('dlPopOvl').classList.add('show');};
-document.getElementById('dlPopClose').onclick=()=>document.getElementById('dlPopOvl').classList.remove('show');
-function dlStartup(){const v=atRisk().filter(r=>r.d.lv==='위험');if(v.length){document.getElementById('dlPopList').innerHTML=dlListHtml();document.getElementById('dlPopOvl').classList.add('show');}}
+  return risks.map(({o,d})=>'<div class="it'+(d.lv!=='위험'?' warn':'')+'"><span>['+(o.office||'')+'] '+esc(o.no)+'<br><small style="color:#94a3b8">마감 '+dlDeadline(o)+'</small></span><b>'+(d.left<0?('초과 '+(-d.left)+'일'):(d.lv+' · D-'+d.left))+'</b></div>').join('')||'<div class="it"><span>해당 없음</span></div>';}
+document.getElementById('dlChipTxt').onclick=()=>showPop(false);
+document.getElementById('dlChipX').onclick=()=>{dlChipHidden=true;document.getElementById('dlChip').classList.remove('show');};
+document.getElementById('dlPopClose').onclick=()=>{if(dlPopTimer){clearTimeout(dlPopTimer);dlPopTimer=null;}document.getElementById('dlPopOvl').classList.remove('show');};
+function showPop(auto){const risks=atRisk();if(!risks.length)return;
+  const worst=risks.some(r=>r.d.lv==='위험')?'위험':risks.some(r=>r.d.lv==='주의')?'주의':'경고';
+  const pop=document.querySelector('#dlPopOvl .dl-pop');pop.className='dl-pop lv-'+worst;
+  const h=document.querySelector('#dlPopOvl h2'),sub=document.querySelector('#dlPopOvl p');
+  if(worst==='위험'){h.textContent='🚨 위험 — 시스템로딩 마감 초과';sub.textContent='준공도 인수 후 14일이 지났습니다. 즉시 시스템로딩을 완료하세요.';}
+  else if(worst==='주의'){h.textContent='⚠ 주의 — 시스템로딩 마감 임박';sub.textContent='마감(준공도 인수 +14일)까지 3일 이내입니다.';}
+  else{h.textContent='⏰ 경고 — 시스템로딩 마감 주의';sub.textContent='마감(준공도 인수 +14일)까지 7일 이내입니다.';}
+  document.getElementById('dlPopList').innerHTML=dlListHtml();
+  document.getElementById('dlPopOvl').classList.add('show');
+  if(dlPopTimer){clearTimeout(dlPopTimer);dlPopTimer=null;}
+  if(auto&&worst!=='위험')dlPopTimer=setTimeout(()=>document.getElementById('dlPopOvl').classList.remove('show'),6000);
+}
+function dlStartup(){showPop(true);}
 
 (async()=>{await loadWorkers();await load();drawLines();renderKpi();
   try{if(LINES.length){const b=L.latLngBounds(LINES.flatMap(o=>o.coords||[]));if(b.isValid())map.fitBounds(b.pad(0.1));}}catch(e){console.error('fit',e);}

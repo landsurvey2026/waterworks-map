@@ -1006,7 +1006,7 @@ function _dleft(o){
 function dlLevel(o){const L=_dleft(o);if(L===null)return null;if(L<0)return{lv:'위험',left:L};if(L<=3)return{lv:'주의',left:L};if(L<=7)return{lv:'경고',left:L};return null;}
 const DLC={'경고':'#eab308','주의':'#f97316','위험':'#ef4444'};
 function dlDeadline(o){if(!o.acceptDate)return'-';const a=new Date(o.acceptDate+'T00:00:00');if(isNaN(a))return'-';a.setDate(a.getDate()+14);return a.toISOString().slice(0,10);}
-let dlLayers=[], dlBlink=null, dlChipHidden=false, dlPopTimer=null;
+let dlLayers=[], dlBlink=null, dlChipHidden=false, dlPopTimer=null, popOpen=false;
 function atRisk(){const out=[];LINES.forEach(o=>{const d=dlLevel(o);if(d)out.push({o,d});});return out;}
 function refreshDeadlines(){
   dlLayers.forEach(l=>map.removeLayer(l));dlLayers=[];
@@ -1016,7 +1016,7 @@ function refreshDeadlines(){
   risks.forEach(({o,d})=>{if((o.coords||[]).length<2)return;
     const pl=L.polyline(o.coords,{color:DLC[d.lv],weight:11,opacity:.95,interactive:false,className:'dl-line'}).addTo(map);
     dlLayers.push(pl);});
-  if(dlLayers.length){let on=true,tk=0;dlBlink=setInterval(()=>{on=!on;tk++;dlLayers.forEach(l=>l.setStyle({opacity:on?.95:.2}));if(tk>=10){clearInterval(dlBlink);dlBlink=null;dlLayers.forEach(l=>map.removeLayer(l));dlLayers=[];}},600);}
+  if(dlLayers.length){let on=true,tk=0;dlBlink=setInterval(()=>{on=!on;tk++;dlLayers.forEach(l=>l.setStyle({opacity:on?.95:.2}));if(tk>=10&&!popOpen){clearInterval(dlBlink);dlBlink=null;dlLayers.forEach(l=>map.removeLayer(l));dlLayers=[];}},600);}
   // 범례 위 작은 칩
   const chip=document.getElementById('dlChip'),txt=document.getElementById('dlChipTxt');
   if(!risks.length){chip.classList.remove('show');return;}
@@ -1029,8 +1029,9 @@ function dlListHtml(){const risks=atRisk().sort((a,b)=>a.d.left-b.d.left);
   return risks.map(({o,d})=>'<div class="it'+(d.lv!=='위험'?' warn':'')+'"><span>['+(o.office||'')+'] '+esc(o.no)+'<br><small style="color:#94a3b8">마감 '+dlDeadline(o)+'</small></span><b>'+(d.left<0?('초과 '+(-d.left)+'일'):(d.lv+' · D-'+d.left))+'</b></div>').join('')||'<div class="it"><span>해당 없음</span></div>';}
 document.getElementById('dlChipTxt').onclick=()=>showPop(false);
 document.getElementById('dlChipX').onclick=()=>{dlChipHidden=true;document.getElementById('dlChip').classList.remove('show');};
-document.getElementById('dlPopClose').onclick=()=>{if(dlPopTimer){clearTimeout(dlPopTimer);dlPopTimer=null;}document.getElementById('dlPopOvl').classList.remove('show');};
+document.getElementById('dlPopClose').onclick=()=>{popOpen=false;if(dlPopTimer){clearTimeout(dlPopTimer);dlPopTimer=null;}document.getElementById('dlPopOvl').classList.remove('show');};
 function showPop(auto){const risks=atRisk();if(!risks.length)return;
+  popOpen=true;refreshDeadlines();
   const worst=risks.some(r=>r.d.lv==='위험')?'위험':risks.some(r=>r.d.lv==='주의')?'주의':'경고';
   const pop=document.querySelector('#dlPopOvl .dl-pop');pop.className='dl-pop lv-'+worst;
   const h=document.querySelector('#dlPopOvl h2'),sub=document.querySelector('#dlPopOvl p');
@@ -1040,7 +1041,7 @@ function showPop(auto){const risks=atRisk();if(!risks.length)return;
   document.getElementById('dlPopList').innerHTML=dlListHtml();
   document.getElementById('dlPopOvl').classList.add('show');
   if(dlPopTimer){clearTimeout(dlPopTimer);dlPopTimer=null;}
-  if(auto&&worst!=='위험')dlPopTimer=setTimeout(()=>document.getElementById('dlPopOvl').classList.remove('show'),6000);
+  if(auto&&worst!=='위험')dlPopTimer=setTimeout(()=>{popOpen=false;document.getElementById('dlPopOvl').classList.remove('show');},6000);
 }
 function dlStartup(){showPop(true);}
 

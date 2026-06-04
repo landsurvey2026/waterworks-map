@@ -1,6 +1,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<title>강동수도사업소 현장관리</title>
+<title>서울시 상수도 현장관리 프로그램</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/proj4@2.11.0/dist/proj4.js"></script>
@@ -108,6 +108,7 @@
   .dc-sum{display:flex;gap:18px;margin:10px 0 4px;font-size:14px;font-weight:700}
   .dc-sum b{color:#34d399}
   .dc-row .wln{color:#5eead4;font-size:11.5px;font-weight:500}
+  .dc-mapbtn{background:#0d9488;color:#fff;border:none;border-radius:8px;padding:5px 11px;font-family:var(--sans);font-size:12px;font-weight:700;cursor:pointer;margin-left:8px;vertical-align:2px}
 
 
   .datepill .lab{font-size:11.5px;color:var(--muted)}.datepill .val{font-family:var(--mono);font-size:14px;font-weight:600;color:var(--ink);margin-left:auto}.datepill .car{color:var(--muted);font-size:11px}
@@ -145,6 +146,7 @@
   .ed-acts .save{background:var(--ink);color:#fff}.ed-acts .cancel{background:#eef1f5;color:#475569}
   .topbtn{font-family:var(--sans);font-size:12px;font-weight:600;color:#fff;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.25);border-radius:9px;padding:7px 12px;cursor:pointer}
   .srch-ovl{position:absolute;inset:0;z-index:1500;background:#0d1117;display:none;flex-direction:column}
+  #dcOvl{overflow-y:auto;-webkit-overflow-scrolling:touch}
   .adm-ovl{position:absolute;inset:0;z-index:1600;background:#0d1117;color:#e6edf3;display:none;flex-direction:column}
   .adm-ovl.show{display:flex}
   .adm-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid #1f2630;font-size:16px;font-weight:700}
@@ -895,18 +897,42 @@ function dcDetail(M){const el=document.getElementById('dcDetail');
   if(!dcSel){el.innerHTML='<p style="color:#9fb0c3;font-size:13px">날짜를 누르면 그날의 작업 현황이 표시됩니다.</p>';return;}
   const day=M[dcSel];
   if(!day){el.innerHTML='<h4>'+dcSel+'</h4><p style="color:#9fb0c3;font-size:13px">작업 기록이 없습니다.</p>';return;}
-  let h='<h4>'+dcSel+'</h4><div class="dc-sum"><span>총물량 <b>'+fmt(day.v)+' m</b></span><span>지시건 <b>'+Object.keys(day.lines).length+' 건</b></span></div>';
+  let h='<h4>'+dcSel+' <button id="dcShowMap" class="dc-mapbtn">지도에서 보기</button></h4><div class="dc-sum"><span>총물량 <b>'+fmt(day.v)+' m</b></span><span>지시건 <b>'+Object.keys(day.lines).length+' 건</b></span></div>';
   h+='<h4>작업자별 (물량 = 대표 기준)</h4>';
   const ws=Object.entries(day.workers).sort((a,b)=>b[1].v-a[1].v);
   h+=ws.length?ws.map(([w,obj])=>{const led=Object.keys(obj.lines||{});const hel=Object.keys(obj.help||{});let det=led.length?'<span class="wln">'+esc(led.join(', '))+'</span>':'';if(hel.length)det+=' <span class="wln" style="color:#94a3b8">보조: '+esc(hel.join(', '))+'</span>';return '<div class="dc-row"><span>'+esc(w)+' '+det+'</span><span>'+fmt(obj.v)+' m</span></div>';}).join(''):'<div class="dc-row"><span>-</span><span></span></div>';
   h+='<h4>지시건별</h4>';
   h+=Object.entries(day.lines).sort((a,b)=>b[1]-a[1]).map(([k,v])=>'<div class="dc-row"><span>'+esc(k)+'</span><span>'+fmt(v)+' m</span></div>').join('');
   el.innerHTML=h;
+  const _sm=document.getElementById('dcShowMap');if(_sm)_sm.onclick=()=>{document.getElementById('dcOvl').classList.remove('show');highlightDate(dcSel);};
+  if(dcSel&&window.innerWidth<760)setTimeout(()=>{el.scrollIntoView({behavior:'smooth',block:'start'});},60);
 }
 document.getElementById('calBtn').onclick=dcOpen;
 document.getElementById('dcClose').onclick=()=>document.getElementById('dcOvl').classList.remove('show');
 document.getElementById('dcPrev').onclick=()=>{dcM--;if(dcM<0){dcM=11;dcY--;}dcSel=null;dcRender();};
 document.getElementById('dcNext').onclick=()=>{dcM++;if(dcM>11){dcM=0;dcY++;}dcSel=null;dcRender();};
+
+
+/* ===== 일자별 라인 하이라이트 ===== */
+let hlLayers=[], hlTimer=null;
+function clearHighlight(){hlLayers.forEach(l=>map.removeLayer(l));hlLayers=[];if(hlTimer){clearInterval(hlTimer);hlTimer=null;}}
+function highlightDate(ds){
+  clearHighlight();
+  const want=new Set();
+  LINES.forEach(o=>{if((o.daily||[]).some(e=>e.d===ds))want.add(o.office+'|'+o.no);});
+  const lines=LINES.filter(o=>want.has(o.office+'|'+o.no)&&(o.coords||[]).length>=2);
+  if(!lines.length){toast('그날 작업한 라인이 없습니다');return;}
+  const all=[];
+  lines.forEach(o=>{
+    const pl=L.polyline(o.coords,{color:'#f43f5e',weight:9,opacity:.95,interactive:false}).addTo(map);
+    hlLayers.push(pl);all.push(...o.coords);
+  });
+  try{const b=L.latLngBounds(all);if(b.isValid())map.fitBounds(b.pad(0.25),{maxZoom:18});}catch(e){}
+  // 깜빡임 (일시적)
+  let on=true,ticks=0;
+  hlTimer=setInterval(()=>{on=!on;hlLayers.forEach(l=>l.setStyle({opacity:on?.95:.15,weight:on?9:5}));ticks++;if(ticks>=12){clearHighlight();}},450);
+  toast(ds+' · '+lines.length+'개 라인 표시');
+}
 
 (async()=>{await loadWorkers();await load();drawLines();renderKpi();
   try{if(LINES.length){const b=L.latLngBounds(LINES.flatMap(o=>o.coords||[]));if(b.isValid())map.fitBounds(b.pad(0.1));}}catch(e){console.error('fit',e);}

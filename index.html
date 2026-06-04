@@ -1016,7 +1016,7 @@ function refreshDeadlines(){
   risks.forEach(({o,d})=>{if((o.coords||[]).length<2)return;
     const pl=L.polyline(o.coords,{color:DLC[d.lv],weight:11,opacity:.95,interactive:false,className:'dl-line'}).addTo(map);
     dlLayers.push(pl);});
-  if(dlLayers.length){let on=true;dlBlink=setInterval(()=>{on=!on;dlLayers.forEach(l=>l.setStyle({opacity:on?.95:.2}));},600);}
+  if(dlLayers.length){let on=true,tk=0;dlBlink=setInterval(()=>{on=!on;tk++;dlLayers.forEach(l=>l.setStyle({opacity:on?.95:.2}));if(tk>=10){clearInterval(dlBlink);dlBlink=null;dlLayers.forEach(l=>l.setStyle({opacity:.95}));}},600);}
   // 범례 위 작은 칩
   const chip=document.getElementById('dlChip'),txt=document.getElementById('dlChipTxt');
   if(!risks.length){chip.classList.remove('show');return;}

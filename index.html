@@ -40,7 +40,10 @@
   .sh-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
   .sh-no{font-family:var(--mono);font-size:13px;color:#0891b2;font-weight:600}.sh-line{font-size:16px;font-weight:600;margin-top:1px}
   .badge{font-family:var(--mono);font-size:11px;font-weight:600;padding:5px 11px;border-radius:20px;white-space:nowrap}
-  .b-wait{background:#eef1f5;color:#64748b}.b-prog{background:#fef3e2;color:#c97a0a}.b-done{background:#e7f9f0;color:#109b6c}.b-hold{background:#fde9e9;color:#dc4545}
+  .b-wait{background:#eef1f5;color:#64748b}.b-prog{background:#fef3e2;color:#c97a0a}.b-done{background:#e7f9f0;color:#109b6c}.b-hold{background:#fde9e9;color:#dc4545}.b-survey{background:#e3edff;color:#2f6fed}
+  .btn-survey{width:100%;margin-top:11px;background:#2f6fed;border:none;color:#fff;font-family:var(--sans);font-weight:700;font-size:14px;border-radius:11px;padding:12px;cursor:pointer}.btn-survey.on{background:#fff;color:#2f6fed;border:1px solid #b9cdf6}
+  .survey-info{margin-top:11px;background:#e3edff;color:#1e40af;border-radius:11px;padding:10px 12px;font-size:13px;font-weight:600}
+  .survey-note{margin-top:11px;color:#94a3b8;font-size:12.5px;text-align:center}
   .warn{margin-top:9px;background:#fff8e6;border:1px solid #f5e0a8;color:#9a6a00;font-size:11.5px;padding:8px 11px;border-radius:9px;line-height:1.5}
   .prog{margin:14px 0 6px}.prog .nums{display:flex;justify-content:space-between;align-items:baseline;font-size:12px;color:var(--muted)}.prog .nums b{font-family:var(--mono);font-size:20px;color:var(--ink)}
   .track{height:12px;border-radius:7px;background:#eef1f5;overflow:hidden;margin-top:7px}.track i{display:block;height:100%;background:linear-gradient(90deg,var(--done),#6ee7b7);transition:width .4s}
@@ -249,7 +252,7 @@
   </div>
 
   <div class="banner" id="banner"></div>
-  <div class="legend"><div><i style="background:#34d399"></i>완료 구간</div><div><i style="background:#f59e0b"></i>미시공</div><div><i style="background:#f87171"></i>보류</div></div>
+  <div class="legend"><div><i style="background:#34d399"></i>완료 구간</div><div><i style="background:#2f6fed"></i>측량완료</div><div><i style="background:#f59e0b"></i>미시공</div><div><i style="background:#f87171"></i>보류</div></div>
   <div class="sheet" id="sheet"><div class="sheet-top"><div class="grab" id="grabBar"></div><button class="s-close" id="sheetClose">✕</button></div><div class="sh-pad" id="sheetBody"></div></div>
   <button class="sheet-tab" id="sheetTab">정보 보기</button>
   <div class="toast" id="toast"></div>
@@ -580,8 +583,8 @@ function subIv(list,a,b){const o=[];for(const[s,e]of list){if(e<=a+.1||s>=b-.1){
 const covered=(list,x)=>list.some(([a,b])=>x>=a-.5&&x<=b+.5);
 const doneM=o=>merge(o.completed).reduce((s,[a,b])=>s+(b-a),0);
 const pct=o=>{const T=LEN(o);return T>0?Math.min(100,Math.round(doneM(o)/T*100)):0;};
-function statusOf(o){if(o.hold)return'보류';const d=doneM(o);const T=LEN(o);if(d<=.5)return'대기';if(d>=T-0.5)return'완료';return'진행중';}
-const SB={'대기':'b-wait','진행중':'b-prog','완료':'b-done','보류':'b-hold'};
+function statusOf(o){if(o.survey&&o.survey.done)return'측량완료';if(o.hold)return'보류';const d=doneM(o);const T=LEN(o);if(d<=.5)return'대기';if(d>=T-0.5)return'완료';return'진행중';}
+const SB={'대기':'b-wait','진행중':'b-prog','완료':'b-done','보류':'b-hold','측량완료':'b-survey'};
 function boundaries(o){const T=totalM(o.coords);const b=[0,...o.cuts.filter(c=>c>1&&c<T-1),T].sort((x,y)=>x-y);const u=[];for(const v of b)if(!u.length||v-u[u.length-1]>1)u.push(v);return u;}
 function segsOf(o){const b=boundaries(o),out=[];for(let i=0;i<b.length-1;i++)out.push([b[i],b[i+1]]);return out;}
 const segDone=(o,a,b)=>covered(merge(o.completed),(a+b)/2);
@@ -611,7 +614,7 @@ function drawLines(){
     segsOf(o).forEach(([a,b])=>{
       const gp=sel?gap(b-a):0, A=Math.min(a+gp,b), B=Math.max(b-gp,a);
       const dn=segDone(o,a,b), path=sliceLL(o.coords,A,B);
-      const col=o.hold&&!dn?'#ef4444':(dn?'#34d399':'#f59e0b');
+      const col=(o.survey&&o.survey.done)?'#2f6fed':(o.hold&&!dn?'#ef4444':(dn?'#34d399':'#f59e0b'));
       // white casing so the line stays visible on both street and satellite
       g.push(L.polyline(path,{color:'#ffffff',weight:sel?12:9,opacity:.95,interactive:false}).addTo(map));
       const pl=L.polyline(path,{color:col,weight:sel?8:6,opacity:1,dashArray:(o.hold&&!dn)?'1 9':null,interactive:false}).addTo(map);
@@ -671,6 +674,10 @@ function renderSheet(){
   const segHtml=segs.map(([a,b],i)=>{const d=segDone(o,a,b);return `<div class="seg ${d?'done':''} ${o.hold?'hold':''}" data-a="${a}" data-b="${b}"><div class="ix">${i+1}</div><div class="rng">${fmt(a)} – ${fmt(b)} m</div><div class="ln">${fmt(b-a)}m</div><div class="st">${d?'완료':'미시공'}</div></div>`}).join('');
   const log=o.daily.length?[...o.daily].reverse().map(e=>`<div class="le"><span class="d">${e.d}</span><span class="seg2">${fmt(e.from)}–${fmt(e.to)}m</span><span class="v">+${fmt(e.v)} m</span>${byText(e.by)?`<span class="by">${esc(byText(e.by))}</span>`:''}</div>`).join(''):'<div class="log-empty">완료 기록 없음</div>';
   const _inf=[];if(o.manager||o.phone)_inf.push(`<div class="inf"><span>공사소장</span><b>${esc(o.manager||'-')}${o.phone?' · '+esc(o.phone):''}</b></div>`);if(o.startDate||o.endDate)_inf.push(`<div class="inf"><span>공사기간</span><b>${esc(o.startDate||'-')} ~ ${esc(o.endDate||'-')}</b></div>`);if(o.shift)_inf.push(`<div class="inf"><span>주야 구분</span><b>${esc(o.shift)}</b></div>`);if(o.note)_inf.push(`<div class="inf"><span>비고</span><b>${esc(o.note)}</b></div>`);const infoHtml=_inf.length?`<div class="infbox">${_inf.join('')}</div>`:'';
+  const _full=LEN(o)>0&&doneM(o)>=LEN(o)-0.5; const _sv=o.survey&&o.survey.done;
+  let surveyHtml; if(_sv){surveyHtml=`<div class="survey-info">📐 측량완료 · ${esc(o.survey.d||'')}${(o.survey.by&&o.survey.by.length)?' · '+esc(o.survey.by.join(', ')):''}</div><button class="btn-survey on" id="isurvey">측량완료 취소</button>`;}
+  else if(_full){surveyHtml=`<button class="btn-survey" id="isurvey">📐 측량완료</button>`;}
+  else{surveyHtml=`<div class="survey-note">공사 완료(100%) 후 측량완료를 체크할 수 있습니다</div>`;}
   body.innerHTML=`<div class="sh-head"><div style="flex:1;min-width:0"><div class="sh-no"><span class="otag ot-${o.office||''}">${esc(o.office||'')}</span> ${esc(o.no)} <button class="mini-edit" id="editBtn">수정</button></div><div class="sh-line">${o.name?esc(o.name):'<span style="color:#94a3b8;font-weight:500">공사명 입력 →</span>'}</div></div><span class="badge ${SB[st]}">${st}</span></div>
     ${o.verified?'':`<div class="warn">⚠ 도면 자동매칭(오차 ${o.matchDist}m). 라인↔번호 확인 필요.</div>`}
     <div class="addr" id="addrRow"><span class="pin"></span><span id="addrText">주소 조회 중…</span></div>
@@ -683,6 +690,7 @@ function renderSheet(){
     <div class="segs">${segHtml}</div>
     <div class="sec"><span>일일 작업일보</span></div><div class="log">${log}</div>
     ${p>=100?'':`<button class="btn-fill" id="ifill">✓ 나머지 전체 완료 (잔여 ${rem<0.5?0:fmt(rem)}m)</button>`}
+    ${surveyHtml}
     <button class="btn-hold ${o.hold?'on':''}" id="ihold">${o.hold?'보류 해제':'보류 지정'}</button>
     ${doneM(o)>0.5?`<button class="btn-reset" id="ireset">↺ 이 라인 완료 전체 취소</button>`:''}
     ${isAdmin?`<button class="btn-edit-geo" id="iedit">✎ 선형 변형</button>`:''}
@@ -699,6 +707,7 @@ function renderSheet(){
   const fill=document.getElementById('ifill');if(fill)fill.onclick=()=>completeRemaining(SEL);
   ihold.onclick=async()=>{o.hold=!o.hold;await save();drawLines();renderKpi();renderSheet();toast(`<b>${o.no}</b> ${o.hold?'보류':'보류 해제'}`);};
   const _rst=document.getElementById('ireset');if(_rst)_rst.onclick=async()=>{if(!confirm('이 라인의 완료를 모두 취소할까요?\n(끊기 점은 유지됩니다)'))return;o.completed=[];o.daily=[];await save();drawLines();renderKpi();renderSheet();toast('완료 취소됨 · '+o.no);};
+  const _svb=document.getElementById('isurvey');if(_svb)_svb.onclick=async()=>{if(o.survey&&o.survey.done){if(!confirm('측량완료를 취소할까요?'))return;o.survey={done:false};}else{o.survey={done:true,d:workDate,by:(todayLead?[todayLead,...todayHelpers]:[])};}await save();drawLines();renderKpi();renderSheet();toast(o.survey.done?'측량완료 · '+o.no:'측량완료 취소');};
   const _del=document.getElementById('idel');if(_del)_del.onclick=async()=>{const no=o.no,office=o.office;if(!confirm('['+office+'] '+no+' 라인을 삭제할까요?\n(되돌릴 수 없습니다)'))return;await load();LINES=LINES.filter(x=>!(x.no===no&&x.office===office));await save();SEL=null;drawLines();renderKpi();renderSheet();toast('삭제됨 · '+no);};
   const _ieg=document.getElementById('iedit');if(_ieg)_ieg.onclick=()=>startEditGeo(SEL);
 }
@@ -805,9 +814,10 @@ document.getElementById('editCancel').onclick=()=>exitEditGeo(true);
 
 /* ===== 통계 (관리자 전용) ===== */
 function statFor(lines){
-  const r={cntT:0,mT:0,cntDone:0,mDone:0,cntProg:0,mProg:0,cntWait:0,mWait:0,cntHold:0,mHold:0};
+  const r={cntT:0,mT:0,cntDone:0,mDone:0,cntProg:0,mProg:0,cntWait:0,mWait:0,cntHold:0,mHold:0,cntSurvey:0,mSurvey:0};
   lines.forEach(o=>{const T=LEN(o),st=statusOf(o);r.cntT++;r.mT+=T;
-    if(st==='완료'){r.cntDone++;r.mDone+=T;}
+    if(st==='측량완료'){r.cntSurvey++;r.mSurvey+=T;r.cntDone++;r.mDone+=T;}
+    else if(st==='완료'){r.cntDone++;r.mDone+=T;}
     else if(st==='진행중'){r.cntProg++;r.mProg+=T;}
     else if(st==='보류'){r.cntHold++;r.mHold+=T;}
     else{r.cntWait++;r.mWait+=T;}});
@@ -819,6 +829,7 @@ function _sTbl(title,r){
     +'<thead><tr><th>구분</th><th>건수</th><th>물량</th></tr></thead><tbody>'
     +_sRow('공사지시(총)',r.cntT,r.mT,'tot')
     +_sRow('완료',r.cntDone,r.mDone)
+    +_sRow('└ 측량완료',r.cntSurvey,r.mSurvey)
     +_sRow('진행',r.cntProg,r.mProg)
     +_sRow('미진행',r.cntWait,r.mWait)
     +_sRow('보류',r.cntHold,r.mHold)

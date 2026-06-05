@@ -564,6 +564,7 @@ function dxfToLines(text,office){
 
 document.getElementById('admFile').addEventListener('change',async function(){
   const f=this.files[0];if(!f)return;
+  admParsed=null;admReport=null;document.getElementById('admUpload').disabled=true;
   if(typeof proj4==='undefined'){admlog('좌표변환 라이브러리(proj4)를 불러오지 못했습니다. 인터넷 연결 확인 후 새로고침하세요.',true);return;}
   admlog('읽는 중: '+f.name,true);
   try{
@@ -601,6 +602,7 @@ document.getElementById('admUpload').onclick=async function(){
     await save();drawLines();renderKpi();
     try{const b=L.latLngBounds(LINES.flatMap(o=>o.coords||[]));if(b.isValid())map.fitBounds(b.pad(0.1));}catch(e){}
     toast('업로드 완료 · 전체 '+LINES.length+'개');admlog('업로드 완료. 전체 '+LINES.length+'개. 현장 앱에 반영됩니다.');
+    admParsed=null;admReport=null;document.getElementById('admFile').value='';
     admRefresh();
   }catch(e){admlog('업로드 오류: '+e.message,true);console.error(e);}
   this.disabled=false;
@@ -715,7 +717,7 @@ async function completeRemaining(idx){
 }
 const inOffice=o=>OFFICE==='전체'||o.office===OFFICE;
 function setOffice(o){OFFICE=o;document.querySelectorAll('#officeTabs button').forEach(b=>b.classList.toggle('on',b.dataset.o===o));SEL=null;clearPick();drawLines();renderKpi();renderSheet();}
-function renderKpi(){const V=LINES.filter(inOffice);const tot=V.reduce((s,o)=>s+LEN(o),0),dn=V.reduce((s,o)=>s+Math.min(doneM(o),LEN(o)),0);kpiPct.textContent=(tot?Math.round(dn/tot*100):0)+'%';kpiM.textContent=fmt(dn)+' / '+fmt(tot)+' m';if(typeof refreshDeadlines==='function')refreshDeadlines();}
+function renderKpi(){const V=LINES.filter(inOffice);const tot=V.reduce((s,o)=>s+LEN(o),0),dn=V.reduce((s,o)=>s+Math.min(doneM(o),LEN(o)),0);kpiPct.textContent=(tot?Math.round(dn/tot*100):0)+'%';kpiM.textContent=fmt(dn)+' / '+fmt(tot)+' m';if(typeof refreshDeadlines==='function')refreshDeadlines();if(typeof refreshMismatch==='function')refreshMismatch();}
 function setBanner(){const bn=document.getElementById('banner');if(SEL===null){bn.classList.remove('show');return;}
   if(mode==='cut'){bn.className='banner cut show';bn.innerHTML='끊기 모드 · 라인을 탭해 끊을 위치를 추가<small>점을 다시 탭하면 삭제 · 끝나면 "완료체크"로 전환</small>';}
   else if(mode==='tap'){bn.className='banner tap show';bn.innerHTML='완료체크 모드 · 완료된 토막을 탭하면 완료<small>다시 탭하면 완료 해제 · 끝나면 다시 눌러 종료</small>';}
@@ -1030,6 +1032,14 @@ const DLC={'경고':'#eab308','주의':'#f97316','위험':'#ef4444'};
 function dlDeadline(o){if(!o.acceptDate)return'-';const a=new Date(o.acceptDate+'T00:00:00');if(isNaN(a))return'-';a.setDate(a.getDate()+14);return a.toISOString().slice(0,10);}
 let dlLayers=[], dlBlink=null, dlChipHidden=false, dlPopTimer=null, popOpen=false;
 function atRisk(){const out=[];LINES.forEach(o=>{const d=dlLevel(o);if(d)out.push({o,d});});return out;}
+let mmLayers=[], mmBlink=null;
+function refreshMismatch(){
+  mmLayers.forEach(l=>map.removeLayer(l));mmLayers=[];
+  if(mmBlink){clearInterval(mmBlink);mmBlink=null;}
+  const bad=LINES.filter(o=>!o.verified&&inOffice(o)&&(o.coords||[]).length>=2);
+  bad.forEach(o=>{const pl=L.polyline(o.coords,{color:'#e879f9',weight:9,opacity:.95,interactive:false,dashArray:'4 7'}).addTo(map);mmLayers.push(pl);});
+  if(mmLayers.length){let on=true;mmBlink=setInterval(()=>{on=!on;mmLayers.forEach(l=>l.setStyle({opacity:on?.95:.15}));},550);}
+}
 function refreshDeadlines(){
   dlLayers.forEach(l=>map.removeLayer(l));dlLayers=[];
   if(dlBlink){clearInterval(dlBlink);dlBlink=null;}

@@ -106,6 +106,15 @@
   .btn-del{width:100%;margin-top:9px;background:#dc2626;border:none;color:#fff;font-family:var(--sans);font-weight:700;font-size:14px;border-radius:11px;padding:12px;cursor:pointer}
   .btn-reset{width:100%;margin-top:9px;background:#fff;border:1px solid #cbd5e1;color:#475569;font-family:var(--sans);font-weight:600;font-size:14px;border-radius:11px;padding:12px;cursor:pointer}
   .btn-reset.armed{background:#dc2626;border-color:#dc2626;color:#fff}
+  .issue-add{display:flex;gap:7px;margin:8px 0}
+  .issue-in{flex:1;border:1px solid var(--line);border-radius:10px;padding:11px 12px;font-family:var(--sans);font-size:14px;box-sizing:border-box}
+  .issue-btn{background:#0f172a;color:#fff;border:none;border-radius:10px;padding:0 16px;font-family:var(--sans);font-weight:700;font-size:14px;cursor:pointer}
+  .issue-list{display:flex;flex-direction:column;gap:7px}
+  .issue-row{border:1px solid var(--line);border-radius:10px;padding:9px 11px;background:#fafafa}
+  .issue-row .ih{font-size:12px;color:#64748b;display:flex;align-items:center;gap:5px}
+  .issue-row .ih b{color:#0f172a}
+  .issue-row .ih .ix{margin-left:auto;color:#cbd5e1;cursor:pointer;font-weight:700;padding:0 3px}
+  .issue-row .it{font-size:14px;color:#0f172a;margin-top:3px;word-break:break-word}
   .hold-reason{width:100%;margin-top:8px;border:1px solid #f0b4b4;border-radius:10px;padding:11px 12px;font-family:var(--sans);font-size:14px;box-sizing:border-box}
   .toast{position:absolute;bottom:90px;left:50%;transform:translateX(-50%) translateY(16px);z-index:1300;background:var(--ink);color:#fff;font-size:13px;padding:11px 17px;border-radius:12px;opacity:0;transition:.25s;box-shadow:0 6px 20px rgba(0,0,0,.4);white-space:nowrap}
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}.toast b{color:var(--accent)}
@@ -710,7 +719,7 @@ function boundaries(o){const T=totalM(o.coords);const b=[0,...o.cuts.filter(c=>c
 function segsOf(o){const b=boundaries(o),out=[];for(let i=0;i<b.length-1;i++)out.push([b[i],b[i+1]]);return out;}
 const segDone=(o,a,b)=>covered(merge(o.completed),(a+b)/2);
 
-function normalize(arr){return (arr||[]).filter(Boolean).map(o=>({...o,cuts:o.cuts||[],completed:o.completed||[],daily:o.daily||[],coords:o.coords||[]}));}
+function normalize(arr){return (arr||[]).filter(Boolean).map(o=>({...o,cuts:o.cuts||[],completed:o.completed||[],daily:o.daily||[],coords:o.coords||[],issues:o.issues||[]}));}
 async function load(){try{const r=await fetch(DB+'/'+KEY+'/lines.json');let d=await r.json();if(d&&!Array.isArray(d))d=Object.values(d);if(Array.isArray(d)&&d.length){LINES=normalize(d);}else if(CONFIG.SEED_IF_EMPTY){LINES=DATA.lines.map(l=>({...l}));await save();}else{LINES=[];}}catch(e){console.error('load',e);LINES=[];}}
 async function save(){try{await fetch(DB+'/'+KEY+'/lines.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(LINES)});}catch(e){console.error('save',e);}}
 
@@ -798,6 +807,7 @@ function renderSheet(){
   const o=LINES[SEL],T=LEN(o),st=statusOf(o),p=pct(o),dn=Math.min(doneM(o),T),segs=segsOf(o);const rem=Math.max(0,T-dn);
   const segHtml=segs.map(([a,b],i)=>{const d=segDone(o,a,b);return `<div class="seg ${d?'done':''} ${o.hold?'hold':''}" data-a="${a}" data-b="${b}"><div class="ix">${i+1}</div><div class="rng">${fmt(a)} – ${fmt(b)} m</div><div class="ln">${fmt(b-a)}m</div><div class="st">${d?'완료':'미시공'}</div></div>`}).join('');
   const log=o.daily.length?[...o.daily].reverse().map(e=>`<div class="le"><span class="d">${e.d}</span><span class="seg2">${fmt(e.from)}–${fmt(e.to)}m</span><span class="v">+${fmt(e.v)} m</span>${byText(e.by)?`<span class="by">${esc(byText(e.by))}</span>`:''}</div>`).join(''):'<div class="log-empty">완료 기록 없음</div>';
+  const _iss=(o.issues||[]);const issuesHtml=_iss.length?[...(_iss)].reverse().map(e=>`<div class="issue-row"><div class="ih"><b>${esc(e.d||'')}</b>${e.by?' · '+esc(e.by):''}<span class="ix" data-id="${e.id}">✕</span></div><div class="it">${esc(e.t||'')}</div></div>`).join(''):'<div class="log-empty">특이사항 없음</div>';
   const _inf=[];if(o.manager||o.phone)_inf.push(`<div class="inf"><span>공사소장</span><b>${esc(o.manager||'-')}${o.phone?' · '+esc(o.phone):''}</b></div>`);if(o.startDate||o.endDate)_inf.push(`<div class="inf"><span>공사기간</span><b>${esc(o.startDate||'-')} ~ ${esc(o.endDate||'-')}</b></div>`);if(o.shift)_inf.push(`<div class="inf"><span>주야 구분</span><b>${esc(o.shift)}</b></div>`);if(o.note)_inf.push(`<div class="inf"><span>비고</span><b>${esc(o.note)}</b></div>`);if(o.hold&&o.holdReason)_inf.push(`<div class="inf"><span>보류 사유</span><b style="color:#dc4545">${esc(o.holdReason)}</b></div>`);if(o.accepted)_inf.push(`<div class="inf"><span>준공도 인수</span><b>${esc(o.acceptDate||'완료')}</b></div>`);if(o.loaded)_inf.push(`<div class="inf"><span>시스템로딩</span><b>완료${o.loadDate?' · '+esc(o.loadDate):''}</b></div>`);if(o.accepted&&!o.loaded)_inf.push(`<div class="inf"><span>로딩 마감일</span><b>${dlDeadline(o)}</b></div>`);{const _dl=dlLevel(o);if(_dl)_inf.push(`<div class="inf"><span>마감 상태</span><b style="color:#dc2626;font-weight:800">${_dl.lv} · ${_dl.left<0?('초과 '+(-_dl.left)+'일'):('D-'+_dl.left)}</b></div>`);}const infoHtml=_inf.length?`<div class="infbox">${_inf.join('')}</div>`:'';
   const _full=LEN(o)>0&&doneM(o)>=LEN(o)-0.5; const _sv=o.survey&&o.survey.done;
   let surveyHtml; if(_sv){surveyHtml=`<div class="survey-info">📐 측량완료 · ${esc(o.survey.d||'')}${(o.survey.by&&o.survey.by.length)?' · '+esc(o.survey.by.join(', ')):''}</div><button class="btn-survey on" id="isurvey">측량완료 취소</button>`;}
@@ -815,6 +825,9 @@ function renderSheet(){
     <div class="sec"><span>구간 (${segs.length}개) — [완료체크] 켜고 탭하면 완료</span></div>
     <div class="segs">${segHtml}</div>
     <div class="sec"><span>일일 작업일보</span></div><div class="log">${log}</div>
+    <div class="sec"><span>일일 특이사항</span></div>
+    <div class="issue-add"><input id="iIssue" class="issue-in" placeholder="특이사항 입력 (민원·누수·중단 등)" autocomplete="off"><button id="iIssueAdd" class="issue-btn">기록</button></div>
+    <div class="issue-list">${issuesHtml}</div>
     ${p>=100?'':`<button class="btn-fill" id="ifill">✓ 나머지 전체 완료 (잔여 ${rem<0.5?0:fmt(rem)}m)</button>`}
     ${surveyHtml}
     <button class="btn-hold ${o.hold?'on':''}" id="ihold">${o.hold?'▶ 보류 해제':'⏸ 보류(중지·취소)'}</button>
@@ -834,6 +847,8 @@ function renderSheet(){
   ihold.onclick=async()=>{o.hold=!o.hold;if(!o.hold)o.holdReason='';await save();drawLines();renderKpi();renderSheet();toast(`<b>${o.no}</b> ${o.hold?'보류(중지·취소)':'보류 해제'}`);};
   const _hr=document.getElementById('iholdReason');if(_hr)_hr.onchange=async()=>{o.holdReason=_hr.value.trim();await save();toast('보류 사유 저장됨');};
   const _rst=document.getElementById('ireset');if(_rst)_rst.onclick=async()=>{if(_rst.dataset.armed!=='1'){_rst.dataset.armed='1';_rst.textContent='정말 취소하려면 한 번 더 탭';_rst.classList.add('armed');setTimeout(()=>{const b=document.getElementById('ireset');if(b){b.dataset.armed='';b.textContent='↺ 이 라인 완료 전체 취소';b.classList.remove('armed');}},3500);return;}o.completed=[];o.daily=[];await save();drawLines();renderKpi();renderSheet();toast('완료 취소됨 · '+o.no);};
+  const _iadd=document.getElementById('iIssueAdd');if(_iadd)_iadd.onclick=async()=>{const inp=document.getElementById('iIssue');const t=(inp.value||'').trim();if(!t){toast('특이사항을 입력하세요');return;}o.issues=o.issues||[];o.issues.push({d:workDate,by:(todayLead||'미지정'),t:t,id:Date.now()});await save();renderSheet();toast('특이사항 기록됨 · '+fmtDate(workDate));};
+  document.querySelectorAll('.issue-row .ix').forEach(x=>x.onclick=async()=>{const id=+x.dataset.id;o.issues=(o.issues||[]).filter(e=>e.id!==id);await save();renderSheet();toast('특이사항 삭제');});
   const _svb=document.getElementById('isurvey');if(_svb)_svb.onclick=async()=>{if(o.survey&&o.survey.done){if(!confirm('측량완료를 취소할까요?'))return;o.survey={done:false};}else{o.survey={done:true,d:workDate,by:(todayLead?[todayLead,...todayHelpers]:[])};}await save();drawLines();renderKpi();renderSheet();toast(o.survey.done?'측량완료 · '+o.no:'측량완료 취소');};
   const _del=document.getElementById('idel');if(_del)_del.onclick=async()=>{const no=o.no,office=o.office;if(!confirm('['+office+'] '+no+' 라인을 삭제할까요?\n(되돌릴 수 없습니다)'))return;await load();LINES=LINES.filter(x=>!(x.no===no&&x.office===office));await save();SEL=null;drawLines();renderKpi();renderSheet();toast('삭제됨 · '+no);};
   const _ieg=document.getElementById('iedit');if(_ieg)_ieg.onclick=()=>startEditGeo(SEL);
@@ -1047,13 +1062,21 @@ function dcRender(){
 function dcDetail(M){const el=document.getElementById('dcDetail');
   if(!dcSel){el.innerHTML='<p style="color:#9fb0c3;font-size:13px">날짜를 누르면 그날의 작업 현황이 표시됩니다.</p>';return;}
   const day=M[dcSel];
-  if(!day){el.innerHTML='<h4>'+dcSel+'</h4><p style="color:#9fb0c3;font-size:13px">작업 기록이 없습니다.</p>';return;}
-  let h='<h4>'+dcSel+' <button id="dcShowMap" class="dc-mapbtn">지도에서 보기</button></h4><div class="dc-sum"><span>총물량 <b>'+fmt(day.v)+' m</b></span><span>지시건 <b>'+Object.keys(day.lines).length+' 건</b></span></div>';
-  h+='<h4>작업자별 (물량 = 대표 기준)</h4>';
-  const ws=Object.entries(day.workers).sort((a,b)=>b[1].v-a[1].v);
-  h+=ws.length?ws.map(([w,obj])=>{const led=Object.keys(obj.lines||{});const hel=Object.keys(obj.help||{});let det=led.length?'<span class="wln">'+esc(led.join(', '))+'</span>':'';if(hel.length)det+=' <span class="wln" style="color:#94a3b8">보조: '+esc(hel.join(', '))+'</span>';return '<div class="dc-row"><span>'+esc(w)+' '+det+'</span><span>'+fmt(obj.v)+' m</span></div>';}).join(''):'<div class="dc-row"><span>-</span><span></span></div>';
-  h+='<h4>지시건별</h4>';
-  h+=Object.entries(day.lines).sort((a,b)=>b[1]-a[1]).map(([k,v])=>'<div class="dc-row"><span>'+esc(k)+'</span><span>'+fmt(v)+' m</span></div>').join('');
+  const dayIssues=[];LINES.forEach(o=>(o.issues||[]).forEach(x=>{if(x.d===dcSel)dayIssues.push({o,x});}));
+  if(!day&&!dayIssues.length){el.innerHTML='<h4>'+dcSel+'</h4><p style="color:#9fb0c3;font-size:13px">작업 기록이 없습니다.</p>';return;}
+  let h='<h4>'+dcSel+' <button id="dcShowMap" class="dc-mapbtn">지도에서 보기</button></h4>';
+  if(day){
+    h+='<div class="dc-sum"><span>총물량 <b>'+fmt(day.v)+' m</b></span><span>지시건 <b>'+Object.keys(day.lines).length+' 건</b></span></div>';
+    h+='<h4>작업자별 (물량 = 대표 기준)</h4>';
+    const ws=Object.entries(day.workers).sort((a,b)=>b[1].v-a[1].v);
+    h+=ws.length?ws.map(([w,obj])=>{const led=Object.keys(obj.lines||{});const hel=Object.keys(obj.help||{});let det=led.length?'<span class="wln">'+esc(led.join(', '))+'</span>':'';if(hel.length)det+=' <span class="wln" style="color:#94a3b8">보조: '+esc(hel.join(', '))+'</span>';return '<div class="dc-row"><span>'+esc(w)+' '+det+'</span><span>'+fmt(obj.v)+' m</span></div>';}).join(''):'<div class="dc-row"><span>-</span><span></span></div>';
+    h+='<h4>지시건별</h4>';
+    h+=Object.entries(day.lines).sort((a,b)=>b[1]-a[1]).map(([k,v])=>'<div class="dc-row"><span>'+esc(k)+'</span><span>'+fmt(v)+' m</span></div>').join('');
+  }
+  if(dayIssues.length){
+    h+='<h4>특이사항</h4>';
+    h+=dayIssues.map(({o,x})=>'<div class="dc-row"><span>['+(o.office||'')+'] '+esc(o.no)+' <span class="wln" style="color:#fbbf24">'+esc(x.t)+'</span></span><span>'+esc(x.by||'')+'</span></div>').join('');
+  }
   el.innerHTML=h;
   const _sm=document.getElementById('dcShowMap');if(_sm)_sm.onclick=()=>{document.getElementById('dcOvl').classList.remove('show');highlightDate(dcSel);};
   if(dcSel&&window.innerWidth<760)setTimeout(()=>{el.scrollIntoView({behavior:'smooth',block:'start'});},60);

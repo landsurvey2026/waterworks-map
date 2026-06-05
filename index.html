@@ -236,6 +236,8 @@
   .nx-flow{stroke-dasharray:7 11;animation:nxflow .7s linear infinite}
   @keyframes nxpulse{0%,100%{stroke-opacity:.85}50%{stroke-opacity:.2}}
   .nx-target{animation:nxpulse 1.3s ease-in-out infinite}
+  .nx-label{position:absolute;transform:translate(-50%,-50%);white-space:nowrap;background:#7c3aed;color:#fff;font-family:var(--sans);font-size:11.5px;font-weight:700;padding:3px 9px;border-radius:11px;box-shadow:0 2px 8px rgba(0,0,0,.4);border:1.5px solid #fff}
+  .nx-label b{font-weight:700;margin:0 1px}
 
   .draw-bar{position:absolute;left:50%;transform:translateX(-50%);bottom:24px;z-index:1400;display:none;align-items:center;gap:8px;background:#161b22;border:1px solid #30363d;border-radius:30px;padding:8px 10px 8px 16px;box-shadow:0 6px 20px rgba(0,0,0,.5)}
   .draw-bar #drawHint{color:#e6edf3;font-size:13px;margin-right:6px;white-space:nowrap}
@@ -773,6 +775,8 @@ function drawNextArrows(){
   nxLayers.push(L.polyline([from,to],{color:'#7c3aed',weight:4,opacity:.95,interactive:false,className:'nx-flow'}).addTo(map));
   const cl=Math.cos(from[0]*Math.PI/180),sx=(to[1]-from[1])*cl,sy=-(to[0]-from[0]),ang=Math.atan2(sy,sx)*180/Math.PI;
   nxLayers.push(L.marker(to,{interactive:false,zIndexOffset:1600,icon:L.divIcon({className:'',html:'<div class="nx-arrow" style="transform:rotate('+ang+'deg)"></div>',iconSize:[24,24],iconAnchor:[12,12]})}).addTo(map));
+  const mid=[(from[0]+to[0])/2,(from[1]+to[1])/2];
+  nxLayers.push(L.marker(mid,{interactive:false,zIndexOffset:1700,icon:L.divIcon({className:'',html:'<div class="nx-label">'+esc(o.no)+' <b>\u2192</b> '+esc(t.no)+'</div>',iconSize:[1,1],iconAnchor:[0,0]})}).addTo(map));
 }
 function gap(len){return Math.min(len*0.12,3.5);}
 function drawLines(){

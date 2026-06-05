@@ -598,7 +598,7 @@ document.getElementById('admUpload').onclick=async function(){
   try{
     await load();
     if(mode==='replace'){LINES=LINES.filter(l=>l.office!==office).concat(admParsed);admlog('교체 완료.');}
-    else{let upd=0,add=0;admParsed.forEach(nl=>{const ex=LINES.find(l=>l.office===office&&l.no===nl.no);if(ex){ex.coords=nl.coords;ex.lenM=nl.lenM;ex.matchDist=nl.matchDist;if(!ex.verified)ex.verified=nl.verified;upd++;}else{LINES.push(nl);add++;}});admlog('병합: 갱신 '+upd+' / 추가 '+add);}
+    else{let upd=0,add=0;const baseN=LINES.length,used=new Set();admParsed.forEach(nl=>{let exi=-1;for(let i=0;i<baseN;i++){if(used.has(i))continue;if(LINES[i].office===office&&LINES[i].no===nl.no){exi=i;break;}}if(exi>=0){const ex=LINES[exi];used.add(exi);ex.coords=nl.coords;ex.lenM=nl.lenM;ex.matchDist=nl.matchDist;if(!ex.verified)ex.verified=nl.verified;upd++;}else{LINES.push(nl);add++;}});admlog('병합: 갱신 '+upd+' / 추가(새 구간 포함) '+add);}
     await save();drawLines();renderKpi();
     try{const b=L.latLngBounds(LINES.flatMap(o=>o.coords||[]));if(b.isValid())map.fitBounds(b.pad(0.1));}catch(e){}
     toast('업로드 완료 · 전체 '+LINES.length+'개');admlog('업로드 완료. 전체 '+LINES.length+'개. 현장 앱에 반영됩니다.');
@@ -735,7 +735,7 @@ function renderSheet(){
   let surveyHtml; if(_sv){surveyHtml=`<div class="survey-info">📐 측량완료 · ${esc(o.survey.d||'')}${(o.survey.by&&o.survey.by.length)?' · '+esc(o.survey.by.join(', ')):''}</div><button class="btn-survey on" id="isurvey">측량완료 취소</button>`;}
   else if(_full){surveyHtml=`<button class="btn-survey" id="isurvey">📐 측량완료</button>`;}
   else{surveyHtml=`<div class="survey-note">공사 완료(100%) 후 측량완료를 체크할 수 있습니다</div>`;}
-  body.innerHTML=`<div class="sh-head"><div style="flex:1;min-width:0"><div class="sh-no"><span class="otag ot-${o.office||''}">${esc(o.office||'')}</span> ${esc(o.no)} <button class="mini-edit" id="editBtn">수정</button></div><div class="sh-line">${o.name?esc(o.name):'<span style="color:#94a3b8;font-weight:500">공사명 입력 →</span>'}</div></div><span class="badge ${SB[st]}">${st}</span></div>
+  body.innerHTML=`<div class="sh-head"><div style="flex:1;min-width:0"><div class="sh-no"><span class="otag ot-${o.office||''}">${esc(o.office||'')}</span> ${esc(o.no)}${pieceLabel(o)} <button class="mini-edit" id="editBtn">수정</button></div><div class="sh-line">${o.name?esc(o.name):'<span style="color:#94a3b8;font-weight:500">공사명 입력 →</span>'}</div></div><span class="badge ${SB[st]}">${st}</span></div>
     ${o.verified?'':`<div class="warn">⚠ 도면 자동매칭(오차 ${o.matchDist}m). 라인↔번호 확인 필요.</div>`}
     <div class="addr" id="addrRow"><span class="pin"></span><span id="addrText">주소 조회 중…</span></div>
     ${infoHtml}
@@ -871,20 +871,23 @@ document.getElementById('editCancel').onclick=()=>exitEditGeo(true);
 
 /* ===== 통계 (관리자 전용) ===== */
 function statFor(lines){
-  const r={cntT:0,mT:0,cntDone:0,mDone:0,cntProg:0,mProg:0,cntWait:0,mWait:0,cntHold:0,mHold:0,cntSurvey:0,mSurvey:0};
-  lines.forEach(o=>{const T=LEN(o),st=statusOf(o);r.cntT++;r.mT+=T;
+  const r={cntT:0,mT:0,cntDone:0,mDone:0,cntProg:0,mProg:0,cntWait:0,mWait:0,cntHold:0,mHold:0,cntSurvey:0,mSurvey:0,cntOrders:0};
+  const _seen=new Set();
+  lines.forEach(o=>{const T=LEN(o),st=statusOf(o);r.cntT++;r.mT+=T;_seen.add(o.no);
     if(st==='측량완료'){r.cntSurvey++;r.mSurvey+=T;r.cntDone++;r.mDone+=T;}
     else if(st==='완료'){r.cntDone++;r.mDone+=T;}
     else if(st==='진행중'){r.cntProg++;r.mProg+=T;}
     else if(st==='보류'){r.cntHold++;r.mHold+=T;}
     else{r.cntWait++;r.mWait+=T;}});
+  r.cntOrders=_seen.size;
   return r;
 }
 function _sRow(label,c,m,cls){return '<tr'+(cls?' class="'+cls+'"':'')+'><td>'+label+'</td><td>'+c+' 건</td><td>'+fmt(m)+' m</td></tr>';}
 function _sTbl(title,r){
   return '<table class="stat-tbl"><caption>'+title+'</caption>'
     +'<thead><tr><th>구분</th><th>건수</th><th>물량</th></tr></thead><tbody>'
-    +_sRow('공사지시(총)',r.cntT,r.mT,'tot')
+    +_sRow('지시건(고유번호)',r.cntOrders,r.mT,'tot')
+    +_sRow('└ 라인(구간)',r.cntT,r.mT)
     +_sRow('완료',r.cntDone,r.mDone)
     +_sRow('└ 측량완료',r.cntSurvey,r.mSurvey)
     +_sRow('진행',r.cntProg,r.mProg)
@@ -892,6 +895,7 @@ function _sTbl(title,r){
     +_sRow('보류',r.cntHold,r.mHold)
     +'</tbody></table>';
 }
+function pieceLabel(o){const same=LINES.filter(l=>l.office===o.office&&l.no===o.no);if(same.length<2)return '';const k=same.indexOf(o)+1;return ' <span style="color:#94a3b8;font-weight:500">('+k+'/'+same.length+')</span>';}
 function renderStats(){
   const box=document.getElementById('statBox');if(!box)return;
   const g=statFor(LINES.filter(l=>l.office==='강동'));

@@ -226,6 +226,11 @@
   .edit-fab button{background:#0d9488;color:#fff;border:none;border-radius:24px;padding:12px 18px;font-family:var(--sans);font-size:15px;font-weight:700;box-shadow:0 4px 14px rgba(0,0,0,.4);cursor:pointer}
   .ve-dot{width:16px;height:16px;border-radius:50%;background:#f59e0b;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.55);cursor:move}
   .btn-edit-geo{width:100%;margin-top:11px;background:#fff;border:1px solid #f5c98a;color:#b45309;font-family:var(--sans);font-weight:600;font-size:14px;border-radius:11px;padding:12px;cursor:pointer}
+  .btn-next{width:100%;margin-top:9px;background:#fff;border:1px solid #c4b5fd;color:#6d28d9;font-family:var(--sans);font-weight:600;font-size:14px;border-radius:11px;padding:12px;cursor:pointer}
+  .nx-info{margin-top:9px;background:#f5f3ff;border:1px solid #ddd6fe;border-radius:11px;padding:10px 12px;font-size:13px;color:#6d28d9}
+  .nx-info b{color:#5b21b6}
+  .nx-info .nx-clear{float:right;color:#a78bfa;cursor:pointer;font-weight:700}
+  .nx-arrow{width:0;height:0;border-left:15px solid #7c3aed;border-top:8px solid transparent;border-bottom:8px solid transparent;filter:drop-shadow(0 1px 2px rgba(0,0,0,.4))}
 
   .draw-bar{position:absolute;left:50%;transform:translateX(-50%);bottom:24px;z-index:1400;display:none;align-items:center;gap:8px;background:#161b22;border:1px solid #30363d;border-radius:30px;padding:8px 10px 8px 16px;box-shadow:0 6px 20px rgba(0,0,0,.5)}
   .draw-bar #drawHint{color:#e6edf3;font-size:13px;margin-right:6px;white-space:nowrap}
@@ -518,7 +523,9 @@ async function pickPoint(latlng){
 }
 // search by 지시번호 / 공사명 / 주소
 function openSearch(){document.getElementById('srchOvl').classList.add('show');const i=document.getElementById('srchInput');i.value='';renderSearch('');setTimeout(()=>i.focus(),50);indexAddresses();}
-function closeSearch(){document.getElementById('srchOvl').classList.remove('show');}
+let nextPickIdx=null;
+function openNextPicker(idx){nextPickIdx=idx;openSearch();}
+function closeSearch(){document.getElementById('srchOvl').classList.remove('show');nextPickIdx=null;}
 let addrIndexing=false;
 async function indexAddresses(){
   if(addrIndexing)return;addrIndexing=true;
@@ -534,7 +541,7 @@ function renderSearch(q){
   const res=LINES.map((o,i)=>({o,i})).filter(({o})=>(o.no||'').toLowerCase().includes(q)||(o.name||'').toLowerCase().includes(q)||(o.addr||'').toLowerCase().includes(q)||((addrCache[o.no]||'').toLowerCase().includes(q)));
   if(!res.length){list.innerHTML='<div class="srch-empty">검색 결과 없음</div>';return;}
   list.innerHTML=res.slice(0,50).map(({o,i})=>{const ad=o.addr||addrCache[o.no];return `<button class="srch-item" data-i="${i}"><span class="si-no">${esc(o.no)}</span><span class="si-nm">${o.name?esc(o.name):'<i style="color:#5b6776">공사명 미입력</i>'}${ad?` <span style="color:#5b6776">· ${esc(ad)}</span>`:''}</span></button>`}).join('');
-  [...list.querySelectorAll('.srch-item')].forEach(b=>b.onclick=()=>{closeSearch();goTo(+b.dataset.i);});
+  [...list.querySelectorAll('.srch-item')].forEach(b=>b.onclick=async()=>{if(nextPickIdx!=null){const src=LINES[nextPickIdx],tgt=LINES[+b.dataset.i];if(src&&tgt&&src!==tgt){src.nextNo=tgt.no;src.nextOffice=tgt.office;await save();toast('다음 공사 지정: '+tgt.no);}nextPickIdx=null;closeSearch();drawLines();renderKpi();renderSheet();}else{closeSearch();goTo(+b.dataset.i);}});
 }
 function goTo(idx){const o=LINES[idx];if(!inView(o)){OFFICE='전체';YEAR='전체';document.querySelectorAll('#officeTabs button').forEach(b=>b.classList.toggle('on',b.dataset.o==='전체'));document.querySelectorAll('#yearTabs button').forEach(b=>b.classList.toggle('on',b.dataset.y==='전체'));}clearPick();SEL=idx;mode='view';drawLines();renderKpi();renderSheet();map.flyToBounds(L.latLngBounds(o.coords).pad(0.4),{maxZoom:19,duration:.6});}
 document.getElementById('srchBtn').onclick=openSearch;
@@ -744,6 +751,21 @@ lyMap.onclick=()=>{map.removeLayer(base);base=tiles.map;base.addTo(map);lyMap.cl
 lySat.onclick=()=>{map.removeLayer(base);base=tiles.sat;base.addTo(map);lySat.classList.add('on');lyMap.classList.remove('on');};
 
 function clearNodes(){nodeMk.forEach(m=>map.removeLayer(m));nodeMk=[];}
+let nxLayers=[];
+function drawNextArrows(){
+  nxLayers.forEach(l=>map.removeLayer(l));nxLayers=[];
+  LINES.forEach(o=>{
+    if(!o.nextNo||!inView(o)||!(o.coords||[]).length)return;
+    const t=LINES.find(l=>l.no===o.nextNo&&(o.nextOffice?l.office===o.nextOffice:true));
+    if(!t||!(t.coords||[]).length)return;
+    if(doneM(t)>0.5)return;
+    const from=o.coords[o.coords.length-1],to=t.coords[0];
+    nxLayers.push(L.polyline([from,to],{color:'#7c3aed',weight:3,opacity:.9,dashArray:'2 8',interactive:false}).addTo(map));
+    nxLayers.push(L.circleMarker(from,{radius:4,color:'#7c3aed',fillColor:'#7c3aed',fillOpacity:1,interactive:false}).addTo(map));
+    const cl=Math.cos(from[0]*Math.PI/180),sx=(to[1]-from[1])*cl,sy=-(to[0]-from[0]),ang=Math.atan2(sy,sx)*180/Math.PI;
+    nxLayers.push(L.marker(to,{interactive:false,zIndexOffset:1500,icon:L.divIcon({className:'',html:'<div class=\'nx-arrow\' style=\'transform:rotate('+ang+'deg)\'></div>',iconSize:[22,22],iconAnchor:[11,11]})}).addTo(map));
+  });
+}
 function gap(len){return Math.min(len*0.12,3.5);}
 function drawLines(){
   Object.values(gLayers).forEach(g=>g.forEach(l=>map.removeLayer(l)));gLayers={};clearNodes();
@@ -803,7 +825,7 @@ const inYear=o=>YEAR==='전체'||(YEAR==='없음'?!yearOf(o):yearOf(o)===YEAR);
 const inView=o=>inOffice(o)&&inYear(o);
 function setYear(y){YEAR=y;document.querySelectorAll('#yearTabs button').forEach(b=>b.classList.toggle('on',b.dataset.y===y));SEL=null;clearPick();drawLines();renderKpi();renderSheet();}
 function setOffice(o){OFFICE=o;document.querySelectorAll('#officeTabs button').forEach(b=>b.classList.toggle('on',b.dataset.o===o));SEL=null;clearPick();drawLines();renderKpi();renderSheet();}
-function renderKpi(){const V=LINES.filter(inView);const tot=V.reduce((s,o)=>s+LEN(o),0),dn=V.reduce((s,o)=>s+Math.min(doneM(o),LEN(o)),0);kpiPct.textContent=(tot?Math.round(dn/tot*100):0)+'%';kpiM.textContent=fmt(dn)+' / '+fmt(tot)+' m';if(typeof refreshDeadlines==='function')refreshDeadlines();if(typeof refreshMismatch==='function')refreshMismatch();if(typeof refreshYearless==='function')refreshYearless();}
+function renderKpi(){const V=LINES.filter(inView);const tot=V.reduce((s,o)=>s+LEN(o),0),dn=V.reduce((s,o)=>s+Math.min(doneM(o),LEN(o)),0);kpiPct.textContent=(tot?Math.round(dn/tot*100):0)+'%';kpiM.textContent=fmt(dn)+' / '+fmt(tot)+' m';if(typeof refreshDeadlines==='function')refreshDeadlines();if(typeof refreshMismatch==='function')refreshMismatch();if(typeof refreshYearless==='function')refreshYearless();if(typeof drawNextArrows==='function')drawNextArrows();}
 function setBanner(){const bn=document.getElementById('banner');if(SEL===null){bn.classList.remove('show');return;}
   if(mode==='cut'){bn.className='banner cut show';bn.innerHTML='끊기 모드 · 라인을 탭해 끊을 위치를 추가<small>점을 다시 탭하면 삭제 · 끝나면 "완료체크"로 전환</small>';}
   else if(mode==='tap'){bn.className='banner tap show';bn.innerHTML='완료체크 모드 · 완료된 토막을 탭하면 완료<small>다시 탭하면 완료 해제 · 끝나면 다시 눌러 종료</small>';}
@@ -819,6 +841,7 @@ function renderSheet(){
   const _iss=(o.issues||[]);const issuesHtml=_iss.length?[...(_iss)].reverse().map(e=>`<div class="issue-row"><div class="ih"><b>${esc(e.d||'')}</b>${e.by?' · '+esc(e.by):''}<span class="ix" data-id="${e.id}">✕</span></div><div class="it">${esc(e.t||'')}</div></div>`).join(''):'<div class="log-empty">특이사항 없음</div>';
   const _inf=[];if(o.manager||o.phone)_inf.push(`<div class="inf"><span>공사소장</span><b>${esc(o.manager||'-')}${o.phone?' · '+esc(o.phone):''}</b></div>`);if(o.startDate||o.endDate)_inf.push(`<div class="inf"><span>공사기간</span><b>${esc(o.startDate||'-')} ~ ${esc(o.endDate||'-')}</b></div>`);if(o.shift)_inf.push(`<div class="inf"><span>주야 구분</span><b>${esc(o.shift)}</b></div>`);if(o.note)_inf.push(`<div class="inf"><span>비고</span><b>${esc(o.note)}</b></div>`);if(o.hold&&o.holdReason)_inf.push(`<div class="inf"><span>보류 사유</span><b style="color:#dc4545">${esc(o.holdReason)}</b></div>`);if(o.accepted)_inf.push(`<div class="inf"><span>준공도 인수</span><b>${esc(o.acceptDate||'완료')}</b></div>`);if(o.loaded)_inf.push(`<div class="inf"><span>시스템로딩</span><b>완료${o.loadDate?' · '+esc(o.loadDate):''}</b></div>`);if(o.accepted&&!o.loaded)_inf.push(`<div class="inf"><span>로딩 마감일</span><b>${dlDeadline(o)}</b></div>`);{const _dl=dlLevel(o);if(_dl)_inf.push(`<div class="inf"><span>마감 상태</span><b style="color:#dc2626;font-weight:800">${_dl.lv} · ${_dl.left<0?('초과 '+(-_dl.left)+'일'):('D-'+_dl.left)}</b></div>`);}const infoHtml=_inf.length?`<div class="infbox">${_inf.join('')}</div>`:'';
   const _full=LEN(o)>0&&doneM(o)>=LEN(o)-0.5; const _sv=o.survey&&o.survey.done;
+  let nextHtml; if(o.nextNo){nextHtml=`<div class="nx-info">→ 다음 공사: <b>${esc(o.nextNo)}</b> <span id="inxClear" class="nx-clear">해제</span></div>`;}else{nextHtml=`<button class="btn-next" id="inext">→ 다음 공사 지정</button>`;}
   let surveyHtml; if(_sv){surveyHtml=`<div class="survey-info">📐 측량완료 · ${esc(o.survey.d||'')}${(o.survey.by&&o.survey.by.length)?' · '+esc(o.survey.by.join(', ')):''}</div><button class="btn-survey on" id="isurvey">측량완료 취소</button>`;}
   else if(_full){surveyHtml=`<button class="btn-survey" id="isurvey">📐 측량완료</button>`;}
   else{surveyHtml=`<div class="survey-note">공사 완료(100%) 후 측량완료를 체크할 수 있습니다</div>`;}
@@ -842,6 +865,7 @@ function renderSheet(){
     <button class="btn-hold ${o.hold?'on':''}" id="ihold">${o.hold?'▶ 보류 해제':'⏸ 보류(중지·취소)'}</button>
     ${o.hold?`<input id="iholdReason" class="hold-reason" placeholder="보류 사유 입력 (예: 민원·자재대기·굴착불가)" value="${esc(o.holdReason||'')}">`:''}
     <button class="btn-edit-geo" id="iedit">✎ 선형 변형</button>
+    ${nextHtml}
     ${isAdmin?'<button class="btn-del" id="idel">🗑 이 라인 삭제</button>':''}`;
   sh.classList.add('open');
   if(sheetCollapsed){sh.classList.add('collapsed');_tab.classList.add('show');}else{sh.classList.remove('collapsed');_tab.classList.remove('show');}
@@ -861,6 +885,8 @@ function renderSheet(){
   const _svb=document.getElementById('isurvey');if(_svb)_svb.onclick=async()=>{if(o.survey&&o.survey.done){if(!confirm('측량완료를 취소할까요?'))return;o.survey={done:false};}else{o.survey={done:true,d:workDate,by:(todayLead?[todayLead,...todayHelpers]:[])};}await save();drawLines();renderKpi();renderSheet();toast(o.survey.done?'측량완료 · '+o.no:'측량완료 취소');};
   const _del=document.getElementById('idel');if(_del)_del.onclick=async()=>{const no=o.no,office=o.office;if(!confirm('['+office+'] '+no+' 라인을 삭제할까요?\n(되돌릴 수 없습니다)'))return;await load();LINES=LINES.filter(x=>!(x.no===no&&x.office===office));await save();SEL=null;drawLines();renderKpi();renderSheet();toast('삭제됨 · '+no);};
   const _ieg=document.getElementById('iedit');if(_ieg)_ieg.onclick=()=>startEditGeo(SEL);
+  const _inx=document.getElementById('inext');if(_inx)_inx.onclick=()=>openNextPicker(SEL);
+  const _inxc=document.getElementById('inxClear');if(_inxc)_inxc.onclick=async()=>{o.nextNo=undefined;o.nextOffice=undefined;await save();drawLines();renderKpi();renderSheet();toast('다음 공사 해제');};
 }
 function select(idx){clearPick();SEL=idx;mode='view';drawLines();renderSheet();const o=LINES[idx],lat=o.coords.reduce((s,c)=>s+c[0],0)/o.coords.length,lon=o.coords.reduce((s,c)=>s+c[1],0)/o.coords.length;map.panTo([lat,lon]);}
 document.getElementById('grabBar').onclick=()=>{sheetCollapsed=!sheetCollapsed;renderSheet();};

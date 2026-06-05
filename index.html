@@ -536,14 +536,24 @@ function parseDXF(text){
   for(let i=0;i+1<ls.length;i+=2)pr.push([parseInt((ls[i]||'').trim(),10),ls[i+1]]);
   const ents=[];let i=0;
   while(i<pr.length&&!(pr[i][0]===2&&(pr[i][1]||'').trim()==='ENTITIES'))i++;i++;
-  let cur=null;const push=()=>{if(cur)ents.push(cur);cur=null;};
+  let cur=null;const push=()=>{if(cur&&cur.type!=='VERTEX')ents.push(cur);cur=null;};
+  let polyCur=null,inv=false,vx=null,vy=null;
   for(;i<pr.length;i++){const code=pr[i][0],val=pr[i][1];
-    if(code===0){const t=(val||'').trim();if(t==='ENDSEC'){push();break;}push();cur={type:t,x:[],y:[],text:'',ix:null,iy:null,sx:null,sy:null,ex:null,ey:null};}
-    else if(cur){const v=(val||'').trim();
-      if(cur.type==='LWPOLYLINE'){if(code===10)cur.x.push(parseFloat(v));else if(code===20)cur.y.push(parseFloat(v));}
-      else if(cur.type==='LINE'){if(code===10)cur.sx=parseFloat(v);else if(code===20)cur.sy=parseFloat(v);else if(code===11)cur.ex=parseFloat(v);else if(code===21)cur.ey=parseFloat(v);}
-      else if(cur.type==='TEXT'||cur.type==='MTEXT'){if(code===1||code===3)cur.text+=v;else if(code===10)cur.ix=parseFloat(v);else if(code===20)cur.iy=parseFloat(v);}
-    }}
+    if(code===0){const t=(val||'').trim();
+      if(t==='ENDSEC'){if(polyCur){ents.push(polyCur);polyCur=null;}push();break;}
+      if(t==='VERTEX'){inv=true;vx=null;vy=null;continue;}
+      if(t==='SEQEND'){inv=false;if(polyCur){ents.push(polyCur);polyCur=null;}continue;}
+      push();
+      if(t==='POLYLINE'){polyCur={type:'LWPOLYLINE',x:[],y:[],text:'',ix:null,iy:null,sx:null,sy:null,ex:null,ey:null};cur=null;inv=false;}
+      else{if(polyCur){ents.push(polyCur);polyCur=null;}cur={type:t,x:[],y:[],text:'',ix:null,iy:null,sx:null,sy:null,ex:null,ey:null};}
+    }
+    else{const v=(val||'').trim();
+      if(inv&&polyCur){if(code===10)vx=parseFloat(v);else if(code===20){vy=parseFloat(v);if(vx!=null){polyCur.x.push(vx);polyCur.y.push(vy);vx=null;vy=null;}}}
+      else if(cur){
+        if(cur.type==='LWPOLYLINE'){if(code===10)cur.x.push(parseFloat(v));else if(code===20)cur.y.push(parseFloat(v));}
+        else if(cur.type==='LINE'){if(code===10)cur.sx=parseFloat(v);else if(code===20)cur.sy=parseFloat(v);else if(code===11)cur.ex=parseFloat(v);else if(code===21)cur.ey=parseFloat(v);}
+        else if(cur.type==='TEXT'||cur.type==='MTEXT'){if(code===1||code===3)cur.text+=v;else if(code===10)cur.ix=parseFloat(v);else if(code===20)cur.iy=parseFloat(v);}
+      }}}
   const polys=[],texts=[];
   for(const e of ents){
     if(e.type==='LWPOLYLINE'&&e.x.length>=2)polys.push(e.x.map((x,k)=>[x,e.y[k]]));
@@ -559,21 +569,24 @@ function exportDXF(){
     if(typeof proj4==='undefined'){toast('좌표 라이브러리(proj4) 로드 실패. 새로고침 후 다시 시도하세요.');return;}
     const lines=LINES.filter(inView);
     if(!lines.length){toast('내보낼 라인이 없습니다');return;}
-    let s='0\nSECTION\n2\nENTITIES\n';
-    const placed=[],D=12;let cnt=0;
+    const ents=[],placed=[],D=12,allXY=[];let cnt=0;
     lines.forEach(o=>{const c=o.coords||[];if(c.length<2)return;
-      let poly='';let ok=true;
-      c.forEach(p=>{const xy=toXY(p[0],p[1]);if(!isFinite(xy[0])||!isFinite(xy[1]))ok=false;else poly+='10\n'+xy[0].toFixed(3)+'\n20\n'+xy[1].toFixed(3)+'\n';});
-      if(!ok)return;
-      s+='0\nLWPOLYLINE\n8\nLINES\n90\n'+c.length+'\n70\n0\n'+poly;
+      const xy=c.map(p=>toXY(p[0],p[1]));if(xy.some(q=>!isFinite(q[0])||!isFinite(q[1])))return;
+      let poly='0\nPOLYLINE\n8\nLINES\n66\n1\n70\n0\n';
+      xy.forEach(q=>{poly+='0\nVERTEX\n8\nLINES\n10\n'+q[0].toFixed(3)+'\n20\n'+q[1].toFixed(3)+'\n';allXY.push(q);});
+      poly+='0\nSEQEND\n8\nLINES\n';
       const mid=ptAt(c,_plenLL(c)/2),m=toXY(mid[0],mid[1]);let px=m[0],py=m[1],t=0;
       while(placed.some(q=>Math.hypot(q[0]-px,q[1]-py)<D)&&t<48){const a=t*2.399963,r=D*(1+Math.floor(t/8));px=m[0]+Math.cos(a)*r;py=m[1]+Math.sin(a)*r;t++;}
       placed.push([px,py]);
-      s+='0\nTEXT\n8\nNO\n10\n'+px.toFixed(3)+'\n20\n'+py.toFixed(3)+'\n40\n6\n1\n'+(o.no||'')+'\n';
-      cnt++;
+      poly+='0\nTEXT\n8\nNO\n10\n'+px.toFixed(3)+'\n20\n'+py.toFixed(3)+'\n40\n6.0\n1\n'+(o.no||'')+'\n';
+      ents.push(poly);cnt++;
     });
-    s+='0\nENDSEC\n0\nEOF\n';
     if(!cnt){toast('내보낼 좌표가 없습니다');return;}
+    const xsv=allXY.map(q=>q[0]),ysv=allXY.map(q=>q[1]);
+    const mnx=Math.min(...xsv),mny=Math.min(...ysv),mxx=Math.max(...xsv),mxy=Math.max(...ysv);
+    let s='0\nSECTION\n2\nHEADER\n9\n$ACADVER\n1\nAC1009\n9\n$EXTMIN\n10\n'+mnx.toFixed(3)+'\n20\n'+mny.toFixed(3)+'\n30\n0.0\n9\n$EXTMAX\n10\n'+mxx.toFixed(3)+'\n20\n'+mxy.toFixed(3)+'\n30\n0.0\n0\nENDSEC\n';
+    s+='0\nSECTION\n2\nTABLES\n0\nTABLE\n2\nLAYER\n70\n2\n0\nLAYER\n2\nLINES\n70\n0\n62\n3\n6\nCONTINUOUS\n0\nLAYER\n2\nNO\n70\n0\n62\n1\n6\nCONTINUOUS\n0\nENDTAB\n0\nENDSEC\n';
+    s+='0\nSECTION\n2\nENTITIES\n'+ents.join('')+'0\nENDSEC\n0\nEOF\n';
     const off=(OFFICE==='전체'?'전체':OFFICE),yr=(YEAR==='전체'?'전체':(YEAR==='없음'?'연도없음':YEAR+'년'));
     const blob=new Blob([s],{type:'application/octet-stream'}),url=URL.createObjectURL(blob);
     const a=document.createElement('a');a.href=url;a.download='상수도_'+off+'_'+yr+'.dxf';document.body.appendChild(a);a.click();

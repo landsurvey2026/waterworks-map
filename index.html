@@ -36,6 +36,26 @@
   .banner.show{display:block}.banner.cut{background:var(--accent)}.banner.tap{background:#fde68a}
   .banner small{display:block;font-weight:500;font-size:11px;margin-top:2px;opacity:.85}
   .legend{position:absolute;bottom:14px;left:13px;z-index:900;background:rgba(13,17,23,.82);backdrop-filter:blur(4px);color:#cbd5e1;font-size:10.5px;border-radius:9px;padding:8px 11px;line-height:1.7;pointer-events:none}
+  #splash{position:fixed;inset:0;z-index:3000;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(180deg,#eaf6ff 0%,#d3ecfb 48%,#bfe0fa 100%);animation:splashOut .55s ease 1.7s forwards;font-family:var(--sans)}
+  @keyframes splashOut{to{opacity:0;visibility:hidden}}
+  #splash .sp-drop{width:120px;height:150px;filter:drop-shadow(0 10px 22px rgba(47,143,214,.35));animation:spBob 1.6s ease-in-out infinite}
+  @keyframes spBob{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-7px) scale(1.02)}}
+  #splash .sp-wave{animation:spWave 2.2s linear infinite}
+  #splash .sp-wave2{animation:spWave 3s linear infinite reverse}
+  @keyframes spWave{0%{transform:translateX(0)}100%{transform:translateX(60px)}}
+  #splash .sp-title{margin-top:22px;font-size:23px;font-weight:800;color:#0c4a6e;letter-spacing:-.5px}
+  #splash .sp-sub{margin-top:7px;font-size:13.5px;font-weight:600;color:#2f8fd6;letter-spacing:.5px}
+  #splash .sp-credit{position:absolute;bottom:26px;font-size:11px;font-weight:600;color:#7bb6dd;letter-spacing:.3px}
+  #splash .sp-rays{position:absolute;top:calc(50% - 150px);width:200px;height:120px}
+  #splash .sp-rays span{position:absolute;left:50%;top:100%;width:4px;height:22px;background:#5bb3ea;border-radius:3px;transform-origin:50% 60px;animation:spRay 1.8s ease-in-out infinite}
+  #splash .sp-rays span:nth-child(1){transform:rotate(-60deg)}
+  #splash .sp-rays span:nth-child(2){transform:rotate(-40deg)}
+  #splash .sp-rays span:nth-child(3){transform:rotate(-20deg)}
+  #splash .sp-rays span:nth-child(4){transform:rotate(0deg)}
+  #splash .sp-rays span:nth-child(5){transform:rotate(20deg)}
+  #splash .sp-rays span:nth-child(6){transform:rotate(40deg)}
+  #splash .sp-rays span:nth-child(7){transform:rotate(60deg)}
+  @keyframes spRay{0%,100%{opacity:.35}50%{opacity:.9}}
   .credit{position:absolute;right:10px;bottom:7px;z-index:905;font-size:11px;font-weight:600;color:#cbd5e1;background:rgba(13,17,23,.7);backdrop-filter:blur(4px);border-radius:7px;padding:4px 9px;font-family:var(--sans);letter-spacing:.3px;pointer-events:none}
   .legend i{display:inline-block;width:14px;height:4px;border-radius:2px;margin-right:6px;vertical-align:2px}
   .sheet{position:absolute;left:0;right:0;bottom:0;z-index:1100;background:#fff;border-radius:20px 20px 0 0;box-shadow:0 -6px 30px rgba(0,0,0,.35);transform:translateY(108%);transition:transform .32s cubic-bezier(.32,.72,0,1);max-height:78%;overflow:auto;padding-bottom:18px}
@@ -302,6 +322,26 @@
   }
 </style>
 <div id="app">
+  <div id="splash">
+    <div class="sp-rays">
+      <span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+    </div>
+    <svg class="sp-drop" viewBox="0 0 120 150" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <defs>
+        <clipPath id="spDropClip"><path d="M60 12 C60 12 22 64 22 96 C22 120 40 138 60 138 C80 138 98 120 98 96 C98 64 60 12 60 12 Z"/></clipPath>
+      </defs>
+      <path d="M60 12 C60 12 22 64 22 96 C22 120 40 138 60 138 C80 138 98 120 98 96 C98 64 60 12 60 12 Z" fill="#dff1fc"/>
+      <g clip-path="url(#spDropClip)">
+        <rect x="0" y="92" width="120" height="60" fill="#6cc4f0"/>
+        <path class="sp-wave" d="M-20 96 q15 -10 30 0 t30 0 t30 0 t30 0 t30 0 v60 h-180 Z" fill="#3ea7e6"/>
+        <path class="sp-wave2" d="M-20 102 q15 -9 30 0 t30 0 t30 0 t30 0 t30 0 v60 h-180 Z" fill="#2f8fd6" opacity=".55"/>
+      </g>
+      <path d="M60 12 C60 12 22 64 22 96 C22 120 40 138 60 138 C80 138 98 120 98 96 C98 64 60 12 60 12 Z" fill="none" stroke="#2f8fd6" stroke-width="5"/>
+    </svg>
+    <div class="sp-title">서울시 상수도 현장관리</div>
+    <div class="sp-sub">실시간 현장관리 시스템</div>
+    <div class="sp-credit">made by Seo Young Min</div>
+  </div>
   <div id="map"></div>
   <div class="top"><div class="b"><h1>서울시 상수도 현장관리</h1><div class="sub" id="roleSub">FIELD</div></div>
     <div class="office-tabs b" id="officeTabs"><button data-o="전체" class="on">전체</button><button data-o="강동">강동</button><button data-o="동부">동부</button></div>
@@ -1271,7 +1311,7 @@ function showPop(auto){const risks=atRisk();if(!risks.length)return;
 }
 function dlStartup(){showPop(true);}
 
-(async()=>{await loadWorkers();await load();drawLines();renderKpi();
+(async()=>{const _sp=document.getElementById('splash');if(_sp)setTimeout(()=>_sp.remove(),2600);await loadWorkers();await load();drawLines();renderKpi();
   try{if(LINES.length){const b=L.latLngBounds(LINES.flatMap(o=>o.coords||[]));if(b.isValid())map.fitBounds(b.pad(0.1));}}catch(e){console.error('fit',e);}
   setTimeout(()=>map.invalidateSize(),200);
   toast('라인 '+LINES.length+'개 불러옴');

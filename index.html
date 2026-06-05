@@ -105,6 +105,8 @@
   .btn-hold{width:100%;margin-top:11px;background:#fff;border:1px solid #f0b4b4;color:#dc4545;font-family:var(--sans);font-weight:600;font-size:14px;border-radius:11px;padding:12px;cursor:pointer}.btn-hold.on{background:var(--hold);color:#fff;border-color:transparent}
   .btn-del{width:100%;margin-top:9px;background:#dc2626;border:none;color:#fff;font-family:var(--sans);font-weight:700;font-size:14px;border-radius:11px;padding:12px;cursor:pointer}
   .btn-reset{width:100%;margin-top:9px;background:#fff;border:1px solid #cbd5e1;color:#475569;font-family:var(--sans);font-weight:600;font-size:14px;border-radius:11px;padding:12px;cursor:pointer}
+  .btn-reset.armed{background:#dc2626;border-color:#dc2626;color:#fff}
+  .hold-reason{width:100%;margin-top:8px;border:1px solid #f0b4b4;border-radius:10px;padding:11px 12px;font-family:var(--sans);font-size:14px;box-sizing:border-box}
   .toast{position:absolute;bottom:90px;left:50%;transform:translateX(-50%) translateY(16px);z-index:1300;background:var(--ink);color:#fff;font-size:13px;padding:11px 17px;border-radius:12px;opacity:0;transition:.25s;box-shadow:0 6px 20px rgba(0,0,0,.4);white-space:nowrap}
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}.toast b{color:var(--accent)}
   .cutdot{background:#fff;width:15px;height:15px;border-radius:50%;border:4px solid var(--accent);box-shadow:0 1px 4px rgba(0,0,0,.4)}
@@ -796,7 +798,7 @@ function renderSheet(){
   const o=LINES[SEL],T=LEN(o),st=statusOf(o),p=pct(o),dn=Math.min(doneM(o),T),segs=segsOf(o);const rem=Math.max(0,T-dn);
   const segHtml=segs.map(([a,b],i)=>{const d=segDone(o,a,b);return `<div class="seg ${d?'done':''} ${o.hold?'hold':''}" data-a="${a}" data-b="${b}"><div class="ix">${i+1}</div><div class="rng">${fmt(a)} – ${fmt(b)} m</div><div class="ln">${fmt(b-a)}m</div><div class="st">${d?'완료':'미시공'}</div></div>`}).join('');
   const log=o.daily.length?[...o.daily].reverse().map(e=>`<div class="le"><span class="d">${e.d}</span><span class="seg2">${fmt(e.from)}–${fmt(e.to)}m</span><span class="v">+${fmt(e.v)} m</span>${byText(e.by)?`<span class="by">${esc(byText(e.by))}</span>`:''}</div>`).join(''):'<div class="log-empty">완료 기록 없음</div>';
-  const _inf=[];if(o.manager||o.phone)_inf.push(`<div class="inf"><span>공사소장</span><b>${esc(o.manager||'-')}${o.phone?' · '+esc(o.phone):''}</b></div>`);if(o.startDate||o.endDate)_inf.push(`<div class="inf"><span>공사기간</span><b>${esc(o.startDate||'-')} ~ ${esc(o.endDate||'-')}</b></div>`);if(o.shift)_inf.push(`<div class="inf"><span>주야 구분</span><b>${esc(o.shift)}</b></div>`);if(o.note)_inf.push(`<div class="inf"><span>비고</span><b>${esc(o.note)}</b></div>`);if(o.accepted)_inf.push(`<div class="inf"><span>준공도 인수</span><b>${esc(o.acceptDate||'완료')}</b></div>`);if(o.loaded)_inf.push(`<div class="inf"><span>시스템로딩</span><b>완료${o.loadDate?' · '+esc(o.loadDate):''}</b></div>`);if(o.accepted&&!o.loaded)_inf.push(`<div class="inf"><span>로딩 마감일</span><b>${dlDeadline(o)}</b></div>`);{const _dl=dlLevel(o);if(_dl)_inf.push(`<div class="inf"><span>마감 상태</span><b style="color:#dc2626;font-weight:800">${_dl.lv} · ${_dl.left<0?('초과 '+(-_dl.left)+'일'):('D-'+_dl.left)}</b></div>`);}const infoHtml=_inf.length?`<div class="infbox">${_inf.join('')}</div>`:'';
+  const _inf=[];if(o.manager||o.phone)_inf.push(`<div class="inf"><span>공사소장</span><b>${esc(o.manager||'-')}${o.phone?' · '+esc(o.phone):''}</b></div>`);if(o.startDate||o.endDate)_inf.push(`<div class="inf"><span>공사기간</span><b>${esc(o.startDate||'-')} ~ ${esc(o.endDate||'-')}</b></div>`);if(o.shift)_inf.push(`<div class="inf"><span>주야 구분</span><b>${esc(o.shift)}</b></div>`);if(o.note)_inf.push(`<div class="inf"><span>비고</span><b>${esc(o.note)}</b></div>`);if(o.hold&&o.holdReason)_inf.push(`<div class="inf"><span>보류 사유</span><b style="color:#dc4545">${esc(o.holdReason)}</b></div>`);if(o.accepted)_inf.push(`<div class="inf"><span>준공도 인수</span><b>${esc(o.acceptDate||'완료')}</b></div>`);if(o.loaded)_inf.push(`<div class="inf"><span>시스템로딩</span><b>완료${o.loadDate?' · '+esc(o.loadDate):''}</b></div>`);if(o.accepted&&!o.loaded)_inf.push(`<div class="inf"><span>로딩 마감일</span><b>${dlDeadline(o)}</b></div>`);{const _dl=dlLevel(o);if(_dl)_inf.push(`<div class="inf"><span>마감 상태</span><b style="color:#dc2626;font-weight:800">${_dl.lv} · ${_dl.left<0?('초과 '+(-_dl.left)+'일'):('D-'+_dl.left)}</b></div>`);}const infoHtml=_inf.length?`<div class="infbox">${_inf.join('')}</div>`:'';
   const _full=LEN(o)>0&&doneM(o)>=LEN(o)-0.5; const _sv=o.survey&&o.survey.done;
   let surveyHtml; if(_sv){surveyHtml=`<div class="survey-info">📐 측량완료 · ${esc(o.survey.d||'')}${(o.survey.by&&o.survey.by.length)?' · '+esc(o.survey.by.join(', ')):''}</div><button class="btn-survey on" id="isurvey">측량완료 취소</button>`;}
   else if(_full){surveyHtml=`<button class="btn-survey" id="isurvey">📐 측량완료</button>`;}
@@ -809,13 +811,14 @@ function renderSheet(){
     <div class="datepill" id="datePill"><span class="lab">작업일자</span><span class="val">${fmtDate(workDate)}</span><span class="car">변경 ▾</span></div>
     <div class="wkchip" id="wkChip"><span class="lab">오늘 작업자</span><span class="val">${todayLead?esc(todayLead)+(todayHelpers.length?` <span style="color:#64748b;font-weight:500">+보조 ${esc(todayHelpers.join(", "))}</span>`:""):"미지정"}</span><span class="car">선택 ▾</span></div>
     <div class="modebar"><button class="cut ${mode==='cut'?'on':''}" id="mCut">✂ 끊기</button><button class="${mode==='tap'?'on':''}" id="mTap">✓ 완료체크</button></div>
+    ${doneM(o)>0.5?`<button class="btn-reset" id="ireset">↺ 이 라인 완료 전체 취소</button>`:''}
     <div class="sec"><span>구간 (${segs.length}개) — [완료체크] 켜고 탭하면 완료</span></div>
     <div class="segs">${segHtml}</div>
     <div class="sec"><span>일일 작업일보</span></div><div class="log">${log}</div>
     ${p>=100?'':`<button class="btn-fill" id="ifill">✓ 나머지 전체 완료 (잔여 ${rem<0.5?0:fmt(rem)}m)</button>`}
     ${surveyHtml}
-    <button class="btn-hold ${o.hold?'on':''}" id="ihold">${o.hold?'보류 해제':'보류 지정'}</button>
-    ${doneM(o)>0.5?`<button class="btn-reset" id="ireset">↺ 이 라인 완료 전체 취소</button>`:''}
+    <button class="btn-hold ${o.hold?'on':''}" id="ihold">${o.hold?'▶ 보류 해제':'⏸ 보류(중지·취소)'}</button>
+    ${o.hold?`<input id="iholdReason" class="hold-reason" placeholder="보류 사유 입력 (예: 민원·자재대기·굴착불가)" value="${esc(o.holdReason||'')}">`:''}
     <button class="btn-edit-geo" id="iedit">✎ 선형 변형</button>
     ${isAdmin?'<button class="btn-del" id="idel">🗑 이 라인 삭제</button>':''}`;
   sh.classList.add('open');
@@ -828,8 +831,9 @@ function renderSheet(){
   renderAddr(o);
   [...body.querySelectorAll('.seg')].forEach(el=>el.onclick=()=>{if(mode!=='tap'){toast('완료하려면 아래 [✓ 완료체크]를 먼저 누르세요');return;}toggleSeg(SEL,+el.dataset.a,+el.dataset.b);});
   const fill=document.getElementById('ifill');if(fill)fill.onclick=()=>completeRemaining(SEL);
-  ihold.onclick=async()=>{o.hold=!o.hold;await save();drawLines();renderKpi();renderSheet();toast(`<b>${o.no}</b> ${o.hold?'보류':'보류 해제'}`);};
-  const _rst=document.getElementById('ireset');if(_rst)_rst.onclick=async()=>{if(!confirm('이 라인의 완료를 모두 취소할까요?\n(끊기 점은 유지됩니다)'))return;o.completed=[];o.daily=[];await save();drawLines();renderKpi();renderSheet();toast('완료 취소됨 · '+o.no);};
+  ihold.onclick=async()=>{o.hold=!o.hold;if(!o.hold)o.holdReason='';await save();drawLines();renderKpi();renderSheet();toast(`<b>${o.no}</b> ${o.hold?'보류(중지·취소)':'보류 해제'}`);};
+  const _hr=document.getElementById('iholdReason');if(_hr)_hr.onchange=async()=>{o.holdReason=_hr.value.trim();await save();toast('보류 사유 저장됨');};
+  const _rst=document.getElementById('ireset');if(_rst)_rst.onclick=async()=>{if(_rst.dataset.armed!=='1'){_rst.dataset.armed='1';_rst.textContent='정말 취소하려면 한 번 더 탭';_rst.classList.add('armed');setTimeout(()=>{const b=document.getElementById('ireset');if(b){b.dataset.armed='';b.textContent='↺ 이 라인 완료 전체 취소';b.classList.remove('armed');}},3500);return;}o.completed=[];o.daily=[];await save();drawLines();renderKpi();renderSheet();toast('완료 취소됨 · '+o.no);};
   const _svb=document.getElementById('isurvey');if(_svb)_svb.onclick=async()=>{if(o.survey&&o.survey.done){if(!confirm('측량완료를 취소할까요?'))return;o.survey={done:false};}else{o.survey={done:true,d:workDate,by:(todayLead?[todayLead,...todayHelpers]:[])};}await save();drawLines();renderKpi();renderSheet();toast(o.survey.done?'측량완료 · '+o.no:'측량완료 취소');};
   const _del=document.getElementById('idel');if(_del)_del.onclick=async()=>{const no=o.no,office=o.office;if(!confirm('['+office+'] '+no+' 라인을 삭제할까요?\n(되돌릴 수 없습니다)'))return;await load();LINES=LINES.filter(x=>!(x.no===no&&x.office===office));await save();SEL=null;drawLines();renderKpi();renderSheet();toast('삭제됨 · '+no);};
   const _ieg=document.getElementById('iedit');if(_ieg)_ieg.onclick=()=>startEditGeo(SEL);

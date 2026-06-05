@@ -843,7 +843,7 @@ function renderSheet(){
   const sh=document.getElementById('sheet'),body=document.getElementById('sheetBody');
   const _tab=document.getElementById('sheetTab');
   if(SEL===null){sh.classList.remove('open');sh.classList.remove('collapsed');_tab.classList.remove('show');_lastShown=null;setBanner();return;}
-  if(SEL!==_lastShown){sheetCollapsed=false;_lastShown=SEL;}
+  if(SEL!==_lastShown){sheetCollapsed=(window.innerWidth<760);_lastShown=SEL;}
   const o=LINES[SEL],T=LEN(o),st=statusOf(o),p=pct(o),dn=Math.min(doneM(o),T),segs=segsOf(o);const rem=Math.max(0,T-dn);
   const segHtml=segs.map(([a,b],i)=>{const d=segDone(o,a,b);return `<div class="seg ${d?'done':''} ${o.hold?'hold':''}" data-a="${a}" data-b="${b}"><div class="ix">${i+1}</div><div class="rng">${fmt(a)} – ${fmt(b)} m</div><div class="ln">${fmt(b-a)}m</div><div class="st">${d?'완료':'미시공'}</div></div>`}).join('');
   const log=o.daily.length?[...o.daily].reverse().map(e=>`<div class="le"><span class="d">${e.d}</span><span class="seg2">${fmt(e.from)}–${fmt(e.to)}m</span><span class="v">+${fmt(e.v)} m</span>${byText(e.by)?`<span class="by">${esc(byText(e.by))}</span>`:''}</div>`).join(''):'<div class="log-empty">완료 기록 없음</div>';
@@ -877,6 +877,7 @@ function renderSheet(){
     ${nextHtml}
     ${isAdmin?'<button class="btn-del" id="idel">🗑 이 라인 삭제</button>':''}`;
   sh.classList.add('open');
+  _tab.textContent=(o?(o.no+' · 정보 보기 ▴'):'정보 보기');
   if(sheetCollapsed){sh.classList.add('collapsed');_tab.classList.add('show');}else{sh.classList.remove('collapsed');_tab.classList.remove('show');}
   setBanner();
   mCut.onclick=()=>{mode=(mode==='cut'?'view':'cut');if(window.innerWidth<760)sheetCollapsed=(mode!=='view');drawLines();renderSheet();};  mTap.onclick=()=>{const on=(mode!=='tap');mode=(on?'tap':'view');if(on&&!todayLead){openWk();}if(window.innerWidth<760)sheetCollapsed=(mode!=='view');drawLines();renderSheet();};

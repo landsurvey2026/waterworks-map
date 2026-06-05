@@ -555,23 +555,31 @@ function parseDXF(text){
 function toLL(x,y){const r=proj4(CONFIG.SRC_EPSG,'WGS84',[x,y]);return [Math.round(r[1]*1e7)/1e7,Math.round(r[0]*1e7)/1e7];}
 function toXY(lat,lon){const r=proj4('WGS84',CONFIG.SRC_EPSG,[lon,lat]);return [r[0],r[1]];}
 function exportDXF(){
-  const lines=LINES.filter(inView);
-  if(!lines.length){toast('내보낼 라인이 없습니다');return;}
-  let s='0\nSECTION\n2\nHEADER\n9\n$ACADVER\n1\nAC1015\n0\nENDSEC\n0\nSECTION\n2\nENTITIES\n';
-  const placed=[],D=12;
-  lines.forEach(o=>{const c=o.coords||[];if(c.length<2)return;
-    s+='0\nLWPOLYLINE\n8\nLINES\n90\n'+c.length+'\n70\n0\n';
-    c.forEach(p=>{const xy=toXY(p[0],p[1]);s+='10\n'+xy[0].toFixed(3)+'\n20\n'+xy[1].toFixed(3)+'\n';});
-    const mid=ptAt(c,_plenLL(c)/2),m=toXY(mid[0],mid[1]);let px=m[0],py=m[1],t=0;
-    while(placed.some(q=>Math.hypot(q[0]-px,q[1]-py)<D)&&t<48){const a=t*2.399963,r=D*(1+Math.floor(t/8));px=m[0]+Math.cos(a)*r;py=m[1]+Math.sin(a)*r;t++;}
-    placed.push([px,py]);
-    s+='0\nTEXT\n8\nNO\n10\n'+px.toFixed(3)+'\n20\n'+py.toFixed(3)+'\n40\n6\n1\n'+(o.no||'')+'\n';
-  });
-  s+='0\nENDSEC\n0\nEOF\n';
-  const off=(OFFICE==='전체'?'전체':OFFICE),yr=(YEAR==='전체'?'전체':(YEAR==='없음'?'연도없음':YEAR+'년'));
-  const blob=new Blob(['\ufeff'+s],{type:'application/dxf'}),url=URL.createObjectURL(blob);
-  const a=document.createElement('a');a.href=url;a.download='상수도_'+off+'_'+yr+'.dxf';document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
-  toast('DXF 내보내기 · '+lines.length+'개');
+  try{
+    if(typeof proj4==='undefined'){toast('좌표 라이브러리(proj4) 로드 실패. 새로고침 후 다시 시도하세요.');return;}
+    const lines=LINES.filter(inView);
+    if(!lines.length){toast('내보낼 라인이 없습니다');return;}
+    let s='0\nSECTION\n2\nENTITIES\n';
+    const placed=[],D=12;let cnt=0;
+    lines.forEach(o=>{const c=o.coords||[];if(c.length<2)return;
+      let poly='';let ok=true;
+      c.forEach(p=>{const xy=toXY(p[0],p[1]);if(!isFinite(xy[0])||!isFinite(xy[1]))ok=false;else poly+='10\n'+xy[0].toFixed(3)+'\n20\n'+xy[1].toFixed(3)+'\n';});
+      if(!ok)return;
+      s+='0\nLWPOLYLINE\n8\nLINES\n90\n'+c.length+'\n70\n0\n'+poly;
+      const mid=ptAt(c,_plenLL(c)/2),m=toXY(mid[0],mid[1]);let px=m[0],py=m[1],t=0;
+      while(placed.some(q=>Math.hypot(q[0]-px,q[1]-py)<D)&&t<48){const a=t*2.399963,r=D*(1+Math.floor(t/8));px=m[0]+Math.cos(a)*r;py=m[1]+Math.sin(a)*r;t++;}
+      placed.push([px,py]);
+      s+='0\nTEXT\n8\nNO\n10\n'+px.toFixed(3)+'\n20\n'+py.toFixed(3)+'\n40\n6\n1\n'+(o.no||'')+'\n';
+      cnt++;
+    });
+    s+='0\nENDSEC\n0\nEOF\n';
+    if(!cnt){toast('내보낼 좌표가 없습니다');return;}
+    const off=(OFFICE==='전체'?'전체':OFFICE),yr=(YEAR==='전체'?'전체':(YEAR==='없음'?'연도없음':YEAR+'년'));
+    const blob=new Blob([s],{type:'application/octet-stream'}),url=URL.createObjectURL(blob);
+    const a=document.createElement('a');a.href=url;a.download='상수도_'+off+'_'+yr+'.dxf';document.body.appendChild(a);a.click();
+    setTimeout(()=>{a.remove();URL.revokeObjectURL(url);},4000);
+    toast('DXF 내보내기 · '+cnt+'개');
+  }catch(e){console.error('exportDXF',e);toast('내보내기 오류: '+e.message);}
 }
 function _segD(px,py,ax,ay,bx,by){const dx=bx-ax,dy=by-ay,L2=dx*dx+dy*dy;if(L2===0)return Math.hypot(px-ax,py-ay);let t=((px-ax)*dx+(py-ay)*dy)/L2;t=Math.max(0,Math.min(1,t));return Math.hypot(px-(ax+t*dx),py-(ay+t*dy));}
 function _ptPolyD(px,py,pts){if(pts.length<2)return Math.hypot(px-pts[0][0],py-pts[0][1]);let m=1e18;for(let i=0;i<pts.length-1;i++)m=Math.min(m,_segD(px,py,pts[i][0],pts[i][1],pts[i+1][0],pts[i+1][1]));return m;}
@@ -859,7 +867,7 @@ document.getElementById('dfSave').onclick=saveNewLine;
 
 
 /* ===== 선형 변형 (관리자 전용) ===== */
-let editingGeo=false, egPts=[], egVtx=[], egLine=null, egNo=null, egOffice=null;
+let editingGeo=false, egPts=[], egVtx=[], egLine=null, egNo=null, egOffice=null, egOcc=0;
 function clearEG(){egVtx.forEach(m=>map.removeLayer(m));egVtx=[];if(egLine){map.removeLayer(egLine);egLine=null;}}
 function nearestSegIndex(pts,ll){const cl=Math.cos(pts[0][0]*Math.PI/180);const xy=p=>[p[1]*cl,p[0]];const P=xy([ll.lat,ll.lng]);let best=0,bd=1e18;for(let i=0;i<pts.length-1;i++){const A=xy(pts[i]),B=xy(pts[i+1]);const dx=B[0]-A[0],dy=B[1]-A[1],L2=dx*dx+dy*dy;let t=L2?((P[0]-A[0])*dx+(P[1]-A[1])*dy)/L2:0;t=Math.max(0,Math.min(1,t));const px=A[0]+t*dx,py=A[1]+t*dy;const d=(P[0]-px)*(P[0]-px)+(P[1]-py)*(P[1]-py);if(d<bd){bd=d;best=i;}}return best;}
 function renderEG(){
@@ -874,8 +882,7 @@ function renderEG(){
   });
 }
 function startEditGeo(idx){
-  if(!isAdmin)return;
-  const o=LINES[idx];egNo=o.no;egOffice=o.office;
+  const o=LINES[idx];egNo=o.no;egOffice=o.office;egOcc=0;for(let j=0;j<idx;j++)if(LINES[j].office===o.office&&LINES[j].no===o.no)egOcc++;
   editingGeo=true;mode='editgeo';egPts=o.coords.map(c=>[c[0],c[1]]);
   SEL=null;clearPick();drawLines();renderSheet();
   map.doubleClickZoom.disable();renderEG();
@@ -887,14 +894,14 @@ function exitEditGeo(reselect){
   editingGeo=false;mode='view';clearEG();egPts=[];
   map.doubleClickZoom.enable();
   document.getElementById('editBar').style.display='none';showFab();
-  if(reselect){const i=LINES.findIndex(l=>l.no===egNo&&l.office===egOffice);if(i>=0)SEL=i;}
+  if(reselect){const grp=[];LINES.forEach((l,j)=>{if(l.office===egOffice&&l.no===egNo)grp.push(j);});if(grp[egOcc]!=null)SEL=grp[egOcc];else if(grp[0]!=null)SEL=grp[0];}
   drawLines();renderKpi();renderSheet();
 }
 async function saveEditGeo(){
   if(egPts.length<2){toast('점을 2개 이상 찍어주세요');return;}
   if(!confirm('선형을 변경하면 이 라인의 완료·끊기 기록이 초기화됩니다.\n저장할까요?'))return;
   await load();
-  const t=LINES.find(l=>l.no===egNo&&l.office===egOffice);
+  const grp=LINES.filter(l=>l.office===egOffice&&l.no===egNo);const t=grp[egOcc]||grp[0];
   if(!t){toast('대상 라인을 찾지 못했습니다');exitEditGeo(false);return;}
   let lenM=0;for(let i=0;i<egPts.length-1;i++)lenM+=map.distance(egPts[i],egPts[i+1]);
   t.coords=egPts.slice();t.lenM=Math.round(lenM*10)/10;t.cuts=[];t.completed=[];t.daily=[];

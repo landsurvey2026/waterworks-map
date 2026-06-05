@@ -240,6 +240,8 @@
   .nx-target{animation:nxpulse 1.3s ease-in-out infinite}
   .nx-label{position:absolute;transform:translate(-50%,-50%);white-space:nowrap;background:#7c3aed;color:#fff;font-family:var(--sans);font-size:11.5px;font-weight:700;padding:3px 9px;border-radius:11px;box-shadow:0 2px 8px rgba(0,0,0,.4);border:1.5px solid #fff}
   .nx-label b{font-weight:700;margin:0 1px}
+  .myloc{position:absolute;top:168px;right:13px;width:44px;height:44px;border-radius:50%;background:#fff;border:1px solid var(--line);box-shadow:0 2px 8px rgba(0,0,0,.2);font-size:21px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:600}
+  .myloc:active{transform:scale(.93)}
 
   .draw-bar{position:absolute;left:50%;transform:translateX(-50%);bottom:24px;z-index:1400;display:none;align-items:center;gap:8px;background:#161b22;border:1px solid #30363d;border-radius:30px;padding:8px 10px 8px 16px;box-shadow:0 6px 20px rgba(0,0,0,.5)}
   .draw-bar #drawHint{color:#e6edf3;font-size:13px;margin-right:6px;white-space:nowrap}
@@ -283,6 +285,7 @@
     .layerbtn{top:auto;bottom:104px;right:10px;flex-direction:row}
     .layerbtn button{border-bottom:none;border-right:1px solid var(--line);padding:7px 10px}
     .layerbtn button:last-child{border-right:none}
+    .myloc{top:auto;bottom:154px;right:10px}
   }
   @media(min-width:760px){
     #app{max-width:none}
@@ -306,6 +309,7 @@
     <button class="topbtn b" id="admBtn">관리자</button>
     <div class="kpi b"><div class="p" id="kpiPct">0%</div><div class="s" id="kpiM">0 / 0 m</div></div></div>
   <div class="layerbtn b"><button id="lyMap" class="on">지도</button><button id="lySat">위성</button><button id="lyBound" class="on">경계</button></div>
+  <button id="myLoc" class="myloc" title="내 위치">📍</button>
   <div class="edit-fab" id="editFab" style="display:none"><button id="drawBtn">+ 라인 그리기</button></div>
   <div class="draw-bar" id="drawBar"><span id="drawHint">지도를 탭해 선을 그리세요</span><button id="drawUndo">되돌리기</button><button id="drawDone" class="primary">완료</button><button id="drawCancel">취소</button></div>
   <div class="draw-bar" id="editBar"><span id="drawHint">꼭짓점 끌어 이동 · 선 중간 탭=추가 · 점 더블탭=삭제</span><button id="editSave" class="primary">저장</button><button id="editCancel">취소</button></div>
@@ -750,6 +754,25 @@ async function load(){try{const r=await fetch(DB+'/'+KEY+'/lines.json');let d=aw
 async function save(){try{await fetch(DB+'/'+KEY+'/lines.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(LINES)});}catch(e){console.error('save',e);}}
 
 const map=L.map('map',{zoomControl:false}).setView(DATA.center,14);
+let locMk=null,locAcc=null;
+function gotoMyLocation(){
+  if(!navigator.geolocation){toast('이 기기는 위치를 지원하지 않습니다');return;}
+  toast('현재 위치 확인 중…');
+  navigator.geolocation.getCurrentPosition(function(p){
+    const ll=[p.coords.latitude,p.coords.longitude];
+    if(locMk)map.removeLayer(locMk);if(locAcc)map.removeLayer(locAcc);
+    locAcc=L.circle(ll,{radius:Math.max(p.coords.accuracy||30,15),color:'#2f6fed',weight:1,fillColor:'#2f6fed',fillOpacity:.12,interactive:false}).addTo(map);
+    locMk=L.circleMarker(ll,{radius:8,color:'#fff',weight:3,fillColor:'#2f6fed',fillOpacity:1,interactive:false}).addTo(map);
+    map.flyTo(ll,17,{duration:.6});
+    toast('현재 위치로 이동');
+  },function(err){
+    let m='위치를 가져오지 못했습니다';
+    if(err.code===1)m='위치 권한이 거부됨 · 브라우저 설정에서 위치 허용';
+    else if(err.code===3)m='위치 확인 시간 초과 · 다시 시도해주세요';
+    toast(m);
+  },{enableHighAccuracy:true,timeout:10000,maximumAge:5000});
+}
+document.getElementById('myLoc').onclick=gotoMyLocation;
 L.control.zoom({position:'bottomright'}).addTo(map);
 const tiles={map:L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'}),sat:L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:19,attribution:'© Esri'})};
 tiles.map.addTo(map);base=tiles.map;

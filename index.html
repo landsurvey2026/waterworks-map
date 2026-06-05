@@ -230,7 +230,12 @@
   .nx-info{margin-top:9px;background:#f5f3ff;border:1px solid #ddd6fe;border-radius:11px;padding:10px 12px;font-size:13px;color:#6d28d9}
   .nx-info b{color:#5b21b6}
   .nx-info .nx-clear{float:right;color:#a78bfa;cursor:pointer;font-weight:700}
-  .nx-arrow{width:0;height:0;border-left:15px solid #7c3aed;border-top:8px solid transparent;border-bottom:8px solid transparent;filter:drop-shadow(0 1px 2px rgba(0,0,0,.4))}
+  .nx-arrow{width:0;height:0;border-left:16px solid #7c3aed;border-top:9px solid transparent;border-bottom:9px solid transparent;filter:drop-shadow(0 1px 2px rgba(0,0,0,.45));animation:nxbeat 1s ease-in-out infinite}
+  @keyframes nxbeat{0%,100%{opacity:1}50%{opacity:.4}}
+  @keyframes nxflow{to{stroke-dashoffset:-32}}
+  .nx-flow{stroke-dasharray:7 11;animation:nxflow .7s linear infinite}
+  @keyframes nxpulse{0%,100%{stroke-opacity:.85}50%{stroke-opacity:.2}}
+  .nx-target{animation:nxpulse 1.3s ease-in-out infinite}
 
   .draw-bar{position:absolute;left:50%;transform:translateX(-50%);bottom:24px;z-index:1400;display:none;align-items:center;gap:8px;background:#161b22;border:1px solid #30363d;border-radius:30px;padding:8px 10px 8px 16px;box-shadow:0 6px 20px rgba(0,0,0,.5)}
   .draw-bar #drawHint{color:#e6edf3;font-size:13px;margin-right:6px;white-space:nowrap}
@@ -754,17 +759,20 @@ function clearNodes(){nodeMk.forEach(m=>map.removeLayer(m));nodeMk=[];}
 let nxLayers=[];
 function drawNextArrows(){
   nxLayers.forEach(l=>map.removeLayer(l));nxLayers=[];
-  LINES.forEach(o=>{
-    if(!o.nextNo||!inView(o)||!(o.coords||[]).length)return;
-    const t=LINES.find(l=>l.no===o.nextNo&&(o.nextOffice?l.office===o.nextOffice:true));
-    if(!t||!(t.coords||[]).length)return;
-    if(doneM(t)>0.5)return;
-    const from=o.coords[o.coords.length-1],to=t.coords[0];
-    nxLayers.push(L.polyline([from,to],{color:'#7c3aed',weight:3,opacity:.9,dashArray:'2 8',interactive:false}).addTo(map));
-    nxLayers.push(L.circleMarker(from,{radius:4,color:'#7c3aed',fillColor:'#7c3aed',fillOpacity:1,interactive:false}).addTo(map));
-    const cl=Math.cos(from[0]*Math.PI/180),sx=(to[1]-from[1])*cl,sy=-(to[0]-from[0]),ang=Math.atan2(sy,sx)*180/Math.PI;
-    nxLayers.push(L.marker(to,{interactive:false,zIndexOffset:1500,icon:L.divIcon({className:'',html:'<div class=\'nx-arrow\' style=\'transform:rotate('+ang+'deg)\'></div>',iconSize:[22,22],iconAnchor:[11,11]})}).addTo(map));
-  });
+  if(SEL==null)return;
+  const o=LINES[SEL];
+  if(!o||!o.nextNo||!(o.coords||[]).length)return;
+  const t=LINES.find(l=>l.no===o.nextNo&&(o.nextOffice?l.office===o.nextOffice:true));
+  if(!t||!(t.coords||[]).length||doneM(t)>0.5)return;
+  // 다음 공사 라인 하이라이트(맥동)
+  nxLayers.push(L.polyline(t.coords,{color:'#7c3aed',weight:12,opacity:.85,interactive:false,className:'nx-target'}).addTo(map));
+  // 출발: 현재 라인 중간, 도착: 다음 라인 중간
+  const Tc=cumM(o.coords),from=ptAt(o.coords,Tc[Tc.length-1]/2);
+  const Td=cumM(t.coords),to=ptAt(t.coords,Td[Td.length-1]/2);
+  nxLayers.push(L.circleMarker(from,{radius:5,color:'#fff',weight:2,fillColor:'#7c3aed',fillOpacity:1,interactive:false}).addTo(map));
+  nxLayers.push(L.polyline([from,to],{color:'#7c3aed',weight:4,opacity:.95,interactive:false,className:'nx-flow'}).addTo(map));
+  const cl=Math.cos(from[0]*Math.PI/180),sx=(to[1]-from[1])*cl,sy=-(to[0]-from[0]),ang=Math.atan2(sy,sx)*180/Math.PI;
+  nxLayers.push(L.marker(to,{interactive:false,zIndexOffset:1600,icon:L.divIcon({className:'',html:'<div class="nx-arrow" style="transform:rotate('+ang+'deg)"></div>',iconSize:[24,24],iconAnchor:[12,12]})}).addTo(map));
 }
 function gap(len){return Math.min(len*0.12,3.5);}
 function drawLines(){
@@ -792,6 +800,7 @@ function drawLines(){
         nodeMk.push(mk);});
     }
   });
+  if(typeof drawNextArrows==='function')drawNextArrows();
 }
 function onLineClick(idx,dist){
   if(SEL!==idx){select(idx);return;}
@@ -825,7 +834,7 @@ const inYear=o=>YEAR==='전체'||(YEAR==='없음'?!yearOf(o):yearOf(o)===YEAR);
 const inView=o=>inOffice(o)&&inYear(o);
 function setYear(y){YEAR=y;document.querySelectorAll('#yearTabs button').forEach(b=>b.classList.toggle('on',b.dataset.y===y));SEL=null;clearPick();drawLines();renderKpi();renderSheet();}
 function setOffice(o){OFFICE=o;document.querySelectorAll('#officeTabs button').forEach(b=>b.classList.toggle('on',b.dataset.o===o));SEL=null;clearPick();drawLines();renderKpi();renderSheet();}
-function renderKpi(){const V=LINES.filter(inView);const tot=V.reduce((s,o)=>s+LEN(o),0),dn=V.reduce((s,o)=>s+Math.min(doneM(o),LEN(o)),0);kpiPct.textContent=(tot?Math.round(dn/tot*100):0)+'%';kpiM.textContent=fmt(dn)+' / '+fmt(tot)+' m';if(typeof refreshDeadlines==='function')refreshDeadlines();if(typeof refreshMismatch==='function')refreshMismatch();if(typeof refreshYearless==='function')refreshYearless();if(typeof drawNextArrows==='function')drawNextArrows();}
+function renderKpi(){const V=LINES.filter(inView);const tot=V.reduce((s,o)=>s+LEN(o),0),dn=V.reduce((s,o)=>s+Math.min(doneM(o),LEN(o)),0);kpiPct.textContent=(tot?Math.round(dn/tot*100):0)+'%';kpiM.textContent=fmt(dn)+' / '+fmt(tot)+' m';if(typeof refreshDeadlines==='function')refreshDeadlines();if(typeof refreshMismatch==='function')refreshMismatch();if(typeof refreshYearless==='function')refreshYearless();}
 function setBanner(){const bn=document.getElementById('banner');if(SEL===null){bn.classList.remove('show');return;}
   if(mode==='cut'){bn.className='banner cut show';bn.innerHTML='끊기 모드 · 라인을 탭해 끊을 위치를 추가<small>점을 다시 탭하면 삭제 · 끝나면 "완료체크"로 전환</small>';}
   else if(mode==='tap'){bn.className='banner tap show';bn.innerHTML='완료체크 모드 · 완료된 토막을 탭하면 완료<small>다시 탭하면 완료 해제 · 끝나면 다시 눌러 종료</small>';}

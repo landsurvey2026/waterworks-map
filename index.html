@@ -181,7 +181,7 @@
   .mini-edit{font-family:var(--sans);font-size:10.5px;font-weight:600;color:#0891b2;background:#e0f2fe;border:none;border-radius:6px;padding:3px 8px;margin-left:5px;cursor:pointer;vertical-align:1px}
   .ed-ovl{position:absolute;inset:0;z-index:1400;background:rgba(8,12,18,.5);display:none;align-items:center;justify-content:center;padding:18px}
   .ed-ovl.show{display:flex}
-  .ed{width:100%;max-width:340px;background:#fff;border-radius:18px;padding:18px;box-shadow:0 12px 40px rgba(0,0,0,.4)}
+  .ed{width:100%;max-width:340px;background:#fff;border-radius:18px;padding:18px;box-shadow:0 12px 40px rgba(0,0,0,.4);max-height:88vh;overflow-y:auto;-webkit-overflow-scrolling:touch;box-sizing:border-box}
   .ed h3{margin:0 0 14px;font-size:16px}
   .ed label{display:block;font-size:12px;color:#64748b;margin:0 0 6px}
   .ed input{width:100%;font-family:var(--sans);font-size:15px;border:1px solid #cfd6df;border-radius:10px;padding:11px 12px;margin-bottom:13px}
@@ -261,6 +261,15 @@
   .nolabel b{font-family:var(--mono);font-size:12px;color:var(--accent)}
   .nolabel span{font-size:10.5px;color:#cbd5e1;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   /* PC(관리자): 전체화면 + 우측 사이드 패널 */
+  @media(max-width:759px){
+    .ed{max-width:320px;padding:14px;border-radius:14px;max-height:84vh}
+    .ed h3{font-size:15px;margin:0 0 10px}
+    .ed label{font-size:11px;margin:0 0 4px}
+    .ed input,.ed select,.ed textarea{font-size:14px;padding:9px 10px;margin-bottom:9px}
+    .layerbtn{top:auto;bottom:104px;right:10px;flex-direction:row}
+    .layerbtn button{border-bottom:none;border-right:1px solid var(--line);padding:7px 10px}
+    .layerbtn button:last-child{border-right:none}
+  }
   @media(min-width:760px){
     #app{max-width:none}
     .sheet{left:auto;right:0;top:0;bottom:0;width:410px;max-height:100%;border-radius:0;box-shadow:-8px 0 34px rgba(0,0,0,.32);transform:translateX(115%);padding-bottom:24px}

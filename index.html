@@ -291,6 +291,11 @@
   .srch-addrhead{padding:12px 16px;font-size:14px;font-weight:700;color:#fff;background:#1f6feb22;border-bottom:1px solid #2c3542}
   .srch-addrhead span{font-size:11.5px;font-weight:600;color:#9fb0c3}
   #srchAddr{background:var(--accent)!important;color:#fff!important;padding:8px 12px!important;border-radius:9px!important}
+  .addr-ring{animation:addrRing 1.8s ease-in-out infinite}
+  @keyframes addrRing{0%,100%{stroke-opacity:.95;fill-opacity:.08}50%{stroke-opacity:.5;fill-opacity:.04}}
+  .addr-hl{filter:drop-shadow(0 0 3px rgba(245,158,11,.6))}
+  .addr-nolabel{transform:translate(-50%,-50%);background:#f59e0b;color:#fff;font-family:var(--mono);font-size:12px;font-weight:700;padding:2px 8px;border-radius:9px;border:1.5px solid #fff;box-shadow:0 1px 5px rgba(0,0,0,.35);white-space:nowrap}
+  .addr-pin{transform:translateY(-50%);background:#ef4444;color:#fff;font-family:var(--sans);font-size:12px;font-weight:700;padding:3px 10px;border-radius:11px;border:1.5px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.4);white-space:nowrap}
   .srch-empty{padding:30px;text-align:center;color:#5b6776;font-size:13px}
   .srch-note{padding:0 16px;font-size:11px;color:#5b6776;min-height:14px}
   .addr{margin-top:10px;font-size:12.5px;color:#475569;line-height:1.5;display:flex;gap:7px;align-items:flex-start}
@@ -609,14 +614,27 @@ if(window.kakao&&kakao.maps&&kakao.maps.load){kakao.maps.load(function(){kakaoOK
 let addrMk=null;
 function _hav(la1,lo1,la2,lo2){const R=6371000,t=Math.PI/180,dla=(la2-la1)*t,dlo=(lo2-lo1)*t,a=Math.sin(dla/2)**2+Math.cos(la1*t)*Math.cos(la2*t)*Math.sin(dlo/2)**2;return 2*R*Math.asin(Math.min(1,Math.sqrt(a)));}
 function nearDist(lat,lng,o){const c=o.coords||[];let m=Infinity;for(const p of c){const d=_hav(lat,lng,p[0],p[1]);if(d<m)m=d;}return m;}
+let arLayers=[],arActive=false;
+function clearAddr(){arLayers.forEach(l=>{try{map.removeLayer(l);}catch(e){}});arLayers=[];arActive=false;}
+function _m(p,ref){const t=Math.PI/180;return [(p[1]-ref[1])*Math.cos(ref[0]*t)*111320,(p[0]-ref[0])*110540];}
+function _segD(ax,ay,bx,by){const dx=bx-ax,dy=by-ay,L2=dx*dx+dy*dy;let u=L2?(( -ax)*dx+(-ay)*dy)/L2:0;u=Math.max(0,Math.min(1,u));const x=ax+u*dx,y=ay+u*dy;return Math.hypot(x,y);}
+function distToLine(lat,lng,o){const c=o.coords||[],ref=[lat,lng];if(!c.length)return Infinity;if(c.length===1)return _hav(lat,lng,c[0][0],c[0][1]);let m=Infinity;for(let i=0;i<c.length-1;i++){const a=_m(c[i],ref),b=_m(c[i+1],ref);const d=_segD(a[0],a[1],b[0],b[1]);if(d<m)m=d;}return m;}
 function showAddrResult(lat,lng,label){
-  if(addrMk)map.removeLayer(addrMk);
-  addrMk=L.circleMarker([lat,lng],{radius:9,color:'#fff',weight:3,fillColor:'#ef4444',fillOpacity:1,zIndexOffset:2000}).addTo(map).bindPopup('📍 '+label);
-  const near=LINES.map((o,i)=>({o,i,d:nearDist(lat,lng,o)})).filter(x=>inView(x.o)&&isFinite(x.d)).sort((a,b)=>a.d-b.d).slice(0,15);
-  const list=document.getElementById('srchList');
-  if(!near.length){list.innerHTML='<div class="srch-empty">주변에 공사 라인이 없습니다</div>';}
-  else{list.innerHTML='<div class="srch-addrhead">📍 '+esc(label)+'<br><span>가까운 공사 순</span></div>'+near.map(x=>{const ad=x.o.addr||addrCache[x.o.no]||'';const dist=x.d<1000?Math.round(x.d)+'m':(x.d/1000).toFixed(1)+'km';return `<button class="srch-item" data-i="${x.i}"><span class="si-no">${esc(x.o.no)}</span><span class="si-nm">${x.o.name?esc(x.o.name):'<i style=\'color:#5b6776\'>공사명 미입력</i>'}${ad?` <span style=\'color:#5b6776\'>· ${esc(ad)}</span>`:''}</span><span class="si-dist">${dist}</span></button>`}).join('');
-    [...list.querySelectorAll('.srch-item')].forEach(b=>b.onclick=()=>{closeSearch();goTo(+b.dataset.i);});}
+  closeSearch();clearAddr();arActive=true;
+  arLayers.push(L.circle([lat,lng],{pane:'hlPane',radius:100,color:'#2f6fed',weight:2.5,opacity:.95,fillColor:'#2f6fed',fillOpacity:.08,dashArray:'5 7',className:'addr-ring'}).addTo(map));
+  arLayers.push(L.circleMarker([lat,lng],{pane:'hlPane',radius:7,color:'#fff',weight:3,fillColor:'#ef4444',fillOpacity:1}).addTo(map));
+  arLayers.push(L.marker([lat,lng],{interactive:false,zIndexOffset:3000,icon:L.divIcon({className:'',html:'<div class="addr-pin">📍 '+esc(label)+'</div>',iconSize:[1,1],iconAnchor:[-8,10]})}).addTo(map));
+  const hits=[];LINES.forEach((o,i)=>{if(!inView(o)||!(o.coords||[]).length)return;const d=distToLine(lat,lng,o);if(d<=100)hits.push({o,i,d});});
+  hits.sort((a,b)=>a.d-b.d);
+  hits.forEach(({o})=>{
+    arLayers.push(L.polyline(o.coords,{pane:'hlPane',color:'#f59e0b',weight:9,opacity:.92,className:'addr-hl'}).addTo(map));
+    const mid=o.coords[Math.floor(o.coords.length/2)];
+    arLayers.push(L.marker(mid,{interactive:false,zIndexOffset:2600,icon:L.divIcon({className:'',html:'<div class="addr-nolabel">'+esc(o.no)+'</div>',iconSize:[1,1],iconAnchor:[0,0]})}).addTo(map));
+  });
+  const b=L.latLngBounds([[lat,lng]]);hits.forEach(({o})=>o.coords.forEach(c=>b.extend(c)));b.extend([lat+0.0012,lng]).extend([lat-0.0012,lng]).extend([lat,lng+0.0012]).extend([lat,lng-0.0012]);
+  map.flyToBounds(b.pad(0.15),{maxZoom:18,duration:.6});
+  if(!hits.length)toast('반경 100m 안에 공사 라인이 없습니다');
+  else toast('반경 100m · 공사 '+hits.length+'건 · 라인을 선택하세요');
 }
 function searchAddress(){
   const q=(document.getElementById('srchInput').value||'').trim();
@@ -844,6 +862,7 @@ async function load(){try{const r=await fetch(DB+'/'+KEY+'/lines.json');let d=aw
 async function save(){try{await fetch(DB+'/'+KEY+'/lines.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(LINES)});}catch(e){console.error('save',e);}}
 
 const map=L.map('map',{zoomControl:false}).setView(DATA.center,14);
+map.createPane('hlPane');map.getPane('hlPane').style.zIndex=410;map.getPane('hlPane').style.pointerEvents='none';
 let locMk=null,locAcc=null;
 function gotoMyLocation(){
   if(!navigator.geolocation){toast('이 기기는 위치를 지원하지 않습니다');return;}
@@ -1030,7 +1049,7 @@ function renderSheet(){
   const _inx=document.getElementById('inext');if(_inx)_inx.onclick=()=>openNextPicker(SEL);
   const _inxc=document.getElementById('inxClear');if(_inxc)_inxc.onclick=async()=>{o.nextNo=undefined;o.nextOffice=undefined;await save();drawLines();renderKpi();renderSheet();toast('다음 공사 해제');};
 }
-function select(idx){clearPick();SEL=idx;mode='view';drawLines();renderSheet();const o=LINES[idx],lat=o.coords.reduce((s,c)=>s+c[0],0)/o.coords.length,lon=o.coords.reduce((s,c)=>s+c[1],0)/o.coords.length;map.panTo([lat,lon]);}
+function select(idx){clearPick();if(arActive)clearAddr();SEL=idx;mode='view';drawLines();renderSheet();const o=LINES[idx],lat=o.coords.reduce((s,c)=>s+c[0],0)/o.coords.length,lon=o.coords.reduce((s,c)=>s+c[1],0)/o.coords.length;map.panTo([lat,lon]);}
 document.getElementById('grabBar').onclick=()=>{sheetCollapsed=!sheetCollapsed;renderSheet();};
 document.getElementById('sheetClose').onclick=()=>{SEL=null;mode='view';sheetCollapsed=false;drawLines();renderSheet();};
 document.getElementById('sheetTab').onclick=()=>{sheetCollapsed=false;renderSheet();};

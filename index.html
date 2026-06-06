@@ -12,6 +12,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/proj4@2.11.0/dist/proj4.js"></script>
+<script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=eb879946d11d6627f85d1ef988dd0de8&libraries=services&autoload=false"></script>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
 <style>
   :root{--accent:#22d3ee;--done:#34d399;--wait:#94a3b8;--hold:#f87171;--ink:#0d1117;--line:#e4e8ee;--muted:#64748b;
@@ -285,7 +286,11 @@
   .srch-item{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:none;border:none;border-bottom:1px solid #1c232e;padding:13px 16px;cursor:pointer}
   .srch-item:active{background:#161d27}
   .si-no{font-family:var(--mono);font-size:13px;color:var(--accent);font-weight:600;flex:none;min-width:78px}
-  .si-nm{font-size:13.5px;color:#cbd5e1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .si-nm{font-size:13.5px;color:#cbd5e1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+  .si-dist{font-family:var(--mono);font-size:12px;color:#34d399;font-weight:700;flex:none;margin-left:8px}
+  .srch-addrhead{padding:12px 16px;font-size:14px;font-weight:700;color:#fff;background:#1f6feb22;border-bottom:1px solid #2c3542}
+  .srch-addrhead span{font-size:11.5px;font-weight:600;color:#9fb0c3}
+  #srchAddr{background:var(--accent)!important;color:#fff!important;padding:8px 12px!important;border-radius:9px!important}
   .srch-empty{padding:30px;text-align:center;color:#5b6776;font-size:13px}
   .srch-note{padding:0 16px;font-size:11px;color:#5b6776;min-height:14px}
   .addr{margin-top:10px;font-size:12.5px;color:#475569;line-height:1.5;display:flex;gap:7px;align-items:flex-start}
@@ -383,7 +388,7 @@
     <div class="cal-foot"><button id="calToday">오늘</button><button id="calClose">닫기</button></div>
   </div></div>
   <div class="srch-ovl" id="srchOvl">
-    <div class="srch-bar"><input id="srchInput" placeholder="지시번호 · 공사명 · 주소 검색" autocomplete="off"><button id="srchClose">취소</button></div>
+    <div class="srch-bar"><input id="srchInput" placeholder="지시번호·공사명 / 주소·도로명" autocomplete="off"><button id="srchAddr">주소찾기</button><button id="srchClose">취소</button></div>
     <div class="srch-note" id="srchNote"></div>
     <div class="srch-list" id="srchList"></div>
   </div>
@@ -599,6 +604,31 @@ function renderSearch(q){
   list.innerHTML=res.slice(0,50).map(({o,i})=>{const ad=o.addr||addrCache[o.no];return `<button class="srch-item" data-i="${i}"><span class="si-no">${esc(o.no)}</span><span class="si-nm">${o.name?esc(o.name):'<i style="color:#5b6776">공사명 미입력</i>'}${ad?` <span style="color:#5b6776">· ${esc(ad)}</span>`:''}</span></button>`}).join('');
   [...list.querySelectorAll('.srch-item')].forEach(b=>b.onclick=async()=>{if(nextPickIdx!=null){const si=nextPickIdx,src=LINES[si],tgt=LINES[+b.dataset.i];nextPickIdx=null;closeSearch();if(src&&tgt&&src!==tgt){src.nextNo=tgt.no;src.nextOffice=tgt.office;SEL=si;_lastShown=si;await save();drawLines();renderKpi();renderSheet();if(typeof drawNextArrows==='function')drawNextArrows();setTimeout(()=>{if(typeof drawNextArrows==='function')drawNextArrows();},120);toast('다음 공사 지정: '+tgt.no);}}else{closeSearch();goTo(+b.dataset.i);}});
 }
+let kakaoOK=false;
+if(window.kakao&&kakao.maps&&kakao.maps.load){kakao.maps.load(function(){kakaoOK=true;});}
+let addrMk=null;
+function _hav(la1,lo1,la2,lo2){const R=6371000,t=Math.PI/180,dla=(la2-la1)*t,dlo=(lo2-lo1)*t,a=Math.sin(dla/2)**2+Math.cos(la1*t)*Math.cos(la2*t)*Math.sin(dlo/2)**2;return 2*R*Math.asin(Math.min(1,Math.sqrt(a)));}
+function nearDist(lat,lng,o){const c=o.coords||[];let m=Infinity;for(const p of c){const d=_hav(lat,lng,p[0],p[1]);if(d<m)m=d;}return m;}
+function showAddrResult(lat,lng,label){
+  if(addrMk)map.removeLayer(addrMk);
+  addrMk=L.circleMarker([lat,lng],{radius:9,color:'#fff',weight:3,fillColor:'#ef4444',fillOpacity:1,zIndexOffset:2000}).addTo(map).bindPopup('📍 '+label);
+  const near=LINES.map((o,i)=>({o,i,d:nearDist(lat,lng,o)})).filter(x=>inView(x.o)&&isFinite(x.d)).sort((a,b)=>a.d-b.d).slice(0,15);
+  const list=document.getElementById('srchList');
+  if(!near.length){list.innerHTML='<div class="srch-empty">주변에 공사 라인이 없습니다</div>';}
+  else{list.innerHTML='<div class="srch-addrhead">📍 '+esc(label)+'<br><span>가까운 공사 순</span></div>'+near.map(x=>{const ad=x.o.addr||addrCache[x.o.no]||'';const dist=x.d<1000?Math.round(x.d)+'m':(x.d/1000).toFixed(1)+'km';return `<button class="srch-item" data-i="${x.i}"><span class="si-no">${esc(x.o.no)}</span><span class="si-nm">${x.o.name?esc(x.o.name):'<i style=\'color:#5b6776\'>공사명 미입력</i>'}${ad?` <span style=\'color:#5b6776\'>· ${esc(ad)}</span>`:''}</span><span class="si-dist">${dist}</span></button>`}).join('');
+    [...list.querySelectorAll('.srch-item')].forEach(b=>b.onclick=()=>{closeSearch();goTo(+b.dataset.i);});}
+}
+function searchAddress(){
+  const q=(document.getElementById('srchInput').value||'').trim();
+  if(!q){toast('주소를 입력하세요');return;}
+  if(!(window.kakao&&kakao.maps&&kakao.maps.services)){toast('주소검색 준비 중… 잠시 후 다시 시도');return;}
+  toast('주소 검색 중…');
+  const geo=new kakao.maps.services.Geocoder();
+  geo.addressSearch(q,function(res,status){
+    if(status===kakao.maps.services.Status.OK&&res.length){const r=res[0];showAddrResult(parseFloat(r.y),parseFloat(r.x),r.address_name||q);}
+    else{const ps=new kakao.maps.services.Places();ps.keywordSearch(q,function(d,st){if(st===kakao.maps.services.Status.OK&&d.length){const r=d[0];showAddrResult(parseFloat(r.y),parseFloat(r.x),r.place_name||q);}else{toast('주소를 찾지 못했습니다 · 도로명/지번을 확인하세요');}});}
+  });
+}
 function goTo(idx){const o=LINES[idx];if(!inView(o)){OFFICE='전체';YEAR='전체';document.querySelectorAll('#officeTabs button').forEach(b=>b.classList.toggle('on',b.dataset.o==='전체'));document.querySelectorAll('#yearTabs button').forEach(b=>b.classList.toggle('on',b.dataset.y==='전체'));}clearPick();SEL=idx;mode='view';drawLines();renderKpi();renderSheet();map.flyToBounds(L.latLngBounds(o.coords).pad(0.4),{maxZoom:19,duration:.6});}
 document.getElementById('srchBtn').onclick=openSearch;
 /* ===== 관리자(Admin) — DXF 업로드/삭제 ===== */
@@ -768,6 +798,8 @@ document.getElementById('admDelYearBtn').onclick=async function(){const office=d
 
 document.getElementById('srchClose').onclick=closeSearch;
 document.getElementById('srchInput').oninput=e=>renderSearch(e.target.value);
+document.getElementById('srchAddr').onclick=searchAddress;
+document.getElementById('srchInput').addEventListener('keydown',e=>{if(e.key==='Enter')searchAddress();});
 document.getElementById('edSave').onclick=async()=>{const o=LINES[SEL];const nn=document.getElementById('eNo').value.trim(),nm=document.getElementById('eName').value.trim(),ad=document.getElementById('eAddr').value.trim();
   if(!nn){toast('공사지시번호를 입력하세요');return;}
   o.no=nn;o.name=nm;o.addr=ad;o.manager=document.getElementById('eMgr').value.trim();o.phone=document.getElementById('ePhone').value.trim();o.startDate=document.getElementById('eStart').value;o.endDate=document.getElementById('eEnd').value;o.shift=document.getElementById('eShift').value;o.note=document.getElementById('eNote').value.trim();o.accepted=document.getElementById('eAcc').checked;o.acceptDate=document.getElementById('eAccDate').value||(o.accepted?today():'');o.loaded=document.getElementById('eLoad').checked;o.loadDate=document.getElementById('eLoadDate').value||(o.loaded?today():'');o.verified=true;await save();closeEdit();drawLines();renderSheet();toast('수정 저장됨');};

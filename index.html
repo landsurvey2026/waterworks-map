@@ -388,7 +388,7 @@
     <div class="cal-foot"><button id="calToday">오늘</button><button id="calClose">닫기</button></div>
   </div></div>
   <div class="srch-ovl" id="srchOvl">
-    <div class="srch-bar"><input id="srchInput" placeholder="지시번호·공사명 / 주소·도로명" autocomplete="off"><button id="srchAddr">주소찾기</button><button id="srchClose">취소</button></div>
+    <div class="srch-bar"><input id="srchInput" placeholder="지시번호·공사명 / 주소 예: 천호동 100-1" autocomplete="off"><button id="srchAddr">주소찾기</button><button id="srchClose">취소</button></div>
     <div class="srch-note" id="srchNote"></div>
     <div class="srch-list" id="srchList"></div>
   </div>
@@ -623,11 +623,27 @@ function searchAddress(){
   if(!q){toast('주소를 입력하세요');return;}
   if(!(window.kakao&&kakao.maps&&kakao.maps.services)){toast('주소검색 준비 중… 잠시 후 다시 시도');return;}
   toast('주소 검색 중…');
+  // 동+번지 우선 → 안 되면 관할 구를 붙여서 차례로 시도
+  const ALLGU=['강동구','송파구','성동구','광진구','중랑구','동대문구'];
+  const officeGu=OFFICE==='강동'?['강동구','송파구']:OFFICE==='동부'?['성동구','광진구','중랑구','동대문구']:ALLGU;
+  const guOrder=officeGu.concat(ALLGU.filter(g=>!officeGu.includes(g)));
+  const cands=[q];
+  if(!/구/.test(q)){guOrder.forEach(g=>cands.push(g+' '+q));}
+  cands.push('서울 '+q);
+  const seen={},list=cands.filter(c=>{if(seen[c])return false;seen[c]=1;return true;});
   const geo=new kakao.maps.services.Geocoder();
-  geo.addressSearch(q,function(res,status){
-    if(status===kakao.maps.services.Status.OK&&res.length){const r=res[0];showAddrResult(parseFloat(r.y),parseFloat(r.x),r.address_name||q);}
-    else{const ps=new kakao.maps.services.Places();ps.keywordSearch(q,function(d,st){if(st===kakao.maps.services.Status.OK&&d.length){const r=d[0];showAddrResult(parseFloat(r.y),parseFloat(r.x),r.place_name||q);}else{toast('주소를 찾지 못했습니다 · 도로명/지번을 확인하세요');}});}
-  });
+  function tryNext(i){
+    if(i>=list.length){
+      const ps=new kakao.maps.services.Places();
+      ps.keywordSearch(q,function(d,st){if(st===kakao.maps.services.Status.OK&&d.length){const r=d[0];showAddrResult(parseFloat(r.y),parseFloat(r.x),r.place_name||q);}else{toast('주소를 찾지 못했습니다 · 동·번지를 확인하거나 구를 붙여보세요');}});
+      return;
+    }
+    geo.addressSearch(list[i],function(res,status){
+      if(status===kakao.maps.services.Status.OK&&res.length){const r=res[0];showAddrResult(parseFloat(r.y),parseFloat(r.x),r.address_name||list[i]);}
+      else tryNext(i+1);
+    });
+  }
+  tryNext(0);
 }
 function goTo(idx){const o=LINES[idx];if(!inView(o)){OFFICE='전체';YEAR='전체';document.querySelectorAll('#officeTabs button').forEach(b=>b.classList.toggle('on',b.dataset.o==='전체'));document.querySelectorAll('#yearTabs button').forEach(b=>b.classList.toggle('on',b.dataset.y==='전체'));}clearPick();SEL=idx;mode='view';drawLines();renderKpi();renderSheet();map.flyToBounds(L.latLngBounds(o.coords).pad(0.4),{maxZoom:19,duration:.6});}
 document.getElementById('srchBtn').onclick=openSearch;

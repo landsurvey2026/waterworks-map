@@ -224,8 +224,11 @@
   .adm-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid #1f2630;font-size:16px;font-weight:700}
   .adm-head button{background:#21262d;color:#e6edf3;border:none;border-radius:8px;padding:8px 14px;font-family:var(--sans);font-size:14px;cursor:pointer}
   .adm-body{padding:16px;overflow:auto;flex:1}
-  .adm-h{font-weight:700;margin:0 0 10px;font-size:14px;color:#9fb0c3}
-  .adm-sec{background:#161b22;border:1px solid #1f2630;border-radius:12px;padding:14px;margin-bottom:14px}
+  .adm-grp{font-size:12px;font-weight:800;letter-spacing:.3px;color:#7dd3fc;margin:20px 2px 10px;padding-bottom:7px;border-bottom:1px solid #233040}
+  .adm-grp:first-child{margin-top:2px}
+  .adm-h{font-weight:800;margin:0 0 12px;font-size:14px;color:#e6edf3;display:flex;align-items:center;gap:8px}
+  .adm-h::before{content:'';width:4px;height:15px;border-radius:2px;background:#38bdf8;display:inline-block;flex:none}
+  .adm-sec{background:#0f141b;border:1px solid #243040;border-radius:14px;padding:16px;margin-bottom:12px}
   .adm-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
   .adm-row label{font-size:13px}
   .adm-row .rad{display:flex;align-items:center;gap:5px}
@@ -430,6 +433,7 @@
         <p class="adm-err" id="admPinErr"></p>
       </div>
       <div id="admPanel" style="display:none">
+        <div class="adm-grp">🔗 현장 공유</div>
         <div class="adm-sec">
           <p class="adm-h">현장 공유 링크</p>
           <p style="color:#9fb0c3;font-size:12.5px;margin:0 0 8px">현장팀에게 이 주소를 보내세요. 누구나 보기·완료체크를 할 수 있습니다.</p>
@@ -439,6 +443,7 @@
             <button id="shareSend" class="adm-btn">공유</button>
           </div>
         </div>
+        <div class="adm-grp">📂 데이터 입력 · 관리</div>
         <div class="adm-sec">
           <p class="adm-h">DXF 업로드</p>
           <div class="adm-row">
@@ -451,6 +456,21 @@
           <div class="adm-log" id="admLog">DXF 파일을 선택하면 미리보기가 표시됩니다.</div>
           <button id="admUpload" class="adm-btn primary" disabled>Firebase에 업로드</button>
         </div>
+        <div class="adm-sec">
+          <p class="adm-h">라인 관리 / 삭제</p>
+          <div class="adm-row">
+            <button id="admRefresh" class="adm-btn">현재 목록 불러오기</button>
+            <button id="admDelOffice" class="adm-btn danger">이 사업소 전체 삭제</button>
+            <button id="admDelAll" class="adm-btn danger">전체 삭제</button>
+          </div>
+          <div class="adm-row" style="margin-top:8px">
+            <label style="width:56px">연도삭제</label>
+            <select id="admDelYear"><option value="23">23년</option><option value="24">24년</option><option value="25">25년</option><option value="26">26년</option><option value="없음">연도없음</option></select>
+            <button id="admDelYearBtn" class="adm-btn danger">이 사업소 + 연도 삭제</button>
+          </div>
+          <div class="adm-list" id="admList"></div>
+        </div>
+        <div class="adm-grp">📤 내보내기</div>
         <div class="adm-sec">
           <p class="adm-h">DXF 내보내기</p>
           <p style="color:#9fb0c3;font-size:12.5px;margin:0 0 8px">지금 화면에 보이는 라인(사업소·연도 필터 적용)을 라인+지시번호로 내보냅니다. 번호는 라인 중간에 표시되고, 겹치면 자동으로 분산됩니다.</p>
@@ -470,20 +490,7 @@
           </div>
           <div class="adm-row" style="margin-top:8px"><button id="xlsPick" class="adm-btn">지시건 선택 내보내기</button></div>
         </div>
-        <div class="adm-sec">
-          <p class="adm-h">라인 관리 / 삭제</p>
-          <div class="adm-row">
-            <button id="admRefresh" class="adm-btn">현재 목록 불러오기</button>
-            <button id="admDelOffice" class="adm-btn danger">이 사업소 전체 삭제</button>
-            <button id="admDelAll" class="adm-btn danger">전체 삭제</button>
-          </div>
-          <div class="adm-row" style="margin-top:8px">
-            <label style="width:56px">연도삭제</label>
-            <select id="admDelYear"><option value="23">23년</option><option value="24">24년</option><option value="25">25년</option><option value="26">26년</option><option value="없음">연도없음</option></select>
-            <button id="admDelYearBtn" class="adm-btn danger">이 사업소 + 연도 삭제</button>
-          </div>
-          <div class="adm-list" id="admList"></div>
-        </div>
+        <div class="adm-grp">📊 현황 · 인원</div>
         <div class="adm-sec">
           <p class="adm-h">통계 (사업소별)</p>
           <button id="statRefresh" class="adm-btn">통계 새로고침</button>

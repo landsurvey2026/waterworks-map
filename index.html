@@ -243,13 +243,18 @@
   .adm-item{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 11px;border-bottom:1px solid #1f2630;font-size:13px}
   .adm-item button{background:#1a1011;border:1px solid #5b2326;color:#fca5a5;border-radius:7px;padding:4px 10px;font-size:12px;cursor:pointer}
   .adm-err{color:#fca5a5;font-size:13px;min-height:18px;margin:8px 0 0}
-  .stat-tbl{width:100%;border-collapse:collapse;font-size:13px;margin:4px 0 16px}
-  .stat-tbl caption{text-align:left;font-weight:700;color:#9fb0c3;padding:4px 0 6px}
-  .stat-tbl td{border-bottom:1px solid #1f2630;padding:8px 8px;text-align:right;white-space:nowrap;color:#e6edf3;font-weight:600}
-  .stat-tbl th{border-bottom:1px solid #1f2630;padding:8px 8px;text-align:right;white-space:nowrap}
+  .stat-wrap{display:flex;gap:12px;flex-wrap:wrap}
+  .stat-wrap>div{flex:1 1 240px;min-width:0}
+  .stat-tbl{width:100%;border-collapse:separate;border-spacing:0;font-size:12.5px;margin:0 0 12px;background:#0d1117;border:1px solid #26303c;border-radius:13px;overflow:hidden}
+  .stat-tbl caption{caption-side:top;text-align:left;font-weight:800;color:#7dd3fc;padding:10px 12px 9px;font-size:13px}
+  .stat-tbl td{padding:8px 11px;text-align:right;white-space:nowrap;color:#e6edf3;font-weight:600;border-top:1px solid #1a232e}
+  .stat-tbl th{padding:8px 11px;text-align:right;white-space:nowrap;border-top:1px solid #1a232e}
   .stat-tbl th:first-child,.stat-tbl td:first-child{text-align:left;color:#cbd5e1}
-  .stat-tbl thead th{color:#9fb0c3;font-weight:600}
-  .stat-tbl .tot td{font-weight:700;color:#fff;border-top:1px solid #30363d;background:#10161d}
+  .stat-tbl thead th{color:#8aa0b6;font-weight:700;background:#121b25;border-top:none}
+  .stat-tbl .tot td{font-weight:800;color:#fff;background:#0f1a26}
+  .stat-tbl .done td:first-child{color:#34d399}
+  .stat-tbl .surv td:first-child{color:#60a5fa}
+  .stat-tbl .hold td:first-child{color:#f87171}
   .edit-fab{position:absolute;left:13px;bottom:24px;z-index:1200}
   .edit-fab button{background:#0d9488;color:#fff;border:none;border-radius:24px;padding:12px 18px;font-family:var(--sans);font-size:15px;font-weight:700;box-shadow:0 4px 14px rgba(0,0,0,.4);cursor:pointer}
   .ve-dot{width:16px;height:16px;border-radius:50%;background:#f59e0b;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.55);cursor:move}
@@ -1275,28 +1280,40 @@ document.getElementById('editCancel').onclick=()=>exitEditGeo(true);
 
 /* ===== 통계 (관리자 전용) ===== */
 function statFor(lines){
-  const r={cntT:0,mT:0,cntDone:0,mDone:0,cntProg:0,mProg:0,cntWait:0,mWait:0,cntHold:0,mHold:0,cntSurvey:0,mSurvey:0,cntOrders:0};
-  const _seen=new Set();
-  lines.forEach(o=>{const T=LEN(o),st=statusOf(o);r.cntT++;r.mT+=T;_seen.add(o.no);
-    if(st==='측량완료'){r.cntSurvey++;r.mSurvey+=T;r.cntDone++;r.mDone+=T;}
-    else if(st==='완료'){r.cntDone++;r.mDone+=T;}
+  // 지시건(사업소+지시번호) 단위 집계. 전 구간 완료=완료, 전 구간 측량완료=측량완료.
+  const groups={};
+  lines.forEach(o=>{const k=o.office+'|'+o.no;(groups[k]=groups[k]||[]).push(o);});
+  const r={cntOrders:0,mT:0,cntDone:0,mDone:0,cntProg:0,mProg:0,cntWait:0,mWait:0,cntHold:0,mHold:0,cntSurvey:0,mSurvey:0};
+  Object.values(groups).forEach(ps=>{
+    const T=ps.reduce((s,o)=>s+LEN(o),0);
+    r.cntOrders++;r.mT+=T;
+    const anyHold=ps.some(o=>o.hold);
+    const allDone=ps.every(o=>doneM(o)>=LEN(o)-0.5);
+    const noneStart=ps.every(o=>doneM(o)<=0.5);
+    const allSurvey=ps.every(o=>o.survey&&o.survey.done);
+    let st;
+    if(anyHold)st='보류';
+    else if(allDone)st='완료';
+    else if(noneStart)st='미진행';
+    else st='진행중';
+    if(st==='완료'){r.cntDone++;r.mDone+=T;}
     else if(st==='진행중'){r.cntProg++;r.mProg+=T;}
+    else if(st==='미진행'){r.cntWait++;r.mWait+=T;}
     else if(st==='보류'){r.cntHold++;r.mHold+=T;}
-    else{r.cntWait++;r.mWait+=T;}});
-  r.cntOrders=_seen.size;
+    if(allSurvey){r.cntSurvey++;r.mSurvey+=T;}
+  });
   return r;
 }
-function _sRow(label,c,m,cls){return '<tr'+(cls?' class="'+cls+'"':'')+'><td>'+label+'</td><td>'+c+' 건</td><td>'+fmt(m)+' m</td></tr>';}
+function _sRow(label,c,m,cls){return '<tr'+(cls?' class="'+cls+'"':'')+'><td>'+label+'</td><td>'+c+'건</td><td>'+fmt(m)+' m</td></tr>';}
 function _sTbl(title,r){
   return '<table class="stat-tbl"><caption>'+title+'</caption>'
-    +'<thead><tr><th>구분</th><th>건수</th><th>물량</th></tr></thead><tbody>'
-    +_sRow('지시건(고유번호)',r.cntOrders,r.mT,'tot')
-    +_sRow('└ 라인(구간)',r.cntT,r.mT)
-    +_sRow('완료',r.cntDone,r.mDone)
-    +_sRow('└ 측량완료',r.cntSurvey,r.mSurvey)
-    +_sRow('진행',r.cntProg,r.mProg)
+    +'<thead><tr><th>구분</th><th>건수</th><th>연장</th></tr></thead><tbody>'
+    +_sRow('지시건 총계',r.cntOrders,r.mT,'tot')
+    +_sRow('완료',r.cntDone,r.mDone,'done')
+    +_sRow('진행중',r.cntProg,r.mProg)
     +_sRow('미진행',r.cntWait,r.mWait)
-    +_sRow('보류',r.cntHold,r.mHold)
+    +_sRow('측량완료',r.cntSurvey,r.mSurvey,'surv')
+    +_sRow('보류',r.cntHold,r.mHold,'hold')
     +'</tbody></table>';
 }
 function pieceLabel(o){const same=LINES.filter(l=>l.office===o.office&&l.no===o.no);if(same.length<2)return '';const k=same.indexOf(o)+1;return ' <span style="color:#94a3b8;font-weight:500">('+k+'/'+same.length+')</span>';}
@@ -1305,7 +1322,7 @@ function renderStats(){
   const g=statFor(LINES.filter(l=>l.office==='강동'));
   const d=statFor(LINES.filter(l=>l.office==='동부'));
   const a=statFor(LINES);
-  box.innerHTML=_sTbl('강동수도사업소',g)+_sTbl('동부수도사업소',d)+_sTbl('합계',a);
+  box.innerHTML='<div class="stat-wrap"><div>'+_sTbl('강동수도사업소',g)+'</div><div>'+_sTbl('동부수도사업소',d)+'</div></div>'+_sTbl('합계 (전체)',a);
 }
 document.getElementById('statRefresh').onclick=renderStats;
 

@@ -1421,7 +1421,7 @@ function highlightDate(ds){
   try{const b=L.latLngBounds(all);if(b.isValid())map.fitBounds(b.pad(0.25),{maxZoom:18});}catch(e){}
   // 깜빡임 (일시적)
   let on=true,ticks=0;
-  hlTimer=setInterval(()=>{on=!on;hlLayers.forEach(l=>{if(l.setStyle)l.setStyle({opacity:on?.95:.15,weight:on?9:5});});ticks++;if(ticks>=13){clearHighlight();}},450);
+  hlTimer=setInterval(()=>{on=!on;hlLayers.forEach(l=>{if(l.setStyle)l.setStyle({opacity:on?.95:.15,weight:on?9:5});});ticks++;if(ticks>=22){clearHighlight();}},450);
   toast(ds+' · '+lines.length+'개 라인 표시');
 }
 

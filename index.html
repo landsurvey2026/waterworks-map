@@ -306,6 +306,13 @@
   #xpOvl .xp-it input{width:18px;height:18px;flex:none}
   #xpOvl .xp-foot{display:flex;gap:8px;padding:12px 14px;border-top:1px solid #e5e7eb}
   #xpOvl .xp-foot .adm-btn{flex:1}
+  .line-pick{position:fixed;z-index:2500;background:#fff;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,.3);border:1px solid #e5e7eb;overflow:hidden;min-width:180px;max-width:80vw}
+  .line-pick .lp-h{padding:9px 13px;font-size:12px;font-weight:700;color:#fff;background:#0f172a}
+  .line-pick .lp-it{display:flex;align-items:center;gap:9px;width:100%;text-align:left;background:none;border:none;border-top:1px solid #f1f5f9;padding:12px 13px;cursor:pointer}
+  .line-pick .lp-it:active{background:#eff6ff}
+  .line-pick .lp-dot{width:11px;height:11px;border-radius:50%;flex:none}
+  .line-pick .lp-no{font-family:var(--mono);font-size:13px;font-weight:700;color:#0f172a;flex:none}
+  .line-pick .lp-nm{font-size:12.5px;color:#64748b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .srch-empty{padding:30px;text-align:center;color:#5b6776;font-size:13px}
   .srch-note{padding:0 16px;font-size:11px;color:#5b6776;min-height:14px}
   .addr{margin-top:10px;font-size:12.5px;color:#475569;line-height:1.5;display:flex;gap:7px;align-items:flex-start}
@@ -963,6 +970,7 @@ L.control.zoom({position:'bottomright'}).addTo(map);
 const tiles={map:L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'}),sat:L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:19,attribution:'© Esri'})};
 tiles.map.addTo(map);base=tiles.map;
 map.on('click',e=>pickPoint(e.latlng));
+map.on('movestart zoomstart',()=>{if(typeof closeLinePicker==='function')closeLinePicker();});
 const officeColor={'강동':'#22d3ee','동부':'#f5a623'};
 boundaryLayer=L.geoJSON(BOUNDARIES,{interactive:false,style:f=>({color:officeColor[f.properties.office]||'#888',weight:4,opacity:.95,fillColor:officeColor[f.properties.office]||'#888',fillOpacity:.16})}).addTo(map);
 boundaryLayer.eachLayer(l=>{const p=l.feature.properties;l.bindTooltip(p.name+' ['+p.office+']',{permanent:true,direction:'center',className:'gulabel ot-'+p.office});});
@@ -1007,7 +1015,7 @@ function drawLines(){
     });
     const hit=L.polyline(o.coords,{color:'#000',weight:34,opacity:0}).addTo(map);
     hit.bindTooltip(esc(o.no),{sticky:true,direction:'top',opacity:0.95});
-    hit.on('click',e=>{if(mode==='draw'){addVertex(e.latlng);return;}if(mode==='editgeo')return;onLineClick(idx, snap(o.coords,[e.latlng.lat,e.latlng.lng]));});g.push(hit);
+    hit.on('click',e=>{clickAt(idx,e.latlng);});g.push(hit);
     gLayers[idx]=g;
     if(sel){ // cut nodes
       o.cuts.filter(c=>c>1&&c<T-1).forEach(c=>{const ll=ptAt(o.coords,c);
@@ -1017,6 +1025,34 @@ function drawLines(){
     }
   });
   if(typeof drawNextArrows==='function')drawNextArrows();
+}
+function _segPx(p,a,b){const dx=b.x-a.x,dy=b.y-a.y,L2=dx*dx+dy*dy;let t=L2?((p.x-a.x)*dx+(p.y-a.y)*dy)/L2:0;t=Math.max(0,Math.min(1,t));return Math.hypot(p.x-(a.x+t*dx),p.y-(a.y+t*dy));}
+function linesNear(latlng){const p0=map.latLngToContainerPoint(latlng);const res=[];LINES.forEach((o,i)=>{if(!inView(o)||!(o.coords||[]).length)return;const pts=o.coords.map(c=>map.latLngToContainerPoint(L.latLng(c[0],c[1])));let m=Infinity;if(pts.length===1)m=p0.distanceTo(pts[0]);else for(let k=0;k<pts.length-1;k++){const d=_segPx(p0,pts[k],pts[k+1]);if(d<m)m=d;}if(m<=18)res.push({i,o,d:m});});res.sort((a,b)=>a.d-b.d);return res;}
+function clickAt(idx,latlng){
+  if(mode==='draw'){addVertex(latlng);return;}
+  if(mode==='editgeo')return;
+  const near=linesNear(latlng);
+  if((mode==='cut'||mode==='tap')&&SEL!=null&&near.some(n=>n.i===SEL)){onLineClick(SEL,snap(LINES[SEL].coords,[latlng.lat,latlng.lng]));return;}
+  if(near.length>1){openLinePicker(near,latlng);return;}
+  const tgt=near.length?near[0].i:idx;
+  onLineClick(tgt,snap(LINES[tgt].coords,[latlng.lat,latlng.lng]));
+}
+function _lpDismiss(e){const b=document.getElementById('linePick');if(b&&!b.contains(e.target))closeLinePicker();}
+function closeLinePicker(){const b=document.getElementById('linePick');if(b)b.remove();document.removeEventListener('pointerdown',_lpDismiss,true);}
+function openLinePicker(near,latlng){
+  closeLinePicker();
+  const p=map.latLngToContainerPoint(latlng);
+  const box=document.createElement('div');box.id='linePick';box.className='line-pick';
+  box.innerHTML='<div class="lp-h">겹친 라인 '+near.length+'개 · 선택</div>'+near.slice(0,8).map(n=>{const o=n.o;const col=(o.survey&&o.survey.done)?'#2f6fed':(o.hold?'#ef4444':(doneM(o)>0.5?'#34d399':'#f59e0b'));return '<button class="lp-it" data-i="'+n.i+'"><span class="lp-dot" style="background:'+col+'"></span><span class="lp-no">'+esc(o.no)+'</span><span class="lp-nm">'+(o.name?esc(o.name):'')+'</span></button>';}).join('');
+  document.body.appendChild(box);
+  const mr=document.getElementById('map').getBoundingClientRect();
+  const bw=box.offsetWidth,bh=box.offsetHeight;
+  let x=mr.left+p.x+10,y=mr.top+p.y+10;
+  x=Math.max(8,Math.min(x,window.innerWidth-bw-8));
+  y=Math.max(8,Math.min(y,window.innerHeight-bh-8));
+  box.style.left=x+'px';box.style.top=y+'px';
+  box.querySelectorAll('.lp-it').forEach(b=>b.onclick=()=>{const i=+b.dataset.i;closeLinePicker();select(i);});
+  setTimeout(()=>document.addEventListener('pointerdown',_lpDismiss,true),0);
 }
 function onLineClick(idx,dist){
   if(SEL!==idx){select(idx);return;}

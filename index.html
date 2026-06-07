@@ -261,6 +261,7 @@
   .nx-target{animation:nxpulse 1.3s ease-in-out infinite}
   .nx-label{position:absolute;transform:translate(-50%,-50%);white-space:nowrap;background:#7c3aed;color:#fff;font-family:var(--sans);font-size:11.5px;font-weight:700;padding:3px 9px;border-radius:11px;box-shadow:0 2px 8px rgba(0,0,0,.4);border:1.5px solid #fff}
   .nx-label b{font-weight:700;margin:0 1px}
+  .wd-label{transform:translate(-50%,-50%);background:#f43f5e;color:#fff;font-family:var(--sans);font-size:11.5px;font-weight:700;padding:3px 9px;border-radius:10px;border:1.5px solid #fff;box-shadow:0 2px 7px rgba(0,0,0,.4);white-space:nowrap}
   .myloc{position:absolute;top:168px;right:13px;width:44px;height:44px;border-radius:50%;background:#fff;border:1px solid var(--line);box-shadow:0 2px 8px rgba(0,0,0,.2);font-size:21px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:600}
   .myloc:active{transform:scale(.93)}
   .myloc.locating{animation:locpulse 1s ease-in-out infinite}
@@ -1408,14 +1409,19 @@ function highlightDate(ds){
   const lines=LINES.filter(o=>want.has(o.office+'|'+o.no)&&(o.coords||[]).length>=2);
   if(!lines.length){toast('그날 작업한 라인이 없습니다');return;}
   const all=[];
+  const md=ds.slice(5).replace('-','/');
   lines.forEach(o=>{
     const pl=L.polyline(o.coords,{color:'#f43f5e',weight:9,opacity:.95,interactive:false}).addTo(map);
     hlLayers.push(pl);all.push(...o.coords);
+    const leads=[...new Set((o.daily||[]).filter(e=>e.d===ds).map(e=>whoOf(e.by).lead).filter(Boolean))].join(', ')||'미지정';
+    const mid=o.coords[Math.floor(o.coords.length/2)];
+    const mk=L.marker(mid,{interactive:false,zIndexOffset:2200,icon:L.divIcon({className:'',html:'<div class="wd-label">'+esc(leads)+' · '+md+'</div>',iconSize:[1,1],iconAnchor:[0,0]})}).addTo(map);
+    hlLayers.push(mk);
   });
   try{const b=L.latLngBounds(all);if(b.isValid())map.fitBounds(b.pad(0.25),{maxZoom:18});}catch(e){}
   // 깜빡임 (일시적)
   let on=true,ticks=0;
-  hlTimer=setInterval(()=>{on=!on;hlLayers.forEach(l=>l.setStyle({opacity:on?.95:.15,weight:on?9:5}));ticks++;if(ticks>=12){clearHighlight();}},450);
+  hlTimer=setInterval(()=>{on=!on;hlLayers.forEach(l=>{if(l.setStyle)l.setStyle({opacity:on?.95:.15,weight:on?9:5});});ticks++;if(ticks>=13){clearHighlight();}},450);
   toast(ds+' · '+lines.length+'개 라인 표시');
 }
 

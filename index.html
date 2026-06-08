@@ -435,6 +435,7 @@
     <button class="topbtn b" id="calBtn">현황</button>
     <button class="topbtn b" id="rosterBtn">배치</button>
     <button class="topbtn b" id="resultBtn">실적</button>
+    <button class="topbtn b" id="manualBtn">📖 매뉴얼</button>
     <button class="topbtn b" id="admBtn">관리자</button>
     <div class="kpi b"><div class="p" id="kpiPct">0%</div><div class="s" id="kpiM">0 / 0 m</div></div></div>
   <div class="layerbtn b"><button id="lyMap" class="on">지도</button><button id="lySat">위성</button><button id="lyBound" class="on">경계</button></div>
@@ -1391,6 +1392,7 @@ function renderStats(){
 document.getElementById('statRefresh').onclick=renderStats;
 const _rbtn=document.getElementById('rosterBtn');if(_rbtn)_rbtn.onclick=()=>rosterPopup(today(),true);
 const _resbtn=document.getElementById('resultBtn');if(_resbtn)_resbtn.onclick=()=>resultsPopup(workDate||today());
+const _manbtn=document.getElementById('manualBtn');if(_manbtn)_manbtn.onclick=()=>window.open('manual.html','_blank');
 const _bke=document.getElementById('bkExport');if(_bke)_bke.onclick=backupExport;
 const _bkr=document.getElementById('bkRestore');if(_bkr)_bkr.onclick=function(){backupRestore(this);};
 const _ru=document.getElementById('rosterUpload');if(_ru)_ru.onclick=async function(){

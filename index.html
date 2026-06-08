@@ -37,6 +37,16 @@
   .banner.show{display:block}.banner.cut{background:var(--accent)}.banner.tap{background:#fde68a}
   .banner small{display:block;font-weight:500;font-size:11px;margin-top:2px;opacity:.85}
   .legend{position:absolute;bottom:14px;left:13px;z-index:900;background:rgba(13,17,23,.82);backdrop-filter:blur(4px);color:#cbd5e1;font-size:10.5px;border-radius:9px;padding:8px 11px;line-height:1.7;pointer-events:none}
+  #gate{position:fixed;inset:0;z-index:4200;display:flex;align-items:center;justify-content:center;padding:20px;background:linear-gradient(180deg,#0b1220 0%,#0f1b2e 100%);font-family:var(--sans)}
+  #gate .gate-box{width:100%;max-width:340px;background:#111a28;border:1px solid #243650;border-radius:18px;padding:30px 24px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+  #gate .gate-logo{font-size:44px;margin-bottom:6px}
+  #gate .gate-title{font-size:18px;font-weight:800;color:#e6edf3}
+  #gate .gate-sub{font-size:13px;color:#7d94ac;margin:7px 0 20px}
+  #gate input{width:100%;box-sizing:border-box;background:#0b1320;border:1px solid #2b3f59;border-radius:11px;padding:13px 14px;font-size:16px;color:#e6edf3;text-align:center;letter-spacing:1px}
+  #gate input:focus{outline:none;border-color:#38bdf8}
+  #gate button{width:100%;margin-top:12px;background:#1f6feb;border:none;border-radius:11px;padding:13px;font-size:15px;font-weight:700;color:#fff;cursor:pointer;font-family:var(--sans)}
+  #gate button:active{background:#1a5fd0}
+  #gate .gate-err{color:#fca5a5;font-size:13px;font-weight:600;margin-top:11px;min-height:16px}
   #splash{position:fixed;inset:0;z-index:3000;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(180deg,#eaf6ff 0%,#d3ecfb 48%,#bfe0fa 100%);animation:splashOut .55s ease 1.7s forwards;font-family:var(--sans)}
   @keyframes splashOut{to{opacity:0;visibility:hidden}}
   #splash .sp-drop{width:120px;height:150px;filter:drop-shadow(0 10px 22px rgba(47,143,214,.35));animation:spBob 1.6s ease-in-out infinite}
@@ -387,6 +397,16 @@
   }
 </style>
 <div id="app">
+  <div id="gate">
+    <div class="gate-box">
+      <div class="gate-logo">💧</div>
+      <div class="gate-title">서울시 상수도 현장관리</div>
+      <div class="gate-sub">접속 비밀번호를 입력하세요</div>
+      <input id="gatePw" type="password" placeholder="비밀번호" autocomplete="off">
+      <button id="gateGo">들어가기</button>
+      <div id="gateErr" class="gate-err"></div>
+    </div>
+  </div>
   <div id="splash">
     <div class="sp-rays">
       <span></span><span></span><span></span><span></span><span></span><span></span><span></span>
@@ -1681,13 +1701,29 @@ function showPop(auto){const risks=atRisk();if(!risks.length)return;
 }
 function dlStartup(){showPop(true);}
 
-(async()=>{const _sp=document.getElementById('splash');if(_sp)setTimeout(()=>_sp.remove(),2600);await loadWorkers();await load();drawLines();renderKpi();
-  try{if(LINES.length){const b=L.latLngBounds(LINES.flatMap(o=>o.coords||[]));if(b.isValid())map.fitBounds(b.pad(0.1));}}catch(e){console.error('fit',e);}
+const ACCESS_PW="!2026";
+let _booted=false;
+async function startApp(){
+  if(_booted)return;_booted=true;
+  const _sp=document.getElementById('splash');if(_sp)setTimeout(()=>_sp.remove(),2600);
   setTimeout(()=>map.invalidateSize(),200);
+  await loadWorkers();await load();drawLines();renderKpi();
+  try{if(LINES.length){const b=L.latLngBounds(LINES.flatMap(o=>o.coords||[]));if(b.isValid())map.fitBounds(b.pad(0.1));}}catch(e){console.error('fit',e);}
+  setTimeout(()=>map.invalidateSize(),350);
   toast('라인 '+LINES.length+'개 불러옴');
   await loadRoster();
   setTimeout(maybeShowRoster,900);
   setTimeout(dlStartup,800);
+}
+function passGate(){const g=document.getElementById('gate');if(g)g.remove();startApp();}
+function tryGate(){const v=(document.getElementById('gatePw').value||'');if(v===ACCESS_PW){try{localStorage.setItem('wwAuth',ACCESS_PW);}catch(e){}passGate();}else{document.getElementById('gateErr').textContent='비밀번호가 올바르지 않습니다.';}}
+(function(){
+  let ok=false;try{ok=(localStorage.getItem('wwAuth')===ACCESS_PW);}catch(e){}
+  if(ok){passGate();return;}
+  const sp=document.getElementById('splash');if(sp)sp.style.display='none';
+  const go=document.getElementById('gateGo'),pw=document.getElementById('gatePw');
+  if(go)go.onclick=tryGate;
+  if(pw){pw.addEventListener('keydown',e=>{if(e.key==='Enter')tryGate();});setTimeout(()=>pw.focus(),200);}
 })();
 function setRole(){const el=document.getElementById('roleSub');if(el)el.textContent=(innerWidth>=760?'PC · 관리자 (전체화면)':'모바일 · 현장 사용자');}
 setRole();addEventListener('resize',()=>{setRole();setTimeout(()=>map.invalidateSize(),120);});

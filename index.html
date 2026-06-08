@@ -1004,7 +1004,9 @@ function addIv(list,iv){return merge([...list,iv]);}
 function subIv(list,a,b){const o=[];for(const[s,e]of list){if(e<=a+.1||s>=b-.1){o.push([s,e]);continue;}if(s<a)o.push([s,a]);if(e>b)o.push([b,e]);}return o;}
 const covered=(list,x)=>list.some(([a,b])=>x>=a-.5&&x<=b+.5);
 const doneM=o=>merge(o.completed).reduce((s,[a,b])=>s+(b-a),0);
-const pct=o=>{const T=LEN(o);return T>0?Math.min(100,Math.round(doneM(o)/T*100)):0;};
+function fmtPct(p){if(p<=0)return '0';if(p>=100)return '100';if(p<1)return p.toFixed(1);return String(Math.round(p));}
+const pctNum=o=>{const T=LEN(o);return T>0?Math.min(100,doneM(o)/T*100):0;};
+const pct=o=>fmtPct(pctNum(o));
 function statusOf(o){if(o.survey&&o.survey.done)return'측량완료';if(o.hold)return'보류';const d=doneM(o);const T=LEN(o);if(d<=.5)return'대기';if(d>=T-0.5)return'완료';return'진행중';}
 const SB={'대기':'b-wait','진행중':'b-prog','완료':'b-done','보류':'b-hold','측량완료':'b-survey'};
 function boundaries(o){const T=totalM(o.coords);const b=[0,...o.cuts.filter(c=>c>1&&c<T-1),T].sort((x,y)=>x-y);const u=[];for(const v of b)if(!u.length||v-u[u.length-1]>1)u.push(v);return u;}
@@ -1178,7 +1180,7 @@ const inYear=o=>YEAR==='전체'||(YEAR==='없음'?!yearOf(o):yearOf(o)===YEAR);
 const inView=o=>inOffice(o)&&inYear(o);
 function setYear(y){YEAR=y;document.querySelectorAll('#yearTabs button').forEach(b=>b.classList.toggle('on',b.dataset.y===y));SEL=null;clearPick();drawLines();renderKpi();renderSheet();}
 function setOffice(o){OFFICE=o;document.querySelectorAll('#officeTabs button').forEach(b=>b.classList.toggle('on',b.dataset.o===o));SEL=null;clearPick();drawLines();renderKpi();renderSheet();}
-function renderKpi(){const V=LINES.filter(inView);const tot=V.reduce((s,o)=>s+LEN(o),0),dn=V.reduce((s,o)=>s+Math.min(doneM(o),LEN(o)),0);kpiPct.textContent=(tot?Math.round(dn/tot*100):0)+'%';kpiM.textContent=fmt(dn)+' / '+fmt(tot)+' m';if(typeof refreshDeadlines==='function')refreshDeadlines();if(typeof refreshMismatch==='function')refreshMismatch();if(typeof refreshYearless==='function')refreshYearless();}
+function renderKpi(){const V=LINES.filter(inView);const tot=V.reduce((s,o)=>s+LEN(o),0),dn=V.reduce((s,o)=>s+Math.min(doneM(o),LEN(o)),0);kpiPct.textContent=fmtPct(tot?dn/tot*100:0)+'%';kpiM.textContent=fmt(dn)+' / '+fmt(tot)+' m';if(typeof refreshDeadlines==='function')refreshDeadlines();if(typeof refreshMismatch==='function')refreshMismatch();if(typeof refreshYearless==='function')refreshYearless();}
 function setBanner(){const bn=document.getElementById('banner');if(SEL===null){bn.classList.remove('show');return;}
   if(mode==='cut'){bn.className='banner cut show';bn.innerHTML='끊기 모드 · 라인을 탭해 끊을 위치를 추가<small>점을 다시 탭하면 삭제 · 끝나면 "완료체크"로 전환</small>';}
   else if(mode==='tap'){bn.className='banner tap show';bn.innerHTML='완료체크 모드 · 완료된 토막을 탭하면 완료<small>다시 탭하면 완료 해제 · 끝나면 다시 눌러 종료</small>';}

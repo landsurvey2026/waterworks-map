@@ -325,6 +325,25 @@
   .line-pick .lp-dot{width:11px;height:11px;border-radius:50%;flex:none}
   .line-pick .lp-no{font-family:var(--mono);font-size:13px;font-weight:700;color:#0f172a;flex:none}
   .line-pick .lp-nm{font-size:12.5px;color:#64748b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .rost-ovl{position:fixed;inset:0;z-index:3500;background:rgba(8,12,18,.55);display:flex;align-items:center;justify-content:center;padding:16px}
+  .rost-box{background:#fff;border-radius:18px;width:100%;max-width:460px;max-height:86vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 18px 50px rgba(0,0,0,.45)}
+  .rost-head{background:#0d9488;color:#fff;font-weight:800;font-size:16px;padding:15px 18px;display:flex;align-items:center;justify-content:space-between}
+  .rost-x{background:rgba(255,255,255,.2);border:none;color:#fff;width:28px;height:28px;border-radius:8px;font-size:14px;cursor:pointer;flex:none}
+  .rost-body{padding:14px 16px;overflow-y:auto}
+  .rost-grp{font-size:12px;font-weight:800;color:#0d9488;margin:13px 0 7px;letter-spacing:.3px}
+  .rost-grp:first-child{margin-top:0}
+  .rost-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:9px 11px;border:1px solid #e5e7eb;border-radius:11px;margin-bottom:7px}
+  .rost-no{font-family:var(--mono);font-weight:800;color:#0f172a;font-size:14px}
+  .rost-shift{font-size:11.5px;font-weight:700;padding:2px 9px;border-radius:20px}
+  .rost-shift.day{background:#fef3c7;color:#92400e}
+  .rost-shift.night{background:#dbeafe;color:#1e40af}
+  .rost-w{font-size:14px;font-weight:700;color:#0f172a}
+  .rost-boss{font-size:12px;color:#64748b;margin-left:auto}
+  .rost-duty{margin-top:14px;background:#fef2f2;border:1px solid #fecaca;color:#991b1b;font-weight:700;font-size:13.5px;padding:11px 13px;border-radius:11px}
+  .rost-empty{color:#64748b;font-size:14px;text-align:center;padding:26px 0}
+  .rost-foot{display:flex;gap:8px;padding:12px 16px;border-top:1px solid #eef2f6}
+  .rost-foot button{flex:1;border-radius:10px;padding:11px;font-family:var(--sans);font-size:14px;font-weight:700;cursor:pointer;border:1px solid #cbd5e1;background:#f1f5f9;color:#334155}
+  .rost-foot button.primary{background:#0d9488;border-color:#0d9488;color:#fff}
   .srch-empty{padding:30px;text-align:center;color:#5b6776;font-size:13px}
   .srch-note{padding:0 16px;font-size:11px;color:#5b6776;min-height:14px}
   .addr{margin-top:10px;font-size:12.5px;color:#475569;line-height:1.5;display:flex;gap:7px;align-items:flex-start}
@@ -387,6 +406,7 @@
     <div class="office-tabs b" id="yearTabs"><button data-y="전체" class="on">전체</button><button data-y="23">23년</button><button data-y="24">24년</button><button data-y="25">25년</button><button data-y="26">26년</button><button data-y="없음">없음</button></div>
     <button class="topbtn b" id="srchBtn">검색</button>
     <button class="topbtn b" id="calBtn">현황</button>
+    <button class="topbtn b" id="rosterBtn">배치</button>
     <button class="topbtn b" id="admBtn">관리자</button>
     <div class="kpi b"><div class="p" id="kpiPct">0%</div><div class="s" id="kpiM">0 / 0 m</div></div></div>
   <div class="layerbtn b"><button id="lyMap" class="on">지도</button><button id="lySat">위성</button><button id="lyBound" class="on">경계</button></div>
@@ -494,6 +514,14 @@
             <button id="xlsGuBtn" class="adm-btn">이 구 내보내기(주소)</button>
           </div>
           <div class="adm-row" style="margin-top:8px"><button id="xlsPick" class="adm-btn">지시건 선택 내보내기</button></div>
+        </div>
+        <div class="adm-grp">👷 일일 작업배치</div>
+        <div class="adm-sec">
+          <p class="adm-h">작업배치표 업로드</p>
+          <p style="color:#9fb0c3;font-size:12.5px;margin:0 0 8px">엑셀 배치표(.xlsx)를 올리면 현장 앱을 켤 때 그날 작업배치가 팝업으로 표시됩니다.</p>
+          <input id="rosterFile" type="file" accept=".xlsx">
+          <div class="adm-log" id="rosterLog">엑셀(.xlsx) 배치표를 선택하세요.</div>
+          <div class="adm-row"><button id="rosterUpload" class="adm-btn primary">배치표 업로드</button><button id="rosterPreview" class="adm-btn">오늘 배치 미리보기</button></div>
         </div>
         <div class="adm-grp">📊 현황 · 인원</div>
         <div class="adm-sec">
@@ -1325,12 +1353,70 @@ function renderStats(){
   box.innerHTML='<div class="stat-wrap"><div>'+_sTbl('강동수도사업소',g)+'</div><div>'+_sTbl('동부수도사업소',d)+'</div></div>'+_sTbl('합계 (전체)',a);
 }
 document.getElementById('statRefresh').onclick=renderStats;
+const _rbtn=document.getElementById('rosterBtn');if(_rbtn)_rbtn.onclick=()=>rosterPopup(today(),true);
+const _ru=document.getElementById('rosterUpload');if(_ru)_ru.onclick=async function(){
+  const fi=document.getElementById('rosterFile');const f=fi&&fi.files[0];if(!f){toast('엑셀 파일을 선택하세요');return;}
+  if(typeof ExcelJS==='undefined'){rlog('엑셀 라이브러리 로딩 중 · 잠시 후 다시',true);return;}
+  rlog('읽는 중…');this.disabled=true;
+  try{const buf=await f.arrayBuffer();const wb=new ExcelJS.Workbook();await wb.xlsx.load(buf);const R=parseRosterXlsx(wb);const nd=Object.keys(R.dates).length;
+    if(!nd){rlog('날짜 배치를 찾지 못했습니다. 양식을 확인하세요.',true);this.disabled=false;return;}
+    await saveRoster(R);ROSTER=R;
+    let tot=0;Object.values(R.dates).forEach(d=>tot+=(d.assign?d.assign.length:0));
+    rlog('업로드 완료 · 날짜 '+nd+'일 / 작업 '+tot+'건');toast('작업배치 업로드 완료 · '+nd+'일');
+  }catch(e){rlog('오류: '+e.message,true);console.error(e);}
+  this.disabled=false;
+};
+const _rp=document.getElementById('rosterPreview');if(_rp)_rp.onclick=()=>rosterPopup(today(),true);
 
 
 /* ===== 작업자 명단 + 오늘 작업자 ===== */
 let WORKERS=[], todayLead=null, todayHelpers=[];
 async function loadWorkers(){try{const r=await fetch(DB+'/'+KEY+'/workers.json');let w=await r.json();if(w&&!Array.isArray(w))w=Object.values(w);WORKERS=Array.isArray(w)?w.filter(Boolean):[];}catch(e){WORKERS=[];}}
 async function saveWorkers(){try{await fetch(DB+'/'+KEY+'/workers.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(WORKERS)});}catch(e){console.error('saveWorkers',e);}}
+/* ===== 일일 작업배치 (roster) ===== */
+let ROSTER={dates:{},duty:[]};
+async function loadRoster(){try{const r=await fetch(DB+'/'+KEY+'/roster.json');const j=await r.json();if(j&&j.dates)ROSTER=j;}catch(e){}}
+async function saveRoster(o){try{await fetch(DB+'/'+KEY+'/roster.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(o)});}catch(e){console.error('saveRoster',e);}}
+function parseRosterXlsx(wb){
+  const ws=wb.worksheets[0];
+  const V=(r,c)=>{if(r<1||c<1||r>ws.rowCount||c>ws.columnCount)return '';const v=ws.getCell(r,c).value;return v==null?'':(typeof v==='object'?(v.text||v.result||(v.richText?v.richText.map(x=>x.text).join(''):'')||''):String(v));};
+  const RW=ws.rowCount,CL=ws.columnCount,blocks=[];
+  for(let c=1;c<=CL;c++){const t=V(2,c);const m=t.match(/(\d+)년\s*(\d+)월\s*(\d+)일/);if(m&&V(2,c-1)!==t){blocks.push({c,ds:m[1]+'-'+String(+m[2]).padStart(2,'0')+'-'+String(+m[3]).padStart(2,'0')});}}
+  const dates={};let duty=[];
+  blocks.forEach(b=>{const sc=b.c,rec={assign:[],special:[]};
+    for(let r=3;r<=RW;r++){const a=V(r,sc).trim();
+      if(a.indexOf('현재 작업')===0)break;
+      if(a===''||a==='사업소'||a==='지역'||a==='대응')continue;
+      if(a==='동부'||a==='강동'){const no=V(r,sc+1).trim();if(!no)continue;rec.assign.push({office:a,no,shift:V(r,sc+2).trim(),worker:V(r,sc+3).trim(),boss:V(r,sc+4).trim()});}
+      else if(a.indexOf('마킹측량')===0||a==='내업'||a==='연차 및 지원'){const w=V(r,sc+1).trim();if(w)rec.special.push({label:a,workers:w});}
+      else if(a==='누수대응'){const period=V(r,sc+1).trim(),worker=V(r,sc+3).trim();if(period&&worker){const pm=period.match(/(\d+)\/(\d+)[^~]*~\s*(\d+)\/(\d+)/);if(pm)duty.push({from:pm[1].padStart(2,'0')+'-'+pm[2].padStart(2,'0'),to:pm[3].padStart(2,'0')+'-'+pm[4].padStart(2,'0'),worker,period});}}
+    }
+    dates[b.ds]=rec;
+  });
+  const seen={};duty=duty.filter(d=>{const k=d.period+d.worker;if(seen[k])return false;seen[k]=1;return true;});
+  return {dates,duty};
+}
+function dutyFor(ds){const md=ds.slice(5);let pick=null;(ROSTER.duty||[]).forEach(d=>{if(d.from<=md&&md<=d.to){if(!pick||d.from>pick.from)pick=d;}});return pick;}
+function rosterPopup(ds,force){
+  const rec=(ROSTER.dates||{})[ds];
+  let ov=document.getElementById('rosterOvl');if(ov)ov.remove();
+  ov=document.createElement('div');ov.id='rosterOvl';ov.className='rost-ovl';
+  let h='<div class="rost-box"><div class="rost-head">👷 오늘 작업배치 · '+fmtDate(ds)+'<button class="rost-x" id="rostX">✕</button></div><div class="rost-body">';
+  if(!rec||((!rec.assign||!rec.assign.length)&&(!rec.special||!rec.special.length))){h+='<p class="rost-empty">오늘 등록된 작업배치가 없습니다.</p>';}
+  else{['동부','강동'].forEach(off=>{const rows=(rec.assign||[]).filter(a=>a.office===off);if(!rows.length)return;h+='<div class="rost-grp">'+off+'수도사업소</div>';rows.forEach(a=>{const night=(a.shift||'').indexOf('야')>=0;h+='<div class="rost-row"><span class="rost-no">'+esc(a.no)+'</span><span class="rost-shift '+(night?'night':'day')+'">'+esc(a.shift||'')+'</span><span class="rost-w">'+esc(a.worker||'')+'</span>'+(a.boss?'<span class="rost-boss">소장 '+esc(a.boss)+'</span>':'')+'</div>';});});
+    if(rec.special&&rec.special.length){h+='<div class="rost-grp">측량 · 내업 · 지원</div>';rec.special.forEach(s=>{h+='<div class="rost-row"><span class="rost-no">'+esc(s.label)+'</span><span class="rost-w">'+esc(s.workers)+'</span></div>';});}
+  }
+  const duty=dutyFor(ds);if(duty)h+='<div class="rost-duty">🚨 누수대응 당직 · <b>'+esc(duty.worker)+'</b></div>';
+  h+='</div><div class="rost-foot"><button id="rostDismiss">오늘 그만 보기</button><button class="primary" id="rostClose">닫기</button></div></div>';
+  ov.innerHTML=h;document.body.appendChild(ov);
+  const close=()=>ov.remove();
+  ov.querySelector('#rostX').onclick=close;ov.querySelector('#rostClose').onclick=close;
+  ov.querySelector('#rostDismiss').onclick=()=>{try{localStorage.setItem('rosterDismiss',ds);}catch(e){}close();toast('오늘은 다시 표시하지 않습니다');};
+  ov.onclick=e=>{if(e.target===ov)close();};
+}
+function maybeShowRoster(){const t=today();let dis='';try{dis=localStorage.getItem('rosterDismiss')||'';}catch(e){}if((ROSTER.dates||{})[t]&&dis!==t)rosterPopup(t,false);}
+function rlog(m,err){const el=document.getElementById('rosterLog');if(el){el.textContent=m;el.style.color=err?'#fca5a5':'#9fb0c3';}}
+
 function whoOf(by){if(by&&typeof by==='object'&&!Array.isArray(by))return{lead:by.lead||'미지정',helpers:by.helpers||[]};if(Array.isArray(by))return{lead:by[0]||'미지정',helpers:by.slice(1)};if(by)return{lead:by,helpers:[]};return{lead:'미지정',helpers:[]};}
 function byText(by){const w=whoOf(by);return w.lead+(w.helpers.length?' (보조 '+w.helpers.join(', ')+')':'');}
 
@@ -1530,6 +1616,8 @@ function dlStartup(){showPop(true);}
   try{if(LINES.length){const b=L.latLngBounds(LINES.flatMap(o=>o.coords||[]));if(b.isValid())map.fitBounds(b.pad(0.1));}}catch(e){console.error('fit',e);}
   setTimeout(()=>map.invalidateSize(),200);
   toast('라인 '+LINES.length+'개 불러옴');
+  await loadRoster();
+  setTimeout(maybeShowRoster,900);
   setTimeout(dlStartup,800);
 })();
 function setRole(){const el=document.getElementById('roleSub');if(el)el.textContent=(innerWidth>=760?'PC · 관리자 (전체화면)':'모바일 · 현장 사용자');}

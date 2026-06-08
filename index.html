@@ -503,6 +503,14 @@
           </div>
           <div class="adm-list" id="admList"></div>
         </div>
+        <div class="adm-sec">
+          <p class="adm-h">데이터 백업 / 복원</p>
+          <p style="color:#9fb0c3;font-size:12.5px;margin:0 0 8px">전체 데이터(라인·완료기록·작업자·작업배치)를 파일 하나로 저장하고, 그 파일로 되돌릴 수 있습니다. 작업 전에 백업해 두면 안전합니다.</p>
+          <div class="adm-row"><button id="bkExport" class="adm-btn primary">전체 백업 내보내기(.json)</button></div>
+          <div class="adm-row" style="margin-top:8px"><input id="bkFile" type="file" accept=".json"></div>
+          <div class="adm-log" id="bkLog">복원하려면 백업 파일(.json)을 선택하세요.</div>
+          <div class="adm-row"><button id="bkRestore" class="adm-btn danger">이 파일로 복원</button></div>
+        </div>
         <div class="adm-grp">📤 내보내기</div>
         <div class="adm-sec">
           <p class="adm-h">DXF 내보내기</p>
@@ -1363,6 +1371,8 @@ function renderStats(){
 document.getElementById('statRefresh').onclick=renderStats;
 const _rbtn=document.getElementById('rosterBtn');if(_rbtn)_rbtn.onclick=()=>rosterPopup(today(),true);
 const _resbtn=document.getElementById('resultBtn');if(_resbtn)_resbtn.onclick=()=>resultsPopup(workDate||today());
+const _bke=document.getElementById('bkExport');if(_bke)_bke.onclick=backupExport;
+const _bkr=document.getElementById('bkRestore');if(_bkr)_bkr.onclick=function(){backupRestore(this);};
 const _ru=document.getElementById('rosterUpload');if(_ru)_ru.onclick=async function(){
   const fi=document.getElementById('rosterFile');const f=fi&&fi.files[0];if(!f){toast('엑셀 파일을 선택하세요');return;}
   if(typeof ExcelJS==='undefined'){rlog('엑셀 라이브러리 로딩 중 · 잠시 후 다시',true);return;}
@@ -1386,6 +1396,34 @@ async function saveWorkers(){try{await fetch(DB+'/'+KEY+'/workers.json',{method:
 let ROSTER={dates:{},duty:[]};
 async function loadRoster(){try{const r=await fetch(DB+'/'+KEY+'/roster.json');const j=await r.json();if(j&&j.dates)ROSTER=j;}catch(e){}}
 async function saveRoster(o){try{await fetch(DB+'/'+KEY+'/roster.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(o)});}catch(e){console.error('saveRoster',e);}}
+function bklog(m,err){const el=document.getElementById('bkLog');if(el){el.textContent=m;el.style.color=err?'#fca5a5':'#9fb0c3';}}
+async function backupExport(){
+  const data={app:'waterworks',version:1,savedAt:new Date().toISOString(),lines:LINES,workers:WORKERS,roster:ROSTER};
+  const blob=new Blob([JSON.stringify(data)],{type:'application/json'});
+  const name='상수도백업_'+today()+'.json';
+  try{
+    if(window.showSaveFilePicker){const h=await window.showSaveFilePicker({suggestedName:name,types:[{description:'JSON',accept:{'application/json':['.json']}}]});const w=await h.createWritable();await w.write(blob);await w.close();bklog('백업 완료 · 라인 '+LINES.length+'개');toast('백업 내보냄');return;}
+  }catch(e){if(e&&e.name==='AbortError'){return;}}
+  const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{a.remove();URL.revokeObjectURL(url);},4000);
+  bklog('백업 완료 · 라인 '+LINES.length+'개');toast('백업 내보냄');
+}
+let _bkPending=false,_bkTimer=null;
+async function backupRestore(btn){
+  const fi=document.getElementById('bkFile');const f=fi&&fi.files[0];
+  if(!f){bklog('백업 파일(.json)을 먼저 선택하세요',true);return;}
+  if(!_bkPending){_bkPending=true;btn.textContent='⚠ 한 번 더 누르면 덮어씁니다';clearTimeout(_bkTimer);_bkTimer=setTimeout(()=>{_bkPending=false;btn.textContent='이 파일로 복원';},4000);return;}
+  _bkPending=false;clearTimeout(_bkTimer);btn.textContent='이 파일로 복원';btn.disabled=true;
+  try{
+    const txt=await f.text();const d=JSON.parse(txt);
+    if(!d||!Array.isArray(d.lines))throw new Error('올바른 백업 파일이 아닙니다');
+    LINES=normalize(d.lines);await save();
+    if(Array.isArray(d.workers)){WORKERS=d.workers;await saveWorkers();if(typeof renderRoster==='function')renderRoster();}
+    if(d.roster&&d.roster.dates){ROSTER=d.roster;await saveRoster(d.roster);}
+    drawLines();renderKpi();if(typeof renderStats==='function')renderStats();if(typeof admRefresh==='function')admRefresh();
+    bklog('복원 완료 · 라인 '+LINES.length+'개 / 작업자 '+(WORKERS?WORKERS.length:0)+'명');toast('복원 완료 · 라인 '+LINES.length+'개');
+  }catch(e){bklog('복원 오류: '+e.message,true);console.error(e);}
+  btn.disabled=false;
+}
 function parseRosterXlsx(wb){
   const ws=wb.worksheets[0];
   const V=(r,c)=>{if(r<1||c<1||r>ws.rowCount||c>ws.columnCount)return '';const v=ws.getCell(r,c).value;return v==null?'':(typeof v==='object'?(v.text||v.result||(v.richText?v.richText.map(x=>x.text).join(''):'')||''):String(v));};

@@ -115,6 +115,12 @@
   .track{height:12px;border-radius:7px;background:#eef1f5;overflow:hidden;margin-top:7px}.track i{display:block;height:100%;background:linear-gradient(90deg,var(--done),#6ee7b7);transition:width .4s}
   .rem{text-align:right;font-family:var(--mono);font-size:12px;color:#0891b2;margin-top:5px}
   .modebar{display:flex;gap:8px;margin:14px 0 4px}
+  .cutnum{display:flex;align-items:center;gap:7px;margin:8px 0 2px;background:#fff5f5;border:1px solid #f3c8cc;border-radius:11px;padding:9px 11px}
+  .cutnum .cl{font-size:12.5px;font-weight:700;color:#b23b46;white-space:nowrap}
+  .cutnum input{flex:1;min-width:0;border:1px solid #e3b9bd;border-radius:8px;padding:9px 10px;font-size:15px;text-align:right;color:#0f172a}
+  .cutnum .cu{font-size:12.5px;color:#9a5560;font-weight:700}
+  .cutnum #cutGo{flex:none;background:#e11d48;color:#fff;border:none;border-radius:8px;padding:9px 13px;font-size:13px;font-weight:700;cursor:pointer}
+  .cuthint{font-size:11.5px;color:#9aa7b4;margin:3px 2px 0}
   .modebar button{flex:1;font-family:var(--sans);font-weight:600;font-size:13px;border:1.5px solid var(--line);background:#fff;color:var(--muted);border-radius:11px;padding:11px;cursor:pointer}
   .modebar button.on{border-color:var(--ink);background:var(--ink);color:#fff}
   .modebar button.cut.on{background:var(--accent);border-color:var(--accent);color:#06222a}
@@ -1017,7 +1023,7 @@ function normalize(arr){return (arr||[]).filter(Boolean).map(o=>({...o,cuts:o.cu
 async function load(){try{const r=await fetch(DB+'/'+KEY+'/lines.json');let d=await r.json();if(d&&!Array.isArray(d))d=Object.values(d);if(Array.isArray(d)&&d.length){LINES=normalize(d);}else if(CONFIG.SEED_IF_EMPTY){LINES=DATA.lines.map(l=>({...l}));await save();}else{LINES=[];}}catch(e){console.error('load',e);LINES=[];}}
 async function save(){try{await fetch(DB+'/'+KEY+'/lines.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(LINES)});}catch(e){console.error('save',e);}}
 
-const map=L.map('map',{zoomControl:false}).setView(DATA.center,14);
+const map=L.map('map',{zoomControl:false,maxZoom:22}).setView(DATA.center,14);
 map.createPane('hlPane');map.getPane('hlPane').style.zIndex=410;map.getPane('hlPane').style.pointerEvents='none';
 let locMk=null,locAcc=null;
 function gotoMyLocation(){
@@ -1050,7 +1056,7 @@ function gotoMyLocation(){
 }
 document.getElementById('myLoc').onclick=gotoMyLocation;
 L.control.zoom({position:'bottomright'}).addTo(map);
-const tiles={map:L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'}),sat:L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:19,attribution:'© Esri'})};
+const tiles={map:L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxNativeZoom:19,maxZoom:22,attribution:'© OpenStreetMap'}),sat:L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxNativeZoom:19,maxZoom:22,attribution:'© Esri'})};
 tiles.map.addTo(map);base=tiles.map;
 map.on('click',e=>pickPoint(e.latlng));
 map.on('movestart zoomstart',()=>{if(typeof closeLinePicker==='function')closeLinePicker();});
@@ -1152,8 +1158,8 @@ function onLineClick(idx,dist){
   if(SEL!==idx){select(idx);return;}
   const o=LINES[idx];
   if(mode==='cut'){
-    const T=totalM(o.coords);if(dist<2||dist>T-2){toast('라인 안쪽을 탭하세요');return;}
-    if(o.cuts.some(c=>Math.abs(c-dist)<3)){toast('이미 가까운 끊김이 있어요');return;}
+    const T=totalM(o.coords);if(dist<1||dist>T-1){toast('라인 안쪽을 탭하세요');return;}
+    if(o.cuts.some(c=>Math.abs(c-dist)<1.5)){toast('이미 가까운 끊김이 있어요');return;}
     o.cuts.push(Math.round(dist*10)/10);save();drawLines();renderSheet();toast(`${fmt(dist)}m 지점 끊김`);
   }else if(mode==='tap'){
     const seg=segsOf(o).find(([a,b])=>dist>=a-.5&&dist<=b+.5);if(!seg)return;toggleSeg(idx,seg[0],seg[1]);
@@ -1209,6 +1215,7 @@ function renderSheet(){
     <div class="datepill" id="datePill"><span class="lab">작업일자</span><span class="val">${fmtDate(workDate)}</span><span class="car">변경 ▾</span></div>
     <div class="wkchip" id="wkChip"><span class="lab">오늘 작업자</span><span class="val">${todayLead?esc(todayLead)+(todayHelpers.length?` <span style="color:#64748b;font-weight:500">+보조 ${esc(todayHelpers.join(", "))}</span>`:""):"미지정"}</span><span class="car">선택 ▾</span></div>
     <div class="modebar"><button class="cut ${mode==='cut'?'on':''}" id="mCut">✂ 끊기</button><button class="${mode==='tap'?'on':''}" id="mTap">✓ 완료체크</button></div>
+    ${mode==='cut'?`<div class="cutnum"><span class="cl">끊을 위치</span><input id="cutAt" type="number" min="0" max="${Math.floor(T)}" step="0.1" placeholder="0 ~ ${fmt(T)}"><span class="cu">m</span><button id="cutGo">여기 끊기</button></div><div class="cuthint">짧은 구간은 지도를 더 확대하거나, 끊을 위치(m)를 직접 입력하세요</div>`:''}
     ${doneM(o)>0.5?`<button class="btn-reset" id="ireset">↺ 이 라인 완료 전체 취소</button>`:''}
     <div class="sec"><span>구간 (${segs.length}개) — [완료체크] 켜고 탭하면 완료</span></div>
     <div class="segs">${segHtml}</div>
@@ -1228,6 +1235,7 @@ function renderSheet(){
   if(sheetCollapsed){sh.classList.add('collapsed');_tab.classList.add('show');}else{sh.classList.remove('collapsed');_tab.classList.remove('show');}
   setBanner();
   mCut.onclick=()=>{mode=(mode==='cut'?'view':'cut');if(window.innerWidth<760)sheetCollapsed=(mode!=='view');drawLines();renderSheet();};  mTap.onclick=()=>{const on=(mode!=='tap');mode=(on?'tap':'view');if(on&&!todayLead){openWk();}if(window.innerWidth<760)sheetCollapsed=(mode!=='view');drawLines();renderSheet();};
+  const _cg=document.getElementById('cutGo');if(_cg)_cg.onclick=()=>{const inp=document.getElementById('cutAt');const v=parseFloat(inp.value);if(!isFinite(v)){toast('끊을 위치(m)를 입력하세요');return;}const TT=totalM(o.coords);if(v<1||v>TT-1){toast('0 ~ '+fmt(TT)+'m 안쪽 값을 넣으세요');return;}if(o.cuts.some(c=>Math.abs(c-v)<1.5)){toast('이미 가까운 끊김이 있어요');return;}o.cuts.push(Math.round(v*10)/10);save();drawLines();renderSheet();toast(fmt(v)+'m 지점 끊김');};
   const _wc=document.getElementById('wkChip');if(_wc)_wc.onclick=openWk;
   document.getElementById('datePill').onclick=openCal;
   document.getElementById('editBtn').onclick=openEdit;

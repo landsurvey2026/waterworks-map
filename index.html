@@ -120,7 +120,8 @@
   .ahd-row{display:flex;align-items:center;gap:7px}
   .ahd-row input{flex:1;min-width:0;border:1px solid #b6dfce;border-radius:9px;padding:11px 12px;font-size:17px;text-align:right;color:#0f172a;font-weight:700}
   .ahd-u{font-size:13px;color:#3f8f7e;font-weight:700}
-  .ahd-row #ahdGo{flex:none;background:#0d9488;color:#fff;border:none;border-radius:9px;padding:11px 15px;font-size:14px;font-weight:800;cursor:pointer}
+  .ahd-row .ahd-add{flex:none;background:#0d9488;color:#fff;border:none;border-radius:9px;padding:11px 14px;font-size:13.5px;font-weight:800;cursor:pointer}
+  .ahd-row .ahd-sub{flex:none;background:#fff;color:#b23b46;border:1px solid #e6b3b8;border-radius:9px;padding:11px 13px;font-size:13.5px;font-weight:800;cursor:pointer}
   .ahd-hint{font-size:11.5px;color:#6b9e90;margin-top:6px}
   .modebar{display:flex;gap:8px;margin:14px 0 4px}
   .cutnum{display:flex;align-items:center;gap:7px;margin:8px 0 2px;background:#fff5f5;border:1px solid #f3c8cc;border-radius:11px;padding:9px 11px}
@@ -1191,14 +1192,36 @@ async function completeRemaining(idx){
 async function completeAhead(idx,len){
   const o=LINES[idx],T=LEN(o);
   if(!(len>0)){toast('완료한 길이(m)를 입력하세요');return;}
-  const m=merge(o.completed);let start=0;m.forEach(([a,b])=>{if(b>start)start=b;});
-  if(start>=T-0.5){toast('이미 100% 완료');return;}
-  const end=Math.min(start+len,T);
-  o.completed=addIv(o.completed,[start,end]);
-  o.daily.push({d:workDate,from:Math.round(start*10)/10,to:Math.round(end*10)/10,v:Math.round((end-start)*10)/10,by:{lead:(todayLead||'미지정'),helpers:todayHelpers.slice()}});
-  [start,end].forEach(c=>{if(c>1&&c<T-1&&!o.cuts.some(x=>Math.abs(x-c)<1))o.cuts.push(Math.round(c*10)/10);});
+  const rem=T-doneM(o);
+  if(rem<=0.5){toast('이미 100% 완료');return;}
+  len=Math.min(len,rem); // 남은 양 이상은 채우지 않음
+  const m=merge(o.completed);let a,b;
+  if(!m.length){a=0;b=len;}
+  else{const touchStart=m[0][0]<=0.5,touchEnd=m[m.length-1][1]>=T-0.5;
+    if(touchEnd&&!touchStart){b=m[0][0];a=b-len;}       // 끝쪽에서 진행중 → 앞으로 이어 붙임
+    else{a=m[m.length-1][1];b=a+len;}                    // 기본: 완료 끝에서 뒤로 이어 붙임
+  }
+  a=Math.max(0,a);b=Math.min(T,b);
+  o.completed=addIv(o.completed,[a,b]);
+  o.daily.push({d:workDate,from:Math.round(a*10)/10,to:Math.round(b*10)/10,v:Math.round((b-a)*10)/10,by:{lead:(todayLead||'미지정'),helpers:todayHelpers.slice()}});
+  [a,b].forEach(c=>{if(c>1&&c<T-1&&!o.cuts.some(x=>Math.abs(x-c)<1))o.cuts.push(Math.round(c*10)/10);});
   await save();drawLines();renderKpi();renderSheet();
-  toast(`이어서 +${fmt(end-start)}m 완료 (누적 ${fmt(end)}m)`);
+  toast(`이어서 +${fmt(b-a)}m 완료 (누적 ${fmt(doneM(o))} / ${fmt(T)}m)`);
+}
+async function completeBack(idx,len){
+  const o=LINES[idx],T=LEN(o);
+  if(!(len>0)){toast('취소할 길이(m)를 입력하세요');return;}
+  const dn=doneM(o);if(dn<=0.5){toast('완료된 구간이 없습니다');return;}
+  len=Math.min(len,dn);
+  const m=merge(o.completed);const touchStart=m[0][0]<=0.5,touchEnd=m[m.length-1][1]>=T-0.5;
+  let a,b;
+  if(touchEnd&&!touchStart){a=m[0][0];b=a+len;}         // 끝쪽에서 진행중 → 시작 끝부터 깎기
+  else{b=m[m.length-1][1];a=b-len;}                      // 기본: 마지막 완료지점에서 뒤로 깎기
+  a=Math.max(0,a);b=Math.min(T,b);
+  o.completed=subIv(merge(o.completed),a,b);
+  o.daily=o.daily.filter(e=>!(e.from<b-0.5&&e.to>a+0.5)); // 겹치는 완료기록 정리
+  await save();drawLines();renderKpi();renderSheet();
+  toast(`완료 취소 -${fmt(b-a)}m (누적 ${fmt(doneM(o))} / ${fmt(T)}m)`);
 }
 const inOffice=o=>OFFICE==='전체'||o.office===OFFICE;
 function yearOf(o){const m=(o.no||'').match(/\((\d{2})년\)/);return m?m[1]:null;}
@@ -1234,7 +1257,7 @@ function renderSheet(){
     <div class="prog"><div class="nums"><span>시공 연장</span><span><b>${fmt(dn)}</b> / ${fmt(T)} m</span></div><div class="track"><i style="width:${p}%"></i></div><div class="rem">${p}% · 잔여 ${rem<0.5?0:fmt(rem)} m</div></div>
     <div class="datepill" id="datePill"><span class="lab">작업일자</span><span class="val">${fmtDate(workDate)}</span><span class="car">변경 ▾</span></div>
     <div class="wkchip" id="wkChip"><span class="lab">오늘 작업자</span><span class="val">${todayLead?esc(todayLead)+(todayHelpers.length?` <span style="color:#64748b;font-weight:500">+보조 ${esc(todayHelpers.join(", "))}</span>`:""):"미지정"}</span><span class="car">선택 ▾</span></div>
-    ${p>=100?'':`<div class="aheadbox"><div class="ahd-lab">오늘 완료한 길이 <small>(완료된 지점에서 이어서)</small></div><div class="ahd-row"><input id="ahdLen" type="number" min="0" max="${Math.floor(rem)}" step="0.1" placeholder="예: 30"><span class="ahd-u">m</span><button id="ahdGo">완료 추가</button></div><div class="ahd-hint">현재 완료 ${fmt(dn)}m · 잔여 ${rem<0.5?0:fmt(rem)}m</div></div>`}
+    <div class="aheadbox"><div class="ahd-lab">오늘 작업 길이 입력 <small>(완료 지점에서 이어서/되돌리기)</small></div><div class="ahd-row"><input id="ahdLen" type="number" min="0" step="0.1" placeholder="예: 30"><span class="ahd-u">m</span>${p>=100?'':`<button id="ahdGo" class="ahd-add">완료 추가</button>`}${dn>0.5?`<button id="ahdBack" class="ahd-sub">완료 취소</button>`:''}</div><div class="ahd-hint">현재 완료 ${fmt(dn)}m · 잔여 ${rem<0.5?0:fmt(rem)}m</div></div>
     <div class="modebar"><button class="cut ${mode==='cut'?'on':''}" id="mCut">✂ 끊기</button><button class="${mode==='tap'?'on':''}" id="mTap">✓ 완료체크</button></div>
     ${mode==='cut'?`<div class="cutnum"><span class="cl">끊을 위치</span><input id="cutAt" type="number" min="0" max="${Math.floor(T)}" step="0.1" placeholder="0 ~ ${fmt(T)}"><span class="cu">m</span><button id="cutGo">여기 끊기</button></div><div class="cuthint">짧은 구간은 지도를 더 확대하거나, 끊을 위치(m)를 직접 입력하세요</div>`:''}
     ${doneM(o)>0.5?`<button class="btn-reset" id="ireset">↺ 이 라인 완료 전체 취소</button>`:''}
@@ -1257,7 +1280,8 @@ function renderSheet(){
   setBanner();
   mCut.onclick=()=>{mode=(mode==='cut'?'view':'cut');if(window.innerWidth<760)sheetCollapsed=(mode!=='view');drawLines();renderSheet();};  mTap.onclick=()=>{const on=(mode!=='tap');mode=(on?'tap':'view');if(on&&!todayLead){openWk();}if(window.innerWidth<760)sheetCollapsed=(mode!=='view');drawLines();renderSheet();};
   const _cg=document.getElementById('cutGo');if(_cg)_cg.onclick=()=>{const inp=document.getElementById('cutAt');const v=parseFloat(inp.value);if(!isFinite(v)){toast('끊을 위치(m)를 입력하세요');return;}const TT=totalM(o.coords);if(v<1||v>TT-1){toast('0 ~ '+fmt(TT)+'m 안쪽 값을 넣으세요');return;}if(o.cuts.some(c=>Math.abs(c-v)<1.5)){toast('이미 가까운 끊김이 있어요');return;}o.cuts.push(Math.round(v*10)/10);save();drawLines();renderSheet();toast(fmt(v)+'m 지점 끊김');};
-  const _ag=document.getElementById('ahdGo');if(_ag)_ag.onclick=()=>{const inp=document.getElementById('ahdLen');const v=parseFloat(inp.value);if(!isFinite(v)||v<=0){toast('완료한 길이(m)를 입력하세요');return;}completeAhead(SEL,v);};
+  const _ag=document.getElementById('ahdGo');if(_ag)_ag.onclick=()=>{const v=parseFloat(document.getElementById('ahdLen').value);if(!isFinite(v)||v<=0){toast('완료한 길이(m)를 입력하세요');return;}completeAhead(SEL,v);};
+  const _ab=document.getElementById('ahdBack');if(_ab)_ab.onclick=()=>{const v=parseFloat(document.getElementById('ahdLen').value);if(!isFinite(v)||v<=0){toast('취소할 길이(m)를 입력하세요');return;}completeBack(SEL,v);};
   const _wc=document.getElementById('wkChip');if(_wc)_wc.onclick=openWk;
   document.getElementById('datePill').onclick=openCal;
   document.getElementById('editBtn').onclick=openEdit;

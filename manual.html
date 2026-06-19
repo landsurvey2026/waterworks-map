@@ -28,12 +28,15 @@
   .toc a:active{background:#eef6ff}
   .toc a::before{content:counter(t);width:26px;height:26px;flex:none;border-radius:8px;background:#e7f0fd;color:var(--blue);font-weight:800;font-size:13px;display:grid;place-items:center}
   .step{background:#fff;border:1px solid var(--line);border-radius:20px;padding:20px 18px 22px;margin:18px 0;box-shadow:var(--shadow);scroll-margin-top:14px}
+  .step.hero{border:2px solid #8fd9c6;box-shadow:0 12px 34px rgba(13,148,136,.16)}
   .step-h{display:flex;align-items:center;gap:12px;margin-bottom:6px}
   .num{width:38px;height:38px;flex:none;border-radius:11px;background:linear-gradient(150deg,var(--blue),#3a8af0);color:#fff;font-family:'Jua',sans-serif;font-size:19px;display:grid;place-items:center;box-shadow:0 4px 12px rgba(31,111,235,.35)}
+  .num.tealnum{background:linear-gradient(150deg,#0d9488,#14b8a6);box-shadow:0 4px 12px rgba(13,148,136,.4)}
   .step-h h3{font-family:'Jua',sans-serif;font-weight:400;font-size:20px;margin:0;letter-spacing:-.3px}
   .step p{margin:9px 0;font-size:14.5px;color:#26425c}
   .step .sub{color:var(--ink2);font-size:13.5px}
   .b{color:var(--blue);font-weight:700}.t{color:var(--teal);font-weight:700}
+  .badge-best{display:inline-block;background:#0d9488;color:#fff;font-size:11px;font-weight:800;padding:2px 9px;border-radius:999px;margin-left:7px;vertical-align:middle}
   .key{display:inline-block;background:#0c2236;color:#fff;font-weight:700;font-size:12.5px;padding:2px 9px;border-radius:7px;margin:0 1px;white-space:nowrap}
   .key.b{background:var(--blue)}.key.t{background:var(--teal)}.key.g{background:#475569}.key.rose{background:#e11d48}.key.green{background:#15803d}
   .note{display:flex;gap:10px;align-items:flex-start;background:#fff8ec;border:1px solid #f6e0b3;border-radius:13px;padding:12px 13px;margin:12px 0 0;font-size:13.5px;color:#7a5a12}
@@ -47,6 +50,7 @@
   .do li{counter-increment:do;position:relative;padding:9px 0 9px 36px;font-size:14.3px;color:#26425c;border-bottom:1px dashed #e6eef6}
   .do li:last-child{border-bottom:none}
   .do li::before{content:counter(do);position:absolute;left:0;top:8px;width:24px;height:24px;border-radius:8px;background:#eaf2fe;color:var(--blue);font-weight:800;font-size:12.5px;display:grid;place-items:center}
+  .do.teal li::before{background:#d5f3ec;color:#0d9488}
   .mini{margin:10px 0 0;padding:0;list-style:none}
   .mini li{position:relative;padding:6px 0 6px 26px;font-size:14px;color:#26425c}
   .mini li::before{content:"";position:absolute;left:6px;top:13px;width:8px;height:8px;border-radius:50%;background:var(--sky)}
@@ -72,8 +76,9 @@
   </div>
 
   <div class="lead">
-    이 안내서는 <b>현장 작업자</b>가 휴대폰으로 직접 따라 할 수 있게 만들었습니다. 특히 <b>라인 끊기</b>와 <b>공사 완료 입력</b>은
-    버튼 이름과 누르는 순서를 하나하나 적었어요. 그림은 이해를 돕는 <span class="illus-note">예시 화면</span>이라 실제와 조금 다를 수 있습니다.
+    이 안내서는 <b>현장 작업자</b>가 휴대폰으로 직접 따라 할 수 있게 만들었습니다.
+    완료 입력은 <b>가장 쉬운 「오늘 완료한 길이」 입력</b>을 먼저 설명하고, 끊기·완료체크는 그다음에 둡니다.
+    그림은 이해를 돕는 <span class="illus-note">예시 화면</span>이라 실제와 조금 다를 수 있어요.
   </div>
 
   <nav class="toc">
@@ -85,10 +90,10 @@
       <li><a href="#s4">내 공사 찾기 (검색)</a></li>
       <li><a href="#s5">지도에서 라인 고르기</a></li>
       <li><a href="#s6">라인 정보 창 열기</a></li>
-      <li><a href="#s7">① 오늘 작업자 먼저 정하기</a></li>
-      <li><a href="#s8">② 라인 끊기 (부분 완료할 때)</a></li>
-      <li><a href="#s9">③ 구간 완료하기</a></li>
-      <li><a href="#s10">완료 취소·수정하기</a></li>
+      <li><a href="#s7">오늘 작업자 먼저 정하기</a></li>
+      <li><a href="#s8">완료 입력 ❶ 길이 입력 (기본·추천)</a></li>
+      <li><a href="#s9">완료 취소 (부분·전체)</a></li>
+      <li><a href="#s10">완료 입력 ❷ 지도에서 끊고 체크 (특수)</a></li>
       <li><a href="#s11">측량완료 표시하기</a></li>
       <li><a href="#s12">보류(중지)·특이사항</a></li>
       <li><a href="#s13">오늘 실적 보기</a></li>
@@ -149,6 +154,7 @@
       <li><span class="b">📖 매뉴얼</span> — 이 사용설명서</li>
     </ul>
     <p class="sub">라인 색 = 진행 상태: <span style="color:#f59e0b;font-weight:700">주황(미시공)</span> · <span style="color:#16a34a;font-weight:700">초록(완료)</span> · <span style="color:#2563eb;font-weight:700">파랑(측량완료)</span> · <span style="color:#e11d48;font-weight:700">빨강(보류)</span></p>
+    <div class="note tip"><span class="ic">🔍</span><div>지도는 손가락 두 개로 <b>아주 크게 확대</b>할 수 있어요. 짧은 구간을 다룰 땐 확대하면 편합니다.</div></div>
   </section>
 
   <section class="step" id="s3">
@@ -209,117 +215,134 @@
         <circle cx="133" cy="150" r="4.5" fill="#f59e0b"/><text x="144" y="154" font-family="monospace" font-size="10.5" font-weight="700" fill="#0f172a">강동/66</text>
       </svg>
     </div>
-    <div class="note tip"><span class="ic">💡</span><div>두 손가락으로 <b>지도를 확대</b>하면 라인이 벌어져 고르기 쉬워요.</div></div>
   </section>
 
   <section class="step" id="s6">
     <div class="step-h"><div class="num">6</div><h3>라인 정보 창 열기</h3></div>
-    <p>라인을 고르면 화면 아래에 정보 창이 열립니다. 휴대폰에서는 아래에 <span class="key g">정보 보기 ▴</span> 띠가 나타나니 위로 올리면 펼쳐져요. 이 창에서 모든 작업(완료·끊기·보류 등)을 합니다.</p>
+    <p>라인을 고르면 화면 아래에 정보 창이 열립니다. 휴대폰에서는 아래에 <span class="key g">정보 보기 ▴</span> 띠가 나타나니 위로 올리면 펼쳐져요. 이 창에서 모든 작업을 합니다.</p>
     <div class="shot">
-      <svg viewBox="0 0 320 215" xmlns="http://www.w3.org/2000/svg">
-        <rect width="320" height="215" fill="#f8fbfe"/>
+      <svg viewBox="0 0 320 220" xmlns="http://www.w3.org/2000/svg">
+        <rect width="320" height="220" fill="#f8fbfe"/>
         <rect x="14" y="14" width="36" height="20" rx="6" fill="#1f6feb"/><text x="32" y="28" text-anchor="middle" font-size="10" fill="#fff">강동</text>
         <text x="58" y="29" font-family="Jua" font-size="15" fill="#0f172a">강동/66</text>
         <rect x="240" y="13" width="66" height="22" rx="11" fill="#fff3da"/><text x="273" y="28" text-anchor="middle" font-size="10" fill="#9a6a12">미시공</text>
         <text x="14" y="50" font-size="11" fill="#64748b">천호대로 관로 정비 · 소장 양한마루</text>
-        <rect x="14" y="60" width="292" height="30" rx="9" fill="#eef5ff" stroke="#cfe0f6"/>
-        <text x="24" y="79" font-size="11" fill="#5b7a98">오늘 작업자</text>
-        <text x="120" y="79" font-size="11" font-weight="700" fill="#0f172a">김시중</text>
-        <text x="296" y="79" text-anchor="end" font-size="11" font-weight="700" fill="#1f6feb">선택 ▾</text>
-        <rect x="14" y="98" width="142" height="32" rx="9" fill="#fff" stroke="#f1b4b8"/><text x="85" y="118" text-anchor="middle" font-size="12" font-weight="700" fill="#d23b48">✂ 끊기</text>
-        <rect x="164" y="98" width="142" height="32" rx="9" fill="#0d9488"/><text x="235" y="118" text-anchor="middle" font-size="12" font-weight="700" fill="#fff">✓ 완료체크</text>
-        <text x="14" y="150" font-size="11" font-weight="700" fill="#475569">구간 (3개)</text>
-        <rect x="14" y="158" width="292" height="22" rx="7" fill="#eafaf2" stroke="#bfe6d6"/><text x="24" y="173" font-size="10" fill="#0c6b5d">1 · 0 – 120 m · 완료</text>
-        <rect x="14" y="184" width="292" height="22" rx="7" fill="#fff6e9" stroke="#f3d9ad"/><text x="24" y="199" font-size="10" fill="#9a6a12">2 · 120 – 320 m · 미시공</text>
+        <rect x="14" y="58" width="292" height="22" rx="7" fill="#eef5ff" stroke="#cfe0f6"/>
+        <text x="24" y="73" font-size="10.5" fill="#5b7a98">시공 연장 <tspan font-weight="800" fill="#0f172a">36</tspan> / 94 m · 38%</text>
+        <rect x="14" y="86" width="292" height="28" rx="9" fill="#eef5ff" stroke="#cfe0f6"/>
+        <text x="24" y="104" font-size="11" fill="#5b7a98">오늘 작업자</text><text x="120" y="104" font-size="11" font-weight="700" fill="#0f172a">김시중</text><text x="296" y="104" text-anchor="end" font-size="11" font-weight="700" fill="#1f6feb">선택 ▾</text>
+        <rect x="14" y="120" width="292" height="50" rx="11" fill="#ecfdf5" stroke="#a7e3cb"/>
+        <text x="24" y="138" font-size="11" font-weight="800" fill="#0c6b5d">오늘 작업 길이 입력</text>
+        <rect x="24" y="144" width="150" height="20" rx="6" fill="#fff" stroke="#b6dfce"/><text x="166" y="158" text-anchor="end" font-size="10" fill="#94a3b8">예: 30</text>
+        <rect x="182" y="144" width="58" height="20" rx="6" fill="#0d9488"/><text x="211" y="158" text-anchor="middle" font-size="10" font-weight="700" fill="#fff">완료 추가</text>
+        <rect x="246" y="144" width="58" height="20" rx="6" fill="#fff" stroke="#e6b3b8"/><text x="275" y="158" text-anchor="middle" font-size="10" font-weight="700" fill="#b23b46">완료 취소</text>
+        <rect x="14" y="178" width="142" height="26" rx="8" fill="#fff" stroke="#f1b4b8"/><text x="85" y="195" text-anchor="middle" font-size="11" font-weight="700" fill="#d23b48">✂ 끊기</text>
+        <rect x="164" y="178" width="142" height="26" rx="8" fill="#0d9488"/><text x="235" y="195" text-anchor="middle" font-size="11" font-weight="700" fill="#fff">✓ 완료체크</text>
       </svg>
     </div>
-    <p class="sub">정보 창 순서: 지시번호·상태 → <b>오늘 작업자</b> 칸 → <b>✂끊기 / ✓완료체크</b> → 구간 목록 → 특이사항 → 보류 버튼.</p>
+    <p class="sub">정보 창 순서: 지시번호·상태 → 진행률 → <b>오늘 작업자</b> → <b class="t">오늘 작업 길이 입력</b>(초록 박스) → 끊기/완료체크 → 구간 목록 → 특이사항 → 보류.</p>
   </section>
 
   <section class="step" id="s7">
-    <div class="step-h"><div class="num">7</div><h3>① 오늘 작업자 먼저 정하기</h3></div>
+    <div class="step-h"><div class="num">7</div><h3>오늘 작업자 먼저 정하기</h3></div>
     <p>완료를 입력하기 <b>전에</b> 오늘 작업한 사람을 먼저 정합니다. 그래야 "누가 했는지"가 기록돼요.</p>
     <ul class="do">
       <li>정보 창에서 <span class="key b">오늘 작업자 … 선택 ▾</span> 칸을 누릅니다.</li>
-      <li><span class="key">오늘 작업자 선택</span> 창이 뜨면 대표 작업자와 보조 인원을 고릅니다(여러 명 가능).</li>
-      <li><span class="key b">확인</span>을 누릅니다. (참고: <span class="key t">✓ 완료체크</span>를 눌렀는데 작업자가 비어 있으면 이 창이 <b>자동으로</b> 먼저 떠요.)</li>
+      <li><span class="key">오늘 작업자 선택</span> 창에서 대표 작업자와 보조 인원을 고릅니다(여러 명 가능).</li>
+      <li><span class="key b">확인</span>을 누릅니다.</li>
     </ul>
-    <div class="shot">
-      <svg viewBox="0 0 320 150" xmlns="http://www.w3.org/2000/svg">
-        <rect width="320" height="150" fill="#f4f9fe"/>
-        <text x="18" y="26" font-size="11.5" font-weight="700" fill="#33506b">오늘 작업자 선택 (여러 명 가능)</text>
-        <rect x="18" y="36" width="84" height="28" rx="9" fill="#1f6feb"/><text x="60" y="54" text-anchor="middle" font-size="11.5" font-weight="700" fill="#fff">김시중</text>
-        <rect x="110" y="36" width="84" height="28" rx="9" fill="#eef3f8" stroke="#d4e0ec"/><text x="152" y="54" text-anchor="middle" font-size="11.5" fill="#33506b">박인규</text>
-        <rect x="202" y="36" width="98" height="28" rx="9" fill="#e7f7f2" stroke="#bfe6da"/><text x="251" y="54" text-anchor="middle" font-size="11" fill="#0c6b5d">윤경일(보조)</text>
-        <rect x="170" y="104" width="56" height="28" rx="9" fill="#eef3f8" stroke="#d4e0ec"/><text x="198" y="122" text-anchor="middle" font-size="11" fill="#33506b">취소</text>
-        <rect x="232" y="104" width="56" height="28" rx="9" fill="#1f6feb"/><text x="260" y="122" text-anchor="middle" font-size="11" font-weight="700" fill="#fff">확인</text>
-      </svg>
-    </div>
     <div class="note"><span class="ic">📝</span><div>작업자가 목록에 없으면 관리자에게 명단 추가를 요청하세요. 안 고르면 "미지정"으로 저장됩니다.</div></div>
   </section>
 
-  <section class="step" id="s8">
-    <div class="step-h"><div class="num">8</div><h3>② 라인 끊기 (부분만 완료할 때)</h3></div>
-    <p>라인 전체가 아니라 <b>일부 구간만</b> 완료할 때는, 먼저 라인을 원하는 지점에서 <b>끊어서</b> 구간을 나눕니다. (라인 전체를 한 번에 완료할 거면 이 단계는 건너뛰고 <a href="#s9">③</a>로 가세요.)</p>
-    <ul class="do">
-      <li>정보 창에서 <span class="key rose">✂ 끊기</span>를 누릅니다. (켜지면 빨간색)</li>
-      <li>지도에서 <b>라인 위의 끊고 싶은 지점</b>을 탭합니다.</li>
-      <li>"○○m 지점 끊김"이 뜨고, 그 자리에 <b>흰 동그라미</b>가 생기며 구간이 나뉩니다.</li>
-      <li>필요하면 다른 지점도 탭해 여러 번 끊을 수 있습니다.</li>
+  <!-- 8 길이 입력 (기본) -->
+  <section class="step hero" id="s8">
+    <div class="step-h"><div class="num tealnum">8</div><h3>완료 입력 ❶ 길이 입력<span class="badge-best">가장 쉬움</span></h3></div>
+    <p>오늘 한 만큼 <b>길이(m)만 입력</b>하면 됩니다. 프로그램이 <b>이미 완료된 지점에서 이어서</b> 자동으로 처리해요. "어디서부터" "몇 m 지점" 같은 건 신경 쓰지 않아도 됩니다.</p>
+    <ul class="do teal">
+      <li>위 <a href="#s7">⑦</a>처럼 <b>오늘 작업자</b>를 먼저 정합니다.</li>
+      <li>초록색 <b>「오늘 작업 길이 입력」</b> 칸에 오늘 시공한 길이를 숫자로 넣습니다. (예: <b>30</b>)</li>
+      <li><span class="key t">완료 추가</span>를 누릅니다. → 완료된 지점에서 이어서 30m가 <span style="color:#16a34a;font-weight:700">초록색</span>으로 완료됩니다.</li>
+      <li>다음 날 또 작업하면, 같은 방법으로 그날 한 길이만 넣으면 이어서 쌓입니다.</li>
     </ul>
     <div class="shot">
-      <svg viewBox="0 0 320 160" xmlns="http://www.w3.org/2000/svg">
-        <rect width="320" height="160" fill="#dceaf5"/>
-        <path d="M40 90 L280 70" stroke="#f59e0b" stroke-width="7" fill="none" stroke-linecap="round"/>
-        <circle cx="160" cy="80" r="8" fill="#fff" stroke="#0d9488" stroke-width="4"/>
-        <text x="118" y="58" font-size="11" font-weight="700" fill="#0d6b5d">← 끊은 지점</text>
-        <rect x="14" y="118" width="150" height="30" rx="9" fill="#e11d48"/><text x="89" y="138" text-anchor="middle" font-size="12" font-weight="700" fill="#fff">✂ 끊기 (켜짐)</text>
-        <rect x="176" y="126" width="130" height="22" rx="8" fill="#0f172a"/><text x="241" y="141" text-anchor="middle" font-size="10.5" font-weight="700" fill="#fff">160m 지점 끊김</text>
+      <svg viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg">
+        <rect width="320" height="200" fill="#f4f9fe"/>
+        <!-- 라인: 36 완료 + 30 추가 -->
+        <rect x="20" y="22" width="280" height="14" rx="7" fill="#fde9c8"/>
+        <rect x="20" y="22" width="107" height="14" rx="7" fill="#34d399"/>
+        <rect x="127" y="22" width="89" height="14" rx="7" fill="#86efac"/>
+        <text x="20" y="52" font-size="10" fill="#16a34a">완료 36m</text>
+        <text x="150" y="52" font-size="10" fill="#15803d">+오늘 30m</text>
+        <text x="270" y="52" font-size="10" fill="#b45309">남음</text>
+        <!-- 입력 박스 -->
+        <rect x="20" y="72" width="280" height="86" rx="13" fill="#ecfdf5" stroke="#a7e3cb"/>
+        <text x="34" y="96" font-size="12.5" font-weight="800" fill="#0c6b5d">오늘 작업 길이 입력</text>
+        <rect x="34" y="106" width="150" height="34" rx="9" fill="#fff" stroke="#b6dfce"/><text x="176" y="129" text-anchor="end" font-size="17" font-weight="700" fill="#0f172a">30</text>
+        <rect x="192" y="106" width="64" height="34" rx="9" fill="#0d9488"/><text x="224" y="128" text-anchor="middle" font-size="12" font-weight="800" fill="#fff">완료 추가</text>
+        <rect x="262" y="106" width="38" height="34" rx="9" fill="#fff" stroke="#e6b3b8"/><text x="281" y="124" text-anchor="middle" font-size="9" font-weight="700" fill="#b23b46">완료</text><text x="281" y="134" text-anchor="middle" font-size="9" font-weight="700" fill="#b23b46">취소</text>
+        <text x="34" y="152" font-size="10.5" fill="#6b9e90">현재 완료 36m · 잔여 58m</text>
+        <rect x="86" y="170" width="148" height="22" rx="8" fill="#0f172a"/><text x="160" y="185" text-anchor="middle" font-size="10.5" font-weight="700" fill="#fff">이어서 +30m 완료 (66 / 94m)</text>
       </svg>
     </div>
-    <div class="note tip"><span class="ic">💡</span><div>끊은 지점을 없애려면 그 <b>흰 동그라미</b>를 한 번 탭하세요. "끊은 위치 삭제"되며 사라집니다.</div></div>
+    <div class="note tip"><span class="ic">💡</span><div>남은 길이보다 큰 숫자를 넣어도 <b>끝에서 자동으로 멈춥니다</b>(넘치지 않아요). 라인이 어느 방향이든 완료된 부분 옆에 알맞게 이어 붙습니다.</div></div>
+    <div class="note warn"><span class="ic">⚠️</span><div>실제 시공한 만큼만 넣으세요. 입력한 길이가 그날 <b>실적·통계</b>에 그대로 반영됩니다. (자동 저장되어 다른 사람 화면에도 바로 보여요.)</div></div>
   </section>
 
+  <!-- 9 취소 -->
   <section class="step" id="s9">
-    <div class="step-h"><div class="num">9</div><h3>③ 구간 완료하기</h3></div>
-    <p>이제 완료한 구간을 표시합니다.</p>
-    <ul class="do">
-      <li>정보 창에서 <span class="key t">✓ 완료체크</span>를 누릅니다. (작업자가 비어 있으면 작업자 선택창이 먼저 떠요 → 고르고 <span class="key b">확인</span>)</li>
-      <li>아래 <b>구간 목록</b>에서 완료한 구간을 <b>탭</b>합니다. 그 구간이 <span style="color:#16a34a;font-weight:700">초록색 "완료"</span>로 바뀌고 물량(m)이 자동 계산됩니다.</li>
-      <li>여러 구간을 했으면 차례로 탭하면 됩니다.</li>
+    <div class="step-h"><div class="num tealnum">9</div><h3>완료 취소 (부분·전체)</h3></div>
+    <p>잘못 입력했을 때 되돌리는 방법이에요. 상황에 따라 세 가지가 있습니다.</p>
+    <ul class="mini">
+      <li><b>길이로 부분 취소</b> — 초록 박스에 되돌릴 길이를 넣고 <span class="key rose">완료 취소</span>를 누르면, <b>마지막 완료지점에서 그만큼</b> 미시공으로 돌아갑니다. (예: 66m → "10" 취소 → 56m)</li>
+      <li><b>구간 하나만 취소</b> — <span class="key t">✓ 완료체크</span>를 켜고, 완료(초록)된 그 구간을 <b>다시 탭</b>하면 해제됩니다.</li>
+      <li><b>이 라인 전체 취소</b> — <span class="key g">↺ 이 라인 완료 전체 취소</span>를 누르고, 문구가 바뀌면 <b>한 번 더</b> 누르면 모두 지워집니다(실수 방지로 두 번).</li>
     </ul>
-    <p class="sub">또는 지도에서 직접 — <span class="key t">✓ 완료체크</span>가 켜진 상태로 지도의 그 구간을 탭해도 완료됩니다.</p>
     <div class="shot">
-      <svg viewBox="0 0 320 170" xmlns="http://www.w3.org/2000/svg">
-        <rect width="320" height="170" fill="#f4f9fe"/>
-        <rect x="14" y="14" width="160" height="30" rx="9" fill="#0d9488"/><text x="94" y="34" text-anchor="middle" font-size="12" font-weight="700" fill="#fff">✓ 완료체크 (켜짐)</text>
-        <text x="14" y="66" font-size="11" fill="#475569">구간을 탭하면 완료 ↓</text>
-        <rect x="14" y="74" width="292" height="26" rx="7" fill="#eafaf2" stroke="#9ad9c2"/>
-        <text x="24" y="91" font-size="11" fill="#0c6b5d">1 · 0 – 160 m</text><text x="296" y="91" text-anchor="end" font-size="11" font-weight="700" fill="#15803d">완료 ✓</text>
-        <rect x="14" y="104" width="292" height="26" rx="7" fill="#fff6e9" stroke="#f3d9ad"/>
-        <text x="24" y="121" font-size="11" fill="#9a6a12">2 · 160 – 320 m</text><text x="296" y="121" text-anchor="end" font-size="11" fill="#b45309">미시공</text>
-        <rect x="14" y="138" width="292" height="24" rx="8" fill="#0f172a"/><text x="160" y="154" text-anchor="middle" font-size="11" font-weight="700" fill="#fff">구간 +160m 완료 ✓</text>
+      <svg viewBox="0 0 320 120" xmlns="http://www.w3.org/2000/svg">
+        <rect width="320" height="120" fill="#f4f9fe"/>
+        <rect x="20" y="20" width="280" height="50" rx="12" fill="#ecfdf5" stroke="#a7e3cb"/>
+        <rect x="34" y="32" width="120" height="26" rx="8" fill="#fff" stroke="#b6dfce"/><text x="146" y="49" text-anchor="end" font-size="14" font-weight="700" fill="#0f172a">10</text>
+        <rect x="162" y="32" width="58" height="26" rx="8" fill="#0d9488"/><text x="191" y="49" text-anchor="middle" font-size="10.5" font-weight="800" fill="#fff">완료 추가</text>
+        <rect x="228" y="32" width="58" height="26" rx="8" fill="#fff" stroke="#e6b3b8"/><text x="257" y="49" text-anchor="middle" font-size="10.5" font-weight="800" fill="#b23b46">완료 취소</text>
+        <rect x="20" y="82" width="280" height="24" rx="8" fill="#fff" stroke="#dbe6f0"/><text x="160" y="98" text-anchor="middle" font-size="11" font-weight="700" fill="#475569">↺ 이 라인 완료 전체 취소</text>
       </svg>
     </div>
-    <p class="sub">라인 전체를 한 번에 끝낼 땐 맨 아래 <span class="key green">✓ 나머지 전체 완료</span> 버튼을 누르면 남은 구간이 모두 완료됩니다.</p>
-    <div class="note warn"><span class="ic">⚠️</span><div>실제 시공한 만큼만 완료로 표시하세요. 입력한 물량이 그날 <b>실적·통계</b>에 그대로 반영됩니다. 완료는 <b>자동 저장</b>되어 다른 사람 화면에도 바로 나타납니다.</div></div>
   </section>
 
+  <!-- 10 지도 끊기 (특수) -->
   <section class="step" id="s10">
-    <div class="step-h"><div class="num">10</div><h3>완료 취소·수정하기</h3></div>
-    <p>잘못 입력했을 때 되돌리는 방법입니다.</p>
-    <ul class="mini">
-      <li><b>한 구간만 취소</b> — <span class="key t">✓ 완료체크</span>가 켜진 상태에서, 완료(초록)된 그 구간을 <b>다시 탭</b>하면 "완료해제"됩니다.</li>
-      <li><b>이 라인 전체 취소</b> — <span class="key g">↺ 이 라인 완료 전체 취소</span>를 누르면 "정말 취소하려면 한 번 더 탭"으로 바뀝니다. <b>한 번 더</b> 누르면 이 라인의 완료가 모두 지워져요(실수 방지로 두 번 누르게 되어 있어요).</li>
-      <li><b>끊은 지점 삭제</b> — 지도에서 그 <b>흰 동그라미</b>를 탭하면 끊김이 사라집니다.</li>
+    <div class="step-h"><div class="num">10</div><h3>완료 입력 ❷ 지도에서 끊고 체크 (특수)</h3></div>
+    <p>라인의 <b>중간 특정 구간</b>만 완료하는 등 특수한 경우엔 지도에서 직접 처리합니다. 평소엔 <a href="#s8">❶ 길이 입력</a>이 더 쉬워요.</p>
+    <p class="sub">먼저 끊기 — 완료할 구간을 나눕니다.</p>
+    <ul class="do">
+      <li><span class="key rose">✂ 끊기</span>를 누릅니다(켜지면 빨강).</li>
+      <li>지도에서 <b>라인 위 끊을 지점</b>을 탭하면 "○m 지점 끊김" + <b>흰 동그라미</b>가 생깁니다.</li>
+      <li>짧아서 손가락으로 어려우면, 나타나는 <span class="key rose">끊을 위치 [__] m · 여기 끊기</span> 칸에 숫자를 넣어 정확히 끊습니다.</li>
     </ul>
+    <p class="sub">그다음 완료체크 — 끊은 구간을 완료로.</p>
+    <ul class="do">
+      <li><span class="key t">✓ 완료체크</span>를 누릅니다(작업자 없으면 선택창이 먼저 떠요).</li>
+      <li>아래 <b>구간 목록</b>에서 완료한 구간을 <b>탭</b>하면 초록색 완료가 됩니다. (지도에서 그 구간을 탭해도 됩니다.)</li>
+    </ul>
+    <div class="shot">
+      <svg viewBox="0 0 320 150" xmlns="http://www.w3.org/2000/svg">
+        <rect width="320" height="150" fill="#dceaf5"/>
+        <path d="M40 50 L280 40" stroke="#f59e0b" stroke-width="7" fill="none" stroke-linecap="round"/>
+        <circle cx="160" cy="45" r="8" fill="#fff" stroke="#0d9488" stroke-width="4"/>
+        <text x="120" y="30" font-size="10.5" font-weight="700" fill="#0d6b5d">← 끊은 지점</text>
+        <rect x="20" y="78" width="150" height="28" rx="9" fill="#e11d48"/><text x="95" y="97" text-anchor="middle" font-size="12" font-weight="700" fill="#fff">✂ 끊기 (켜짐)</text>
+        <rect x="180" y="78" width="120" height="28" rx="9" fill="#fff5f5" stroke="#f3c8cc"/><text x="240" y="97" text-anchor="middle" font-size="10" font-weight="700" fill="#b23b46">끊을 위치 [__] m</text>
+        <rect x="20" y="114" width="280" height="24" rx="8" fill="#0d9488"/><text x="160" y="130" text-anchor="middle" font-size="11" font-weight="700" fill="#fff">✓ 완료체크 → 구간 탭하면 완료</text>
+      </svg>
+    </div>
+    <div class="note tip"><span class="ic">🔍</span><div>짧은 구간은 지도를 <b>크게 확대</b>하거나 "끊을 위치"에 <b>숫자로 입력</b>하면 정확합니다.</div></div>
   </section>
 
   <section class="step" id="s11">
     <div class="step-h"><div class="num">11</div><h3>측량완료 표시하기</h3></div>
-    <p>공사가 <b>100% 완료</b>되면, 정보 창 아래에 <span class="key b">📐 측량완료</span> 버튼이 생깁니다. 측량까지 끝났으면 눌러 표시하세요. 라인이 <span style="color:#2563eb;font-weight:700">파란색</span>으로 바뀝니다.</p>
+    <p>공사가 <b>100% 완료</b>되면 정보 창 아래에 <span class="key b">📐 측량완료</span> 버튼이 생깁니다. 측량까지 끝났으면 눌러 표시하세요. 라인이 <span style="color:#2563eb;font-weight:700">파란색</span>으로 바뀝니다.</p>
     <ul class="mini">
-      <li>아직 100%가 안 됐으면 "공사 완료(100%) 후 측량완료를 체크할 수 있습니다" 안내가 나옵니다.</li>
+      <li>아직 100%가 아니면 "공사 완료(100%) 후 측량완료를 체크할 수 있습니다" 안내가 나옵니다.</li>
       <li>잘못 눌렀으면 <span class="key b">측량완료 취소</span>로 되돌립니다.</li>
     </ul>
   </section>
@@ -327,7 +350,7 @@
   <section class="step" id="s12">
     <div class="step-h"><div class="num">12</div><h3>보류(중지)·특이사항</h3></div>
     <p><b>특이사항</b>(민원·누수·중단 등)은 정보 창의 입력칸에 적고 <span class="key b">기록</span>을 누르면 날짜·작성자와 함께 저장돼요. 목록의 <b>✕</b>로 지웁니다.</p>
-    <p>공사를 멈춰야 하면 <span class="key rose">⏸ 보류(중지·취소)</span>를 누르고 나타나는 칸에 <b>보류 사유</b>를 적습니다. 라인이 <span style="color:#e11d48;font-weight:700">빨간색</span>으로 바뀌어요. 다시 시작할 땐 <span class="key">▶ 보류 해제</span>를 누릅니다.</p>
+    <p>공사를 멈춰야 하면 <span class="key rose">⏸ 보류(중지·취소)</span>를 누르고 <b>보류 사유</b>를 적습니다. 라인이 <span style="color:#e11d48;font-weight:700">빨간색</span>으로 바뀌어요. 다시 시작할 땐 <span class="key">▶ 보류 해제</span>를 누릅니다.</p>
     <div class="shot">
       <svg viewBox="0 0 320 150" xmlns="http://www.w3.org/2000/svg">
         <rect width="320" height="150" fill="#f4f9fe"/>
@@ -377,17 +400,17 @@
 
   <section class="step" id="s15">
     <div class="step-h"><div class="num">15</div><h3>내 위치·지도 전환</h3></div>
-    <p>오른쪽 버튼으로 <span class="key g">지도</span>(일반) / <span class="key g">위성</span>(항공사진) / <span class="key g">경계</span>(구 경계)를 바꿉니다. <span class="key b">📍</span> 버튼을 누르면 <b>내 현재 위치</b>가 파란 점으로 표시돼요(위치 권한 허용 필요).</p>
+    <p>오른쪽 버튼으로 <span class="key g">지도</span>(일반) / <span class="key g">위성</span>(항공사진) / <span class="key g">경계</span>(구 경계)를 바꿉니다. <span class="key b">📍</span> 버튼을 누르면 <b>내 현재 위치</b>가 파란 점으로 표시돼요(위치 권한 허용 필요). 지도는 아주 크게 확대됩니다.</p>
   </section>
 
   <div class="divider"><span>❓ 문제가 생기면</span></div>
   <div id="faq">
-    <div class="faq"><p class="q">완료체크를 눌렀는데 구간이 안 바뀌어요.</p><p class="a"><b>✓ 완료체크</b>가 켜졌는지(초록) 확인하세요. 꺼진 상태에서 구간을 누르면 "완료하려면 먼저 [완료체크]를 누르세요"가 뜹니다.</p></div>
-    <div class="faq"><p class="q">끊긴 지점을 잘못 만들었어요.</p><p class="a">지도에서 그 <b>흰 동그라미</b>를 한 번 탭하면 삭제됩니다.</p></div>
-    <div class="faq"><p class="q">완료를 통째로 잘못 입력했어요.</p><p class="a"><b>↺ 이 라인 완료 전체 취소</b>를 누르고, 문구가 바뀌면 <b>한 번 더</b> 누르면 모두 지워집니다.</p></div>
-    <div class="faq"><p class="q">화면이 안 바뀌거나 이상해요.</p><p class="a">화면을 아래로 당겨 <b>새로고침</b>하거나 브라우저를 껐다 켜세요. 그래도 안 되면 관리자에게 알려주세요.</p></div>
-    <div class="faq"><p class="q">측량완료 버튼이 안 보여요.</p><p class="a">공사가 <b>100% 완료</b>되어야 버튼이 나타납니다. 남은 구간을 먼저 완료하세요.</p></div>
-    <div class="faq"><p class="q">내 위치(📍)가 안 잡혀요.</p><p class="a">휴대폰 위치 권한을 <b>허용</b>해야 합니다. 실내·지하에서는 부정확할 수 있어요.</p></div>
+    <div class="faq"><p class="q">길이를 넣었는데 갑자기 100%가 됐어요.</p><p class="a">예전 버전의 문제였고 지금은 고쳐졌습니다. 그 라인을 <b>↺ 전체 취소</b>(두 번 탭)로 비운 뒤, <b>완료 추가</b>로 다시 넣어보세요. 이제 완료된 부분 옆에 알맞게 이어 붙습니다.</p></div>
+    <div class="faq"><p class="q">완료를 너무 많이 입력했어요.</p><p class="a">초록 박스에 줄일 길이를 넣고 <b>완료 취소</b>를 누르면 그만큼 되돌아갑니다.</p></div>
+    <div class="faq"><p class="q">완료체크를 눌렀는데 구간이 안 바뀌어요.</p><p class="a"><b>✓ 완료체크</b>가 켜졌는지(초록) 확인하세요. 꺼진 상태에서 구간을 누르면 안내문이 뜹니다.</p></div>
+    <div class="faq"><p class="q">짧은 구간을 끊기 어려워요.</p><p class="a">지도를 <b>크게 확대</b>하거나, 끊기 모드의 <b>「끊을 위치 [__] m」</b> 칸에 숫자로 입력하세요.</p></div>
+    <div class="faq"><p class="q">측량완료 버튼이 안 보여요.</p><p class="a">공사가 <b>100% 완료</b>되어야 나타납니다. 남은 구간을 먼저 완료하세요.</p></div>
+    <div class="faq"><p class="q">화면이 이상하거나 내 위치가 안 잡혀요.</p><p class="a">화면을 아래로 당겨 <b>새로고침</b>하세요. 위치는 휴대폰 <b>권한 허용</b>이 필요하고 실내·지하에서는 부정확할 수 있어요.</p></div>
   </div>
 
   <a class="backtop" href="#">▲ 맨 위로</a>

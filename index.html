@@ -310,6 +310,8 @@
   .nx-label b{font-weight:700;margin:0 1px}
   .wd-label{transform:translate(-50%,-50%);background:#fff;color:#000;font-family:var(--sans);font-size:22px;font-weight:800;padding:5px 13px;border-radius:11px;border:2px solid #111;box-shadow:0 3px 10px rgba(0,0,0,.5);white-space:nowrap}
   .myloc{position:absolute;top:168px;right:13px;width:44px;height:44px;border-radius:50%;background:#fff;border:1px solid var(--line);box-shadow:0 2px 8px rgba(0,0,0,.2);font-size:21px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:600}
+  .fitall{position:absolute;right:13px;bottom:96px;width:44px;height:34px;border-radius:9px;background:#fff;border:1px solid var(--line);box-shadow:0 2px 8px rgba(0,0,0,.2);font-family:var(--sans);font-size:13px;font-weight:800;color:#1f6feb;cursor:pointer;z-index:600;display:flex;align-items:center;justify-content:center}
+  .fitall:active{transform:scale(.93)}
   .myloc:active{transform:scale(.93)}
   .myloc.locating{animation:locpulse 1s ease-in-out infinite}
   @keyframes locpulse{0%,100%{box-shadow:0 2px 8px rgba(47,111,237,.3)}50%{box-shadow:0 0 0 6px rgba(47,111,237,.25)}}
@@ -502,6 +504,7 @@
     <div class="kpi b"><div class="p" id="kpiPct">0%</div><div class="s" id="kpiM">0 / 0 m</div></div></div>
   <div class="layerbtn b"><button id="lyMap" class="on">지도</button><button id="lySat">위성</button><button id="lyBound" class="on">경계</button></div>
   <button id="myLoc" class="myloc" title="내 위치">📍</button>
+  <button id="fitAllBtn" class="fitall" title="전체 보기">전체</button>
   <div class="edit-fab" id="editFab" style="display:none"><button id="drawBtn">+ 라인 그리기</button></div>
   <div class="draw-bar" id="drawBar"><span id="drawHint">지도를 탭해 선을 그리세요</span><button id="drawUndo">되돌리기</button><button id="drawDone" class="primary">완료</button><button id="drawCancel">취소</button></div>
   <div class="draw-bar" id="editBar"><span id="drawHint">꼭짓점 끌어 이동 · 선 중간 탭=추가 · 점 더블탭=삭제</span><button id="editSave" class="primary">저장</button><button id="editCancel">취소</button></div>
@@ -1161,6 +1164,7 @@ function gotoMyLocation(){
   },{enableHighAccuracy:true,timeout:15000,maximumAge:0});
   setTimeout(function(){finish();},12000);
 }
+const _faB=document.getElementById('fitAllBtn');if(_faB)_faB.onclick=()=>{clearPick&&clearPick();fitAll();};
 document.getElementById('myLoc').onclick=gotoMyLocation;
 L.control.zoom({position:'bottomright'}).addTo(map);
 const tiles={map:L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxNativeZoom:19,maxZoom:22,attribution:'© OpenStreetMap'}),sat:L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxNativeZoom:19,maxZoom:22,attribution:'© Esri'})};
@@ -1330,6 +1334,8 @@ const inOffice=o=>OFFICE==='전체'||o.office===OFFICE;
 function yearOf(o){const m=(o.no||'').match(/\((\d{2})년\)/);return m?m[1]:null;}
 const inYear=o=>YEAR==='전체'||(YEAR==='없음'?!yearOf(o):yearOf(o)===YEAR);
 const inView=o=>inOffice(o)&&inYear(o);
+function fitAll(){try{const pts=LINES.filter(inView).flatMap(o=>o.coords||[]);const b=L.latLngBounds(pts.length?pts:LINES.flatMap(o=>o.coords||[]));if(b.isValid())map.fitBounds(b.pad(0.1));}catch(e){}}
+map.on('moveend',()=>{try{const c=map.getCenter();localStorage.setItem('lastView',JSON.stringify({c:{lat:c.lat,lng:c.lng},z:map.getZoom()}));}catch(e){}});
 function yearLabel(y){return y==='전체'?'전체':(y==='없음'?'연도없음':y+'년');}
 function setYear(y){YEAR=y;document.querySelectorAll('#yearTabs button').forEach(b=>b.classList.toggle('on',b.dataset.y===y));const lab=document.getElementById('yearDropLab');if(lab)lab.textContent=yearLabel(y);const dd=document.getElementById('yearDrop');if(dd)dd.classList.remove('open');SEL=null;clearPick();drawLines();renderKpi();renderSheet();}
 function setOffice(o){OFFICE=o;document.querySelectorAll('#officeTabs button').forEach(b=>b.classList.toggle('on',b.dataset.o===o));SEL=null;clearPick();drawLines();renderKpi();renderSheet();}
@@ -1883,7 +1889,9 @@ async function startApp(){
   setTimeout(()=>map.invalidateSize(),200);
   await loadWorkers();await load();drawLines();renderKpi();
   try{const yy=String(new Date().getFullYear()).slice(2);if(document.querySelector('#yearTabs button[data-y="'+yy+'"]'))setYear(yy);}catch(e){}
-  try{if(LINES.length){const b=L.latLngBounds(LINES.flatMap(o=>o.coords||[]));if(b.isValid())map.fitBounds(b.pad(0.1));}}catch(e){console.error('fit',e);}
+  let _lv=null;try{_lv=JSON.parse(localStorage.getItem("lastView")||"null");}catch(e){}
+  if(_lv&&_lv.c&&typeof _lv.z==="number"){try{map.setView([_lv.c.lat,_lv.c.lng],_lv.z);}catch(e){fitAll();}}
+  else{fitAll();}
   setTimeout(()=>map.invalidateSize(),350);
   toast('라인 '+LINES.length+'개 불러옴');
   await loadRoster();

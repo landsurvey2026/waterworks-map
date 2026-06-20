@@ -388,11 +388,13 @@
   .urg-foot button{flex:1;border-radius:11px;padding:13px;font-family:var(--sans);font-size:14px;font-weight:800;cursor:pointer;border:1px solid #cbd5e1;background:#f1f5f9;color:#334155}
   .urg-foot .urg-red{background:#dc2626;border-color:#dc2626;color:#fff}
   .rost-ovl{position:fixed;inset:0;z-index:3500;background:rgba(8,12,18,.55);display:flex;align-items:center;justify-content:center;padding:16px}
-  .rost-box{background:#fff;border-radius:18px;width:100%;max-width:460px;max-height:86vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 18px 50px rgba(0,0,0,.45)}
+  .rost-box{background:#fff;border-radius:18px;width:100%;max-width:760px;max-height:86vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 18px 50px rgba(0,0,0,.45)}
   .rost-head{background:#0d9488;color:#fff;font-weight:800;font-size:16px;padding:15px 18px;display:flex;align-items:center;justify-content:space-between}
   .rost-x{background:rgba(255,255,255,.2);border:none;color:#fff;width:28px;height:28px;border-radius:8px;font-size:14px;cursor:pointer;flex:none}
   .rost-body{padding:14px 16px;overflow-y:auto}
-  .rost-day{border:1px solid #e6eef5;border-radius:13px;padding:10px 12px;margin-bottom:11px;background:#fbfdff}
+  .rost-3col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+  .rost-day{border:1px solid #e6eef5;border-radius:13px;padding:10px 12px;background:#fbfdff;min-width:0}
+  @media(max-width:680px){.rost-3col{grid-template-columns:1fr}}
   .rost-day.today{border:2px solid #0d9488;background:#f0fdfa;box-shadow:0 4px 14px rgba(13,148,136,.14)}
   .rost-dayhead{font-family:var(--sans);font-weight:800;font-size:13.5px;color:#64748b;margin-bottom:8px;display:flex;align-items:center;gap:7px}
   .rost-day.today .rost-dayhead{color:#0c6b5d}
@@ -1163,8 +1165,8 @@ tiles.map.addTo(map);base=tiles.map;
 map.doubleClickZoom.disable();
 map.on('dblclick',e=>pickPoint(e.latlng));
 map.on('movestart zoomstart',()=>{if(typeof closeLinePicker==='function')closeLinePicker();});
-const officeColor={'강동':'#22d3ee','동부':'#c9a8e8'};
-boundaryLayer=L.geoJSON(BOUNDARIES,{interactive:false,style:f=>{const dong=f.properties.office==='동부';return {color:officeColor[f.properties.office]||'#888',weight:dong?3:4,opacity:dong?.65:.95,fillColor:officeColor[f.properties.office]||'#888',fillOpacity:dong?.08:.16};}}).addTo(map);
+const officeColor={'강동':'#22d3ee','동부':'#4f46e5'};
+boundaryLayer=L.geoJSON(BOUNDARIES,{interactive:false,style:f=>({color:officeColor[f.properties.office]||'#888',weight:4,opacity:.95,fillColor:officeColor[f.properties.office]||'#888',fillOpacity:.14})}).addTo(map);
 boundaryLayer.eachLayer(l=>{const p=l.feature.properties;l.bindTooltip(p.name+' ['+p.office+']',{permanent:true,direction:'center',className:'gulabel ot-'+p.office});});
 lyMap.onclick=()=>{map.removeLayer(base);base=tiles.map;base.addTo(map);lyMap.classList.add('on');lySat.classList.remove('on');};
 lySat.onclick=()=>{map.removeLayer(base);base=tiles.sat;base.addTo(map);lySat.classList.add('on');lyMap.classList.remove('on');};
@@ -1637,9 +1639,11 @@ function rosterPopup(ds,force){
   let ov=document.getElementById('rosterOvl');if(ov)ov.remove();
   ov=document.createElement('div');ov.id='rosterOvl';ov.className='rost-ovl';
   let h='<div class="rost-box"><div class="rost-head">👷 작업배치 (어제·오늘·내일)<button class="rost-x" id="rostX">✕</button></div><div class="rost-body">';
+  h+='<div class="rost-3col">';
   h+=rosterDayHtml(shiftDate(t,-1),false);
   h+=rosterDayHtml(t,true);
   h+=rosterDayHtml(shiftDate(t,1),false);
+  h+='</div>';
   h+='</div><div class="rost-foot"><button id="rostDismiss">오늘 그만 보기</button><button class="primary" id="rostClose">닫기</button></div></div>';
   ov.innerHTML=h;document.body.appendChild(ov);
   const tdEl=ov.querySelector('.rost-day.today');if(tdEl)tdEl.scrollIntoView({block:'center'});

@@ -180,6 +180,8 @@
   .pickpin{width:20px;height:20px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:#ef4444;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.45)}
   .pickaddr{font-family:var(--sans);font-size:12.5px;color:#1f2937;max-width:210px;line-height:1.45}
   .pickaddr b{display:block;font-size:10.5px;color:#dc2626;font-weight:700;margin-bottom:3px}
+  .rv-btn{display:block;margin-top:9px;text-align:center;background:#fae100;color:#3c1e1e;font-weight:800;font-size:12.5px;text-decoration:none;padding:9px 10px;border-radius:9px}
+  .rv-btn:active{background:#e6cf00}
   .gulabel{background:rgba(13,17,23,.55);border:none;box-shadow:none;color:#fff;font-family:var(--sans);font-size:12px;font-weight:700;padding:3px 9px;border-radius:8px}
   .gulabel::before{display:none}
   .gulabel.ot-강동{outline:1px solid rgba(34,211,238,.6)}
@@ -755,9 +757,10 @@ async function pickPoint(latlng){
   if(mode==='editgeo')return;
   clearPick();
   pickMarker=L.marker(latlng,{icon:L.divIcon({className:'',html:'<div class="pickpin"></div>',iconSize:[20,20],iconAnchor:[10,20]})}).addTo(map);
-  pickPop=L.popup({offset:[0,-18],closeButton:true,autoPan:true}).setLatLng(latlng).setContent('<div class="pickaddr">주소 조회 중…</div>').openOn(map);
+  const rv=`<a class="rv-btn" href="https://map.kakao.com/link/roadview/${latlng.lat},${latlng.lng}" target="_blank" rel="noopener">🛣️ 카카오맵 로드뷰로 열기</a>`;
+  pickPop=L.popup({offset:[0,-18],closeButton:true,autoPan:true}).setLatLng(latlng).setContent(`<div class="pickaddr"><b>선택 지점</b>주소 조회 중…${rv}</div>`).openOn(map);
   const a=await reverseGeocode(latlng.lat,latlng.lng);
-  if(pickPop)pickPop.setContent(`<div class="pickaddr"><b>선택 지점</b>${esc(a)}</div>`);
+  if(pickPop)pickPop.setContent(`<div class="pickaddr"><b>선택 지점</b>${esc(a)}${rv}</div>`);
 }
 // search by 지시번호 / 공사명 / 주소
 function openSearch(){document.getElementById('srchOvl').classList.add('show');const i=document.getElementById('srchInput');i.value='';renderSearch('');setTimeout(()=>i.focus(),50);indexAddresses();}

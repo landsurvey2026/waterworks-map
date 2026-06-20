@@ -392,6 +392,11 @@
   .rost-head{background:#0d9488;color:#fff;font-weight:800;font-size:16px;padding:15px 18px;display:flex;align-items:center;justify-content:space-between}
   .rost-x{background:rgba(255,255,255,.2);border:none;color:#fff;width:28px;height:28px;border-radius:8px;font-size:14px;cursor:pointer;flex:none}
   .rost-body{padding:14px 16px;overflow-y:auto}
+  .rost-day{border:1px solid #e6eef5;border-radius:13px;padding:10px 12px;margin-bottom:11px;background:#fbfdff}
+  .rost-day.today{border:2px solid #0d9488;background:#f0fdfa;box-shadow:0 4px 14px rgba(13,148,136,.14)}
+  .rost-dayhead{font-family:var(--sans);font-weight:800;font-size:13.5px;color:#64748b;margin-bottom:8px;display:flex;align-items:center;gap:7px}
+  .rost-day.today .rost-dayhead{color:#0c6b5d}
+  .rost-todaytag{background:#0d9488;color:#fff;font-size:11px;font-weight:800;padding:2px 9px;border-radius:999px}
   .rost-grp{font-size:12px;font-weight:800;color:#0d9488;margin:13px 0 7px;letter-spacing:.3px}
   .rost-grp:first-child{margin-top:0}
   .rost-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:9px 11px;border:1px solid #e5e7eb;border-radius:11px;margin-bottom:7px}
@@ -1616,21 +1621,31 @@ function parseRosterXlsx(wb){
   return {dates,duty};
 }
 function dutyFor(ds){const md=ds.slice(5);let pick=null;(ROSTER.duty||[]).forEach(d=>{if(d.from<=md&&md<=d.to){if(!pick||d.from>pick.from)pick=d;}});return pick;}
-function rosterPopup(ds,force){
+function shiftDate(ds,delta){const d=new Date(ds+'T00:00:00');d.setDate(d.getDate()+delta);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function rosterDayHtml(ds,isToday){
   const rec=(ROSTER.dates||{})[ds];
-  let ov=document.getElementById('rosterOvl');if(ov)ov.remove();
-  ov=document.createElement('div');ov.id='rosterOvl';ov.className='rost-ovl';
-  let h='<div class="rost-box"><div class="rost-head">👷 오늘 작업배치 · '+fmtDate(ds)+'<button class="rost-x" id="rostX">✕</button></div><div class="rost-body">';
-  if(!rec||((!rec.assign||!rec.assign.length)&&(!rec.special||!rec.special.length))){h+='<p class="rost-empty">오늘 등록된 작업배치가 없습니다.</p>';}
+  let h='<div class="rost-day'+(isToday?' today':'')+'"><div class="rost-dayhead">'+(isToday?'<span class="rost-todaytag">오늘</span> ':'')+fmtDate(ds)+'</div>';
+  if(!rec||((!rec.assign||!rec.assign.length)&&(!rec.special||!rec.special.length))){h+='<p class="rost-empty">등록된 작업배치가 없습니다.</p>';}
   else{['동부','강동'].forEach(off=>{const rows=(rec.assign||[]).filter(a=>a.office===off);if(!rows.length)return;h+='<div class="rost-grp">'+off+'수도사업소</div>';rows.forEach(a=>{const night=(a.shift||'').indexOf('야')>=0;h+='<div class="rost-row"><span class="rost-no">'+esc(a.no)+'</span><span class="rost-shift '+(night?'night':'day')+'">'+esc(a.shift||'')+'</span><span class="rost-w">'+esc(a.worker||'')+'</span>'+(a.boss?'<span class="rost-boss">소장 '+esc(a.boss)+'</span>':'')+'</div>';});});
     if(rec.special&&rec.special.length){h+='<div class="rost-grp">측량 · 내업 · 지원</div>';rec.special.forEach(s=>{h+='<div class="rost-row"><span class="rost-no">'+esc(s.label)+'</span><span class="rost-w">'+esc(s.workers)+'</span></div>';});}
   }
   const duty=dutyFor(ds);if(duty)h+='<div class="rost-duty">🚨 누수대응 당직 · <b>'+esc(duty.worker)+'</b></div>';
+  h+='</div>';return h;
+}
+function rosterPopup(ds,force){
+  const t=today();
+  let ov=document.getElementById('rosterOvl');if(ov)ov.remove();
+  ov=document.createElement('div');ov.id='rosterOvl';ov.className='rost-ovl';
+  let h='<div class="rost-box"><div class="rost-head">👷 작업배치 (어제·오늘·내일)<button class="rost-x" id="rostX">✕</button></div><div class="rost-body">';
+  h+=rosterDayHtml(shiftDate(t,-1),false);
+  h+=rosterDayHtml(t,true);
+  h+=rosterDayHtml(shiftDate(t,1),false);
   h+='</div><div class="rost-foot"><button id="rostDismiss">오늘 그만 보기</button><button class="primary" id="rostClose">닫기</button></div></div>';
   ov.innerHTML=h;document.body.appendChild(ov);
+  const tdEl=ov.querySelector('.rost-day.today');if(tdEl)tdEl.scrollIntoView({block:'center'});
   const close=()=>ov.remove();
   ov.querySelector('#rostX').onclick=close;ov.querySelector('#rostClose').onclick=close;
-  ov.querySelector('#rostDismiss').onclick=()=>{try{localStorage.setItem('rosterDismiss',ds);}catch(e){}close();toast('오늘은 다시 표시하지 않습니다');};
+  ov.querySelector('#rostDismiss').onclick=()=>{try{localStorage.setItem('rosterDismiss',t);}catch(e){}close();toast('오늘은 다시 표시하지 않습니다');};
   ov.onclick=e=>{if(e.target===ov)close();};
 }
 function resultsFor(ds){

@@ -73,6 +73,8 @@
   .sheet.open{transform:translateY(0)}.grab{width:38px;height:4px;border-radius:3px;background:#cfd6df;margin:9px auto 4px}.sh-pad{padding:6px 18px 0}
   .sheet-top{position:sticky;top:0;background:#fff;z-index:3;height:26px}
   #grabBar{cursor:pointer}
+  .linehit{cursor:pointer}
+  path.linehit{cursor:pointer}
   .s-close{position:absolute;top:6px;right:12px;background:#eef1f5;border:none;border-radius:8px;color:#475569;font-size:13px;font-weight:700;width:30px;height:26px;cursor:pointer}
   .sheet.collapsed{transform:translateY(108%)!important}
   .sheet-tab{position:absolute;z-index:1090;display:none;left:50%;bottom:16px;transform:translateX(-50%);background:#0d9488;color:#fff;border:none;border-radius:22px;padding:11px 20px;font-family:var(--sans);font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.4)}
@@ -350,6 +352,33 @@
   .line-pick .lp-dot{width:11px;height:11px;border-radius:50%;flex:none}
   .line-pick .lp-no{font-family:var(--mono);font-size:13px;font-weight:700;color:#0f172a;flex:none}
   .line-pick .lp-nm{font-size:12.5px;color:#64748b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  #boardBtn{background:linear-gradient(135deg,#7c3aed,#a855f7)!important;color:#fff!important;font-weight:800!important;box-shadow:0 2px 8px rgba(124,58,237,.4)}
+  .bd-ovl{position:fixed;inset:0;z-index:3600;background:rgba(8,12,18,.55);display:flex;align-items:center;justify-content:center;padding:14px}
+  .bd-box{background:#fff;border-radius:18px;width:100%;max-width:520px;max-height:88vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 18px 50px rgba(0,0,0,.45)}
+  .bd-head{background:linear-gradient(135deg,#7c3aed,#a855f7);color:#fff;font-family:var(--sans);font-weight:800;font-size:16px;padding:15px 18px;display:flex;align-items:center;justify-content:space-between}
+  .bd-x{background:rgba(255,255,255,.2);border:none;color:#fff;width:28px;height:28px;border-radius:8px;font-size:14px;cursor:pointer;flex:none}
+  .bd-tabs{display:flex;gap:6px;padding:11px 14px 4px;border-bottom:1px solid #eef2f6;flex-wrap:wrap}
+  .bd-tab{flex:1;min-width:74px;border:1px solid #e2e8f0;background:#f8fafc;border-radius:10px;padding:9px 6px;font-family:var(--sans);font-size:12.5px;font-weight:700;color:#475569;cursor:pointer;text-align:center}
+  .bd-tab.on{background:#7c3aed;border-color:#7c3aed;color:#fff}
+  .bd-tab .c{display:block;font-size:16px;font-weight:800;margin-top:2px}
+  .bd-list{overflow-y:auto;padding:8px 12px 14px}
+  .bd-row{display:flex;align-items:center;gap:9px;padding:11px 12px;border:1px solid #e8eef5;border-radius:11px;margin-bottom:8px;cursor:pointer}
+  .bd-row:active{background:#f4f0ff}
+  .bd-dot{width:11px;height:11px;border-radius:50%;flex:none}
+  .bd-no{font-family:var(--mono);font-weight:800;color:#0f172a;font-size:14px;flex:none}
+  .bd-nm{font-size:12.5px;color:#64748b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+  .bd-days{font-size:12px;font-weight:700;color:#b45309;background:#fff7ed;border:1px solid #fed7aa;border-radius:7px;padding:2px 8px;flex:none}
+  .bd-urg{font-size:11.5px;font-weight:800;color:#fff;background:#dc2626;border-radius:7px;padding:2px 8px;flex:none}
+  .bd-empty{text-align:center;color:#94a3b8;font-size:13.5px;padding:30px 0}
+  .bd-reason{font-size:11.5px;color:#b91c1c;margin:2px 0 0 20px}
+  .urg-ovl{position:fixed;inset:0;z-index:4000;background:rgba(8,12,18,.6);display:flex;align-items:center;justify-content:center;padding:18px}
+  .urg-box{background:#fff;border-radius:18px;width:100%;max-width:380px;padding:22px;box-shadow:0 18px 50px rgba(0,0,0,.5)}
+  .urg-h{font-family:var(--sans);font-weight:800;font-size:18px;color:#0f172a;text-align:center}
+  .urg-sub{font-size:13.5px;color:#475569;text-align:center;margin:9px 0 14px;line-height:1.6}
+  .urg-box textarea{width:100%;box-sizing:border-box;min-height:60px;border:1px solid #cbd5e1;border-radius:11px;padding:11px;font-family:var(--sans);font-size:14px;resize:vertical}
+  .urg-foot{display:flex;gap:8px;margin-top:14px}
+  .urg-foot button{flex:1;border-radius:11px;padding:13px;font-family:var(--sans);font-size:14px;font-weight:800;cursor:pointer;border:1px solid #cbd5e1;background:#f1f5f9;color:#334155}
+  .urg-foot .urg-red{background:#dc2626;border-color:#dc2626;color:#fff}
   .rost-ovl{position:fixed;inset:0;z-index:3500;background:rgba(8,12,18,.55);display:flex;align-items:center;justify-content:center;padding:16px}
   .rost-box{background:#fff;border-radius:18px;width:100%;max-width:460px;max-height:86vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 18px 50px rgba(0,0,0,.45)}
   .rost-head{background:#0d9488;color:#fff;font-weight:800;font-size:16px;padding:15px 18px;display:flex;align-items:center;justify-content:space-between}
@@ -445,11 +474,12 @@
   <div id="map"></div>
   <div class="top"><div class="b"><h1>서울시 상수도 현장관리</h1><div class="sub" id="roleSub">FIELD</div></div>
     <div class="office-tabs b" id="officeTabs"><button data-o="전체" class="on">전체</button><button data-o="강동">강동</button><button data-o="동부">동부</button></div>
-    <div class="office-tabs b" id="yearTabs"><button data-y="전체" class="on">전체</button><button data-y="23">23년</button><button data-y="24">24년</button><button data-y="25">25년</button><button data-y="26">26년</button><button data-y="없음">없음</button></div>
+    <div class="office-tabs b" id="yearTabs"><button data-y="전체" class="on">전체</button><button data-y="23">23년</button><button data-y="24">24년</button><button data-y="25">25년</button><button data-y="26">26년</button><button data-y="27">27년</button><button data-y="28">28년</button><button data-y="없음">없음</button></div>
     <button class="topbtn b" id="srchBtn">검색</button>
     <button class="topbtn b" id="calBtn">현황</button>
     <button class="topbtn b" id="rosterBtn">배치</button>
     <button class="topbtn b" id="resultBtn">실적</button>
+    <button class="topbtn b" id="boardBtn">📋 현황판</button>
     <button class="topbtn b" id="manualBtn">📖 매뉴얼</button>
     <button class="topbtn b" id="admBtn">관리자</button>
     <div class="kpi b"><div class="p" id="kpiPct">0%</div><div class="s" id="kpiM">0 / 0 m</div></div></div>
@@ -534,7 +564,7 @@
           </div>
           <div class="adm-row" style="margin-top:8px">
             <label style="width:56px">연도삭제</label>
-            <select id="admDelYear"><option value="23">23년</option><option value="24">24년</option><option value="25">25년</option><option value="26">26년</option><option value="없음">연도없음</option></select>
+            <select id="admDelYear"><option value="23">23년</option><option value="24">24년</option><option value="25">25년</option><option value="26">26년</option><option value="27">27년</option><option value="28">28년</option><option value="없음">연도없음</option></select>
             <button id="admDelYearBtn" class="adm-btn danger">이 사업소 + 연도 삭제</button>
           </div>
           <div class="adm-list" id="admList"></div>
@@ -1024,11 +1054,60 @@ const pctNum=o=>{const T=LEN(o);return T>0?Math.min(100,doneM(o)/T*100):0;};
 const pct=o=>fmtPct(pctNum(o));
 function statusOf(o){if(o.survey&&o.survey.done)return'측량완료';if(o.hold)return'보류';const d=doneM(o);const T=LEN(o);if(d<=.5)return'대기';if(d>=T-0.5)return'완료';return'진행중';}
 const SB={'대기':'b-wait','진행중':'b-prog','완료':'b-done','보류':'b-hold','측량완료':'b-survey'};
+const isFull=o=>LEN(o)>0&&doneM(o)>=LEN(o)-0.5;
+function boardStatus(o){if(o.survey&&o.survey.done)return'측량완료';if(o.hold)return'보류';if(isFull(o))return'측량요청';const d=doneM(o);if(d<=.5)return'대기';return'공사중';}
+function reqDays(o){if(!o.doneDate)return 0;const a=new Date(o.doneDate+'T00:00:00'),b=new Date(today()+'T00:00:00');return Math.max(0,Math.round((b-a)/86400000));}
+function syncDone(o){const full=isFull(o);if(full){if(!o.doneDate)o.doneDate=today();}else{o.doneDate=null;o.surveyReq=null;}}
+function maybePromptUrgent(idx,wasFull){const o=LINES[idx];syncDone(o);if(isFull(o)&&!wasFull&&!(o.survey&&o.survey.done)){openUrgentPrompt(idx);}}
+function openUrgentPrompt(idx){
+  const o=LINES[idx];let ov=document.getElementById('urgOvl');if(ov)ov.remove();
+  ov=document.createElement('div');ov.id='urgOvl';ov.className='urg-ovl';
+  ov.innerHTML='<div class="urg-box"><div class="urg-h">📐 측량요청으로 전환</div><div class="urg-sub">'+esc(o.no)+' 공사가 100% 완료되었습니다.<br>측량이 <b>긴급</b>한가요?</div><textarea id="urgReason" placeholder="긴급 사유 (긴급일 때 입력)"></textarea><div class="urg-foot"><button id="urgNormal">일반 요청</button><button id="urgGo" class="urg-red">🔴 긴급 요청</button></div></div>';
+  document.body.appendChild(ov);
+  const close=()=>ov.remove();
+  ov.querySelector('#urgNormal').onclick=async()=>{o.surveyReq={urgent:false,reason:''};await save();drawLines();renderSheet();close();toast('측량요청 등록 (일반)');};
+  ov.querySelector('#urgGo').onclick=async()=>{const r=(ov.querySelector('#urgReason').value||'').trim();if(!r){toast('긴급 사유를 입력하세요');return;}o.surveyReq={urgent:true,reason:r};await save();drawLines();renderSheet();close();toast('측량요청 등록 (🔴 긴급)');};
+}
+let boardTab='측량요청';
+function openBoard(){
+  let ov=document.getElementById('bdOvl');if(ov)ov.remove();
+  ov=document.createElement('div');ov.id='bdOvl';ov.className='bd-ovl';
+  ov.innerHTML='<div class="bd-box"><div class="bd-head">📋 공사 현황판<button class="bd-x" id="bdX">✕</button></div><div class="bd-tabs" id="bdTabs"></div><div class="bd-list" id="bdList"></div></div>';
+  document.body.appendChild(ov);
+  ov.querySelector('#bdX').onclick=()=>ov.remove();
+  ov.onclick=e=>{if(e.target===ov)ov.remove();};
+  renderBoard();
+}
+function renderBoard(){
+  const ov=document.getElementById('bdOvl');if(!ov)return;
+  const vis=LINES.filter(o=>inYear(o)); // 현재 선택 연도 기준
+  const groups={'공사중':[],'측량요청':[],'측량완료':[]};
+  vis.forEach((o,gi)=>{const st=boardStatus(o);if(groups[st])groups[st].push(o);});
+  // 측량요청: 긴급 먼저, 그다음 경과일 많은 순
+  groups['측량요청'].sort((a,b)=>((b.surveyReq&&b.surveyReq.urgent?1:0)-(a.surveyReq&&a.surveyReq.urgent?1:0))||(reqDays(b)-reqDays(a)));
+  const tabs=[['공사중','#f59e0b'],['측량요청','#7c3aed'],['측량완료','#2563eb']];
+  ov.querySelector('#bdTabs').innerHTML=tabs.map(([k])=>`<button class="bd-tab ${boardTab===k?'on':''}" data-k="${k}">${k}<span class="c">${groups[k].length}</span></button>`).join('');
+  ov.querySelectorAll('.bd-tab').forEach(b=>b.onclick=()=>{boardTab=b.dataset.k;renderBoard();});
+  const col={'공사중':'#f59e0b','측량요청':'#7c3aed','측량완료':'#2563eb'};
+  const list=groups[boardTab];
+  const lh=ov.querySelector('#bdList');
+  if(!list.length){lh.innerHTML='<div class="bd-empty">해당 상태의 지시건이 없습니다.</div>';return;}
+  lh.innerHTML=list.map(o=>{
+    const idx=LINES.indexOf(o);
+    const urgent=boardTab==='측량요청'&&o.surveyReq&&o.surveyReq.urgent;
+    const days=boardTab==='측량요청'?reqDays(o):0;
+    let right='';
+    if(boardTab==='측량요청'){right=`${urgent?'<span class="bd-urg">🔴 긴급</span>':''}<span class="bd-days">${days}일경과</span>`;}
+    const reason=(urgent&&o.surveyReq.reason)?`<div class="bd-reason">사유: ${esc(o.surveyReq.reason)}</div>`:'';
+    return `<div class="bd-row" data-i="${idx}"><span class="bd-dot" style="background:${col[boardTab]}"></span><span class="bd-no">${esc(o.no)}</span><span class="bd-nm">${o.name?esc(o.name):''}</span>${right}</div>${reason}`;
+  }).join('');
+  lh.querySelectorAll('.bd-row').forEach(r=>r.onclick=()=>{const i=+r.dataset.i;document.getElementById('bdOvl').remove();goTo(i);});
+}
 function boundaries(o){const T=totalM(o.coords);const b=[0,...o.cuts.filter(c=>c>1&&c<T-1),T].sort((x,y)=>x-y);const u=[];for(const v of b)if(!u.length||v-u[u.length-1]>1)u.push(v);return u;}
 function segsOf(o){const b=boundaries(o),out=[];for(let i=0;i<b.length-1;i++)out.push([b[i],b[i+1]]);return out;}
 const segDone=(o,a,b)=>covered(merge(o.completed),(a+b)/2);
 
-function normalize(arr){return (arr||[]).filter(Boolean).map(o=>({...o,cuts:o.cuts||[],completed:o.completed||[],daily:o.daily||[],coords:o.coords||[],issues:o.issues||[]}));}
+function normalize(arr){return (arr||[]).filter(Boolean).map(o=>({...o,cuts:o.cuts||[],completed:o.completed||[],daily:o.daily||[],coords:o.coords||[],issues:o.issues||[],doneDate:o.doneDate||null,surveyReq:o.surveyReq||null}));}
 async function load(){try{const r=await fetch(DB+'/'+KEY+'/lines.json');let d=await r.json();if(d&&!Array.isArray(d))d=Object.values(d);if(Array.isArray(d)&&d.length){LINES=normalize(d);}else if(CONFIG.SEED_IF_EMPTY){LINES=DATA.lines.map(l=>({...l}));await save();}else{LINES=[];}}catch(e){console.error('load',e);LINES=[];}}
 async function save(){try{await fetch(DB+'/'+KEY+'/lines.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(LINES)});}catch(e){console.error('save',e);}}
 
@@ -1069,7 +1148,7 @@ const tiles={map:L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png
 tiles.map.addTo(map);base=tiles.map;
 map.on('click',e=>pickPoint(e.latlng));
 map.on('movestart zoomstart',()=>{if(typeof closeLinePicker==='function')closeLinePicker();});
-const officeColor={'강동':'#22d3ee','동부':'#f5a623'};
+const officeColor={'강동':'#22d3ee','동부':'#a855f7'};
 boundaryLayer=L.geoJSON(BOUNDARIES,{interactive:false,style:f=>({color:officeColor[f.properties.office]||'#888',weight:4,opacity:.95,fillColor:officeColor[f.properties.office]||'#888',fillOpacity:.16})}).addTo(map);
 boundaryLayer.eachLayer(l=>{const p=l.feature.properties;l.bindTooltip(p.name+' ['+p.office+']',{permanent:true,direction:'center',className:'gulabel ot-'+p.office});});
 lyMap.onclick=()=>{map.removeLayer(base);base=tiles.map;base.addTo(map);lyMap.classList.add('on');lySat.classList.remove('on');};
@@ -1111,7 +1190,7 @@ function drawLines(){
       const pl=L.polyline(path,{color:col,weight:sel?8:6,opacity:1,dashArray:(o.hold&&!dn)?'1 9':null,interactive:false}).addTo(map);
       g.push(pl);
     });
-    const hit=L.polyline(o.coords,{color:'#000',weight:34,opacity:0}).addTo(map);
+    const hit=L.polyline(o.coords,{color:'#000',weight:34,opacity:0,className:'linehit'}).addTo(map);
     hit.bindTooltip(esc(o.no),{sticky:true,direction:'top',opacity:0.95});
     hit.on('click',e=>{clickAt(idx,e.latlng);});g.push(hit);
     gLayers[idx]=g;
@@ -1178,7 +1257,8 @@ async function toggleSeg(idx,a,b){
   const o=LINES[idx];
   if(segDone(o,a,b)){o.completed=subIv(merge(o.completed),a,b);o.daily=o.daily.filter(e=>!(e.from<b-.5&&e.to>a+.5));toast(`구간 ${fmt(a)}–${fmt(b)}m 완료해제`);}
   else{o.completed=addIv(o.completed,[a,b]);o.daily.push({d:workDate,from:Math.round(a*10)/10,to:Math.round(b*10)/10,v:Math.round((b-a)*10)/10,by:{lead:(todayLead||'미지정'),helpers:todayHelpers.slice()}});toast(`구간 +${fmt(b-a)}m 완료`);}
-  await save();drawLines();renderKpi();renderSheet();
+  const _wf3=isFull(o);syncDone(o);await save();drawLines();renderKpi();renderSheet();
+  if(!segDone(o,a,b)){}else maybePromptUrgent(idx,_wf3);
 }
 async function completeRemaining(idx){
   const o=LINES[idx],T=LEN(o),m=merge(o.completed);let cur=0;const gaps=[];
@@ -1186,8 +1266,9 @@ async function completeRemaining(idx){
   if(cur<T-.5)gaps.push([cur,T]);
   if(!gaps.length){toast('이미 100%');return;}
   gaps.forEach(([a,b])=>o.daily.push({d:workDate,from:Math.round(a*10)/10,to:Math.round(b*10)/10,v:Math.round((b-a)*10)/10,by:{lead:(todayLead||'미지정'),helpers:todayHelpers.slice()}}));
-  o.completed=[[0,T]];await save();drawLines();renderKpi();renderSheet();
+  const _wf2=isFull(o);o.completed=[[0,T]];syncDone(o);await save();drawLines();renderKpi();renderSheet();
   toast(`나머지 +${fmt(gaps.reduce((s,[a,b])=>s+(b-a),0))}m 완료`);
+  maybePromptUrgent(idx,_wf2);
 }
 async function completeAhead(idx,len){
   const o=LINES[idx],T=LEN(o);
@@ -1202,11 +1283,13 @@ async function completeAhead(idx,len){
     else{a=m[m.length-1][1];b=a+len;}                    // 기본: 완료 끝에서 뒤로 이어 붙임
   }
   a=Math.max(0,a);b=Math.min(T,b);
+  const _wf=isFull(o);
   o.completed=addIv(o.completed,[a,b]);
   o.daily.push({d:workDate,from:Math.round(a*10)/10,to:Math.round(b*10)/10,v:Math.round((b-a)*10)/10,by:{lead:(todayLead||'미지정'),helpers:todayHelpers.slice()}});
   [a,b].forEach(c=>{if(c>1&&c<T-1&&!o.cuts.some(x=>Math.abs(x-c)<1))o.cuts.push(Math.round(c*10)/10);});
-  await save();drawLines();renderKpi();renderSheet();
+  syncDone(o);await save();drawLines();renderKpi();renderSheet();
   toast(`이어서 +${fmt(b-a)}m 완료 (누적 ${fmt(doneM(o))} / ${fmt(T)}m)`);
+  maybePromptUrgent(idx,_wf);
 }
 async function completeBack(idx,len){
   const o=LINES[idx],T=LEN(o);
@@ -1220,7 +1303,7 @@ async function completeBack(idx,len){
   a=Math.max(0,a);b=Math.min(T,b);
   o.completed=subIv(merge(o.completed),a,b);
   o.daily=o.daily.filter(e=>!(e.from<b-0.5&&e.to>a+0.5)); // 겹치는 완료기록 정리
-  await save();drawLines();renderKpi();renderSheet();
+  syncDone(o);await save();drawLines();renderKpi();renderSheet();
   toast(`완료 취소 -${fmt(b-a)}m (누적 ${fmt(doneM(o))} / ${fmt(T)}m)`);
 }
 const inOffice=o=>OFFICE==='전체'||o.office===OFFICE;
@@ -1293,7 +1376,7 @@ function renderSheet(){
   const _rst=document.getElementById('ireset');if(_rst)_rst.onclick=async()=>{if(_rst.dataset.armed!=='1'){_rst.dataset.armed='1';_rst.textContent='정말 취소하려면 한 번 더 탭';_rst.classList.add('armed');setTimeout(()=>{const b=document.getElementById('ireset');if(b){b.dataset.armed='';b.textContent='↺ 이 라인 완료 전체 취소';b.classList.remove('armed');}},3500);return;}o.completed=[];o.daily=[];await save();drawLines();renderKpi();renderSheet();toast('완료 취소됨 · '+o.no);};
   const _iadd=document.getElementById('iIssueAdd');if(_iadd)_iadd.onclick=async()=>{const inp=document.getElementById('iIssue');const t=(inp.value||'').trim();if(!t){toast('특이사항을 입력하세요');return;}o.issues=o.issues||[];o.issues.push({d:workDate,by:(todayLead||'미지정'),t:t,id:Date.now()});await save();renderSheet();toast('특이사항 기록됨 · '+fmtDate(workDate));};
   document.querySelectorAll('.issue-row .ix').forEach(x=>x.onclick=async()=>{const id=+x.dataset.id;o.issues=(o.issues||[]).filter(e=>e.id!==id);await save();renderSheet();toast('특이사항 삭제');});
-  const _svb=document.getElementById('isurvey');if(_svb)_svb.onclick=async()=>{if(o.survey&&o.survey.done){if(!confirm('측량완료를 취소할까요?'))return;o.survey={done:false};}else{o.survey={done:true,d:workDate,by:(todayLead?[todayLead,...todayHelpers]:[])};}await save();drawLines();renderKpi();renderSheet();toast(o.survey.done?'측량완료 · '+o.no:'측량완료 취소');};
+  const _svb=document.getElementById('isurvey');if(_svb)_svb.onclick=async()=>{if(o.survey&&o.survey.done){if(!confirm('측량완료를 취소할까요?'))return;o.survey={done:false};}else{o.survey={done:true,d:workDate,by:(todayLead?[todayLead,...todayHelpers]:[])};o.surveyReq=null;}await save();drawLines();renderKpi();renderSheet();toast(o.survey.done?'측량완료 · '+o.no:'측량완료 취소');};
   const _del=document.getElementById('idel');if(_del)_del.onclick=async()=>{const no=o.no,office=o.office;if(!confirm('['+office+'] '+no+' 라인을 삭제할까요?\n(되돌릴 수 없습니다)'))return;await load();LINES=LINES.filter(x=>!(x.no===no&&x.office===office));await save();SEL=null;drawLines();renderKpi();renderSheet();toast('삭제됨 · '+no);};
   const _ieg=document.getElementById('iedit');if(_ieg)_ieg.onclick=()=>startEditGeo(SEL);
   const _inx=document.getElementById('inext');if(_inx)_inx.onclick=()=>openNextPicker(SEL);
@@ -1448,6 +1531,7 @@ function renderStats(){
 document.getElementById('statRefresh').onclick=renderStats;
 const _rbtn=document.getElementById('rosterBtn');if(_rbtn)_rbtn.onclick=()=>rosterPopup(today(),true);
 const _resbtn=document.getElementById('resultBtn');if(_resbtn)_resbtn.onclick=()=>resultsPopup(workDate||today());
+const _bdbtn=document.getElementById('boardBtn');if(_bdbtn)_bdbtn.onclick=openBoard;
 const _manbtn=document.getElementById('manualBtn');if(_manbtn)_manbtn.onclick=()=>window.open('manual.html','_blank');
 const _bke=document.getElementById('bkExport');if(_bke)_bke.onclick=backupExport;
 const _bkr=document.getElementById('bkRestore');if(_bkr)_bkr.onclick=function(){backupRestore(this);};
@@ -1766,6 +1850,7 @@ async function startApp(){
   const _sp=document.getElementById('splash');if(_sp)setTimeout(()=>_sp.remove(),2600);
   setTimeout(()=>map.invalidateSize(),200);
   await loadWorkers();await load();drawLines();renderKpi();
+  try{const yy=String(new Date().getFullYear()).slice(2);if(document.querySelector('#yearTabs button[data-y="'+yy+'"]'))setYear(yy);}catch(e){}
   try{if(LINES.length){const b=L.latLngBounds(LINES.flatMap(o=>o.coords||[]));if(b.isValid())map.fitBounds(b.pad(0.1));}}catch(e){console.error('fit',e);}
   setTimeout(()=>map.invalidateSize(),350);
   toast('라인 '+LINES.length+'개 불러옴');

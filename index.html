@@ -25,6 +25,14 @@
   .top{flex-wrap:wrap}
   .top .b{pointer-events:auto}
   .office-tabs{display:flex;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.22);border-radius:9px;padding:3px}
+  .yeardrop{position:relative;display:inline-block}
+  .yeardrop-btn{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.22);border-radius:9px;padding:6px 12px;color:#fff;font-family:var(--sans);font-size:12px;font-weight:700;cursor:pointer}
+  .yeardrop-btn .yd-car{font-size:10px;opacity:.85}
+  .yeardrop-list{display:none;position:absolute;top:calc(100% + 5px);left:0;z-index:1500;background:#16202e;border:1px solid #2b3a4d;border-radius:11px;padding:5px;min-width:120px;box-shadow:0 10px 28px rgba(0,0,0,.45)}
+  .yeardrop.open .yeardrop-list{display:block}
+  .yeardrop-list button{display:block;width:100%;text-align:left;background:none;border:none;color:#cbd5e1;font-family:var(--sans);font-size:13px;font-weight:600;padding:9px 12px;border-radius:8px;cursor:pointer}
+  .yeardrop-list button:active{background:#22304a}
+  .yeardrop-list button.on{background:#1f6feb;color:#fff}
   .office-tabs button{font-family:var(--sans);font-size:12px;font-weight:600;color:#cbd5e1;background:none;border:none;padding:6px 12px;border-radius:7px;cursor:pointer}
   .office-tabs button.on{background:#fff;color:#0d1117}
   .otag{font-size:10px;font-weight:700;padding:2px 6px;border-radius:6px;vertical-align:1px}
@@ -474,7 +482,7 @@
   <div id="map"></div>
   <div class="top"><div class="b"><h1>서울시 상수도 현장관리</h1><div class="sub" id="roleSub">FIELD</div></div>
     <div class="office-tabs b" id="officeTabs"><button data-o="전체" class="on">전체</button><button data-o="강동">강동</button><button data-o="동부">동부</button></div>
-    <div class="office-tabs b" id="yearTabs"><button data-y="전체" class="on">전체</button><button data-y="23">23년</button><button data-y="24">24년</button><button data-y="25">25년</button><button data-y="26">26년</button><button data-y="27">27년</button><button data-y="28">28년</button><button data-y="없음">없음</button></div>
+    <div class="yeardrop b" id="yearDrop"><button class="yeardrop-btn" id="yearDropBtn"><span id="yearDropLab">전체</span><span class="yd-car">▾</span></button><div class="yeardrop-list" id="yearTabs"><button data-y="전체" class="on">전체</button><button data-y="23">23년</button><button data-y="24">24년</button><button data-y="25">25년</button><button data-y="26">26년</button><button data-y="27">27년</button><button data-y="28">28년</button><button data-y="없음">없음</button></div></div>
     <button class="topbtn b" id="srchBtn">검색</button>
     <button class="topbtn b" id="calBtn">현황</button>
     <button class="topbtn b" id="rosterBtn">배치</button>
@@ -1056,7 +1064,8 @@ function statusOf(o){if(o.survey&&o.survey.done)return'측량완료';if(o.hold)r
 const SB={'대기':'b-wait','진행중':'b-prog','완료':'b-done','보류':'b-hold','측량완료':'b-survey'};
 const isFull=o=>LEN(o)>0&&doneM(o)>=LEN(o)-0.5;
 function boardStatus(o){if(o.survey&&o.survey.done)return'측량완료';if(o.hold)return'보류';if(isFull(o))return'측량요청';const d=doneM(o);if(d<=.5)return'대기';return'공사중';}
-function reqDays(o){if(!o.doneDate)return 0;const a=new Date(o.doneDate+'T00:00:00'),b=new Date(today()+'T00:00:00');return Math.max(0,Math.round((b-a)/86400000));}
+function lastWorkDate(o){const ds=(o.daily||[]).map(e=>e.d).filter(Boolean).sort();return ds.length?ds[ds.length-1]:(o.doneDate||null);}
+function reqDays(o){const ld=lastWorkDate(o);if(!ld)return 0;const a=new Date(ld+'T00:00:00'),b=new Date(today()+'T00:00:00');return Math.max(0,Math.round((b-a)/86400000));}
 function syncDone(o){const full=isFull(o);if(full){if(!o.doneDate)o.doneDate=today();}else{o.doneDate=null;o.surveyReq=null;}}
 function maybePromptUrgent(idx,wasFull){const o=LINES[idx];syncDone(o);if(isFull(o)&&!wasFull&&!(o.survey&&o.survey.done)){openUrgentPrompt(idx);}}
 function openUrgentPrompt(idx){
@@ -1146,10 +1155,11 @@ document.getElementById('myLoc').onclick=gotoMyLocation;
 L.control.zoom({position:'bottomright'}).addTo(map);
 const tiles={map:L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxNativeZoom:19,maxZoom:22,attribution:'© OpenStreetMap'}),sat:L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxNativeZoom:19,maxZoom:22,attribution:'© Esri'})};
 tiles.map.addTo(map);base=tiles.map;
-map.on('click',e=>pickPoint(e.latlng));
+map.doubleClickZoom.disable();
+map.on('dblclick',e=>pickPoint(e.latlng));
 map.on('movestart zoomstart',()=>{if(typeof closeLinePicker==='function')closeLinePicker();});
-const officeColor={'강동':'#22d3ee','동부':'#a855f7'};
-boundaryLayer=L.geoJSON(BOUNDARIES,{interactive:false,style:f=>({color:officeColor[f.properties.office]||'#888',weight:4,opacity:.95,fillColor:officeColor[f.properties.office]||'#888',fillOpacity:.16})}).addTo(map);
+const officeColor={'강동':'#22d3ee','동부':'#c9a8e8'};
+boundaryLayer=L.geoJSON(BOUNDARIES,{interactive:false,style:f=>{const dong=f.properties.office==='동부';return {color:officeColor[f.properties.office]||'#888',weight:dong?3:4,opacity:dong?.65:.95,fillColor:officeColor[f.properties.office]||'#888',fillOpacity:dong?.08:.16};}}).addTo(map);
 boundaryLayer.eachLayer(l=>{const p=l.feature.properties;l.bindTooltip(p.name+' ['+p.office+']',{permanent:true,direction:'center',className:'gulabel ot-'+p.office});});
 lyMap.onclick=()=>{map.removeLayer(base);base=tiles.map;base.addTo(map);lyMap.classList.add('on');lySat.classList.remove('on');};
 lySat.onclick=()=>{map.removeLayer(base);base=tiles.sat;base.addTo(map);lySat.classList.add('on');lyMap.classList.remove('on');};
@@ -1310,7 +1320,8 @@ const inOffice=o=>OFFICE==='전체'||o.office===OFFICE;
 function yearOf(o){const m=(o.no||'').match(/\((\d{2})년\)/);return m?m[1]:null;}
 const inYear=o=>YEAR==='전체'||(YEAR==='없음'?!yearOf(o):yearOf(o)===YEAR);
 const inView=o=>inOffice(o)&&inYear(o);
-function setYear(y){YEAR=y;document.querySelectorAll('#yearTabs button').forEach(b=>b.classList.toggle('on',b.dataset.y===y));SEL=null;clearPick();drawLines();renderKpi();renderSheet();}
+function yearLabel(y){return y==='전체'?'전체':(y==='없음'?'연도없음':y+'년');}
+function setYear(y){YEAR=y;document.querySelectorAll('#yearTabs button').forEach(b=>b.classList.toggle('on',b.dataset.y===y));const lab=document.getElementById('yearDropLab');if(lab)lab.textContent=yearLabel(y);const dd=document.getElementById('yearDrop');if(dd)dd.classList.remove('open');SEL=null;clearPick();drawLines();renderKpi();renderSheet();}
 function setOffice(o){OFFICE=o;document.querySelectorAll('#officeTabs button').forEach(b=>b.classList.toggle('on',b.dataset.o===o));SEL=null;clearPick();drawLines();renderKpi();renderSheet();}
 function renderKpi(){const V=LINES.filter(inView);const tot=V.reduce((s,o)=>s+LEN(o),0),dn=V.reduce((s,o)=>s+Math.min(doneM(o),LEN(o)),0);kpiPct.textContent=fmtPct(tot?dn/tot*100:0)+'%';kpiM.textContent=fmt(dn)+' / '+fmt(tot)+' m';if(typeof refreshDeadlines==='function')refreshDeadlines();if(typeof refreshMismatch==='function')refreshMismatch();if(typeof refreshYearless==='function')refreshYearless();}
 function setBanner(){const bn=document.getElementById('banner');if(SEL===null){bn.classList.remove('show');return;}
@@ -1335,7 +1346,6 @@ function renderSheet(){
   else{surveyHtml=`<div class="survey-note">공사 완료(100%) 후 측량완료를 체크할 수 있습니다</div>`;}
   body.innerHTML=`<div class="sh-head"><div style="flex:1;min-width:0"><div class="sh-no"><span class="otag ot-${o.office||''}">${esc(o.office||'')}</span> ${esc(o.no)}${pieceLabel(o)} <button class="mini-edit" id="editBtn">수정</button></div><div class="sh-line">${o.name?esc(o.name):'<span style="color:#94a3b8;font-weight:500">공사명 입력 →</span>'}</div></div><span class="badge ${SB[st]}">${st}</span></div>
     ${o.verified?'':`<div class="warn">⚠ 도면 자동매칭(오차 ${o.matchDist}m). 라인↔번호 확인 필요.</div>`}
-    <div class="addr" id="addrRow"><span class="pin"></span><span id="addrText">주소 조회 중…</span></div>
     ${infoHtml}
     <div class="prog"><div class="nums"><span>시공 연장</span><span><b>${fmt(dn)}</b> / ${fmt(T)} m</span></div><div class="track"><i style="width:${p}%"></i></div><div class="rem">${p}% · 잔여 ${rem<0.5?0:fmt(rem)} m</div></div>
     <div class="datepill" id="datePill"><span class="lab">작업일자</span><span class="val">${fmtDate(workDate)}</span><span class="car">변경 ▾</span></div>
@@ -1368,7 +1378,7 @@ function renderSheet(){
   const _wc=document.getElementById('wkChip');if(_wc)_wc.onclick=openWk;
   document.getElementById('datePill').onclick=openCal;
   document.getElementById('editBtn').onclick=openEdit;
-  renderAddr(o);
+  // 주소는 정보창에 표시하지 않음
   [...body.querySelectorAll('.seg')].forEach(el=>el.onclick=()=>{if(mode!=='tap'){toast('완료하려면 아래 [✓ 완료체크]를 먼저 누르세요');return;}toggleSeg(SEL,+el.dataset.a,+el.dataset.b);});
   const fill=document.getElementById('ifill');if(fill)fill.onclick=()=>completeRemaining(SEL);
   ihold.onclick=async()=>{o.hold=!o.hold;if(!o.hold)o.holdReason='';await save();drawLines();renderKpi();renderSheet();toast(`<b>${o.no}</b> ${o.hold?'보류(중지·취소)':'보류 해제'}`);};
@@ -1872,5 +1882,7 @@ function setRole(){const el=document.getElementById('roleSub');if(el)el.textCont
 setRole();addEventListener('resize',()=>{setRole();setTimeout(()=>map.invalidateSize(),120);});
 document.querySelectorAll('#officeTabs button').forEach(b=>b.onclick=()=>setOffice(b.dataset.o));
 document.querySelectorAll('#yearTabs button').forEach(b=>b.onclick=()=>setYear(b.dataset.y));
+const _ydBtn=document.getElementById('yearDropBtn');if(_ydBtn)_ydBtn.onclick=e=>{e.stopPropagation();document.getElementById('yearDrop').classList.toggle('open');};
+document.addEventListener('click',e=>{const dd=document.getElementById('yearDrop');if(dd&&!dd.contains(e.target))dd.classList.remove('open');});
 document.getElementById('lyBound').onclick=function(){boundsOn=!boundsOn;if(boundsOn){boundaryLayer.addTo(map);this.classList.add('on');}else{map.removeLayer(boundaryLayer);this.classList.remove('on');}};
 </script>

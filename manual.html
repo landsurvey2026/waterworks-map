@@ -13,39 +13,40 @@
   html{scroll-behavior:smooth}
   body{margin:0;font-family:'Noto Sans KR',sans-serif;color:var(--ink);background:radial-gradient(1200px 600px at 50% -200px,#cfe8fb 0%,transparent 60%),linear-gradient(180deg,#eef6fd 0%,#e3f0fa 100%);line-height:1.65;-webkit-font-smoothing:antialiased;}
   .wrap{max-width:760px;margin:0 auto;padding:0 16px 80px}
-  .cover{text-align:center;padding:46px 22px 38px;margin:18px 0 8px;background:linear-gradient(160deg,#0e4c8a 0%,#1f6feb 55%,#2f8fd6 100%);border-radius:26px;color:#fff;box-shadow:var(--shadow);position:relative;overflow:hidden;}
-  .cover .drop{font-size:50px;line-height:1;filter:drop-shadow(0 6px 12px rgba(0,0,0,.2))}
-  .cover h1{font-family:'Jua',sans-serif;font-weight:400;font-size:30px;margin:12px 0 4px;letter-spacing:-.5px}
+  .cover{text-align:center;padding:44px 22px 34px;margin:18px 0 8px;background:linear-gradient(160deg,#0e4c8a 0%,#1f6feb 55%,#2f8fd6 100%);border-radius:26px;color:#fff;box-shadow:var(--shadow);position:relative;overflow:hidden;}
+  .cover .drop{font-size:48px;line-height:1;filter:drop-shadow(0 6px 12px rgba(0,0,0,.2))}
+  .cover h1{font-family:'Jua',sans-serif;font-weight:400;font-size:29px;margin:10px 0 4px;letter-spacing:-.5px}
   .cover .tag{font-size:15px;opacity:.92;font-weight:500}
-  .cover .pill{display:inline-block;margin-top:18px;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.3);padding:8px 16px;border-radius:999px;font-size:13.5px;font-weight:700}
-  .lead{background:#fff;border:1px solid var(--line);border-radius:18px;padding:18px;margin:16px 0;box-shadow:var(--shadow);font-size:14.5px;color:var(--ink2)}
+  .cover .pill{display:inline-block;margin-top:16px;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.3);padding:8px 16px;border-radius:999px;font-size:13.5px;font-weight:700}
+  .toolbar{display:flex;justify-content:flex-end;gap:8px;margin:14px 0 0}
+  .wordbtn{display:inline-flex;align-items:center;gap:8px;background:#2b579a;color:#fff;border:none;border-radius:11px;padding:11px 16px;font-family:'Noto Sans KR',sans-serif;font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 4px 12px rgba(43,87,154,.3)}
+  .wordbtn:active{background:#1e3f70}
+  .lead{background:#fff;border:1px solid var(--line);border-radius:18px;padding:18px;margin:14px 0 16px;box-shadow:var(--shadow);font-size:14.5px;color:var(--ink2)}
   .lead b{color:var(--blue)}
   .toc{background:#fff;border:1px solid var(--line);border-radius:18px;padding:16px 18px;margin:16px 0;box-shadow:var(--shadow)}
-  .toc h2{font-family:'Jua',sans-serif;font-weight:400;font-size:17px;margin:0 0 12px;display:flex;align-items:center;gap:8px}
+  .toc h2{font-family:'Jua',sans-serif;font-weight:400;font-size:17px;margin:0 0 12px}
   .toc ol{margin:0;padding:0;list-style:none;counter-reset:t}
   .toc li{counter-increment:t}
-  .toc a{display:flex;align-items:center;gap:11px;padding:9px 6px;border-radius:10px;text-decoration:none;color:var(--ink);font-weight:500;font-size:14.5px}
+  .toc a{display:flex;align-items:center;gap:11px;padding:8px 6px;border-radius:10px;text-decoration:none;color:var(--ink);font-weight:500;font-size:14.5px}
   .toc a:active{background:#eef6ff}
   .toc a::before{content:counter(t);width:26px;height:26px;flex:none;border-radius:8px;background:#e7f0fd;color:var(--blue);font-weight:800;font-size:13px;display:grid;place-items:center}
   .step{background:#fff;border:1px solid var(--line);border-radius:20px;padding:20px 18px 22px;margin:18px 0;box-shadow:var(--shadow);scroll-margin-top:14px}
-  .step.hero{border:2px solid #8fd9c6;box-shadow:0 12px 34px rgba(13,148,136,.16)}
+  .step.hero{border:2px solid #8fd9c6}
   .step-h{display:flex;align-items:center;gap:12px;margin-bottom:6px}
-  .num{width:38px;height:38px;flex:none;border-radius:11px;background:linear-gradient(150deg,var(--blue),#3a8af0);color:#fff;font-family:'Jua',sans-serif;font-size:19px;display:grid;place-items:center;box-shadow:0 4px 12px rgba(31,111,235,.35)}
-  .num.tealnum{background:linear-gradient(150deg,#0d9488,#14b8a6);box-shadow:0 4px 12px rgba(13,148,136,.4)}
+  .num{width:38px;height:38px;flex:none;border-radius:11px;background:linear-gradient(150deg,var(--blue),#3a8af0);color:#fff;font-family:'Jua',sans-serif;font-size:19px;display:grid;place-items:center}
+  .num.tealnum{background:linear-gradient(150deg,#0d9488,#14b8a6)}
+  .num.purnum{background:linear-gradient(150deg,#7c3aed,#a855f7)}
   .step-h h3{font-family:'Jua',sans-serif;font-weight:400;font-size:20px;margin:0;letter-spacing:-.3px}
   .step p{margin:9px 0;font-size:14.5px;color:#26425c}
   .step .sub{color:var(--ink2);font-size:13.5px}
   .b{color:var(--blue);font-weight:700}.t{color:var(--teal);font-weight:700}
   .badge-best{display:inline-block;background:#0d9488;color:#fff;font-size:11px;font-weight:800;padding:2px 9px;border-radius:999px;margin-left:7px;vertical-align:middle}
   .key{display:inline-block;background:#0c2236;color:#fff;font-weight:700;font-size:12.5px;padding:2px 9px;border-radius:7px;margin:0 1px;white-space:nowrap}
-  .key.b{background:var(--blue)}.key.t{background:var(--teal)}.key.g{background:#475569}.key.rose{background:#e11d48}.key.green{background:#15803d}
+  .key.b{background:var(--blue)}.key.t{background:var(--teal)}.key.g{background:#475569}.key.rose{background:#e11d48}.key.green{background:#15803d}.key.pur{background:#7c3aed}
   .note{display:flex;gap:10px;align-items:flex-start;background:#fff8ec;border:1px solid #f6e0b3;border-radius:13px;padding:12px 13px;margin:12px 0 0;font-size:13.5px;color:#7a5a12}
   .note .ic{font-size:17px}
   .note.warn{background:#fef1f1;border-color:#f6c9c9;color:#a23131}
   .note.tip{background:#eafaf6;border-color:#b6e6da;color:#0c6b5d}
-  .shot{margin:14px 0 2px;border-radius:16px;overflow:hidden;border:1px solid var(--line);background:#f4f9fe}
-  .shot svg{display:block;width:100%;height:auto}
-  .illus-note{font-size:12px;color:#8aa0b4}
   .do{counter-reset:do;margin:12px 0 0;padding:0;list-style:none}
   .do li{counter-increment:do;position:relative;padding:9px 0 9px 36px;font-size:14.3px;color:#26425c;border-bottom:1px dashed #e6eef6}
   .do li:last-child{border-bottom:none}
@@ -68,7 +69,11 @@
 <body>
 <div class="wrap">
 
-  <div class="cover">
+  <div class="toolbar">
+    <button class="wordbtn" id="wordBtn" onclick="exportWord()">📄 워드로 내보내기</button>
+  </div>
+
+  <div class="cover" id="docTop">
     <div class="drop">💧</div>
     <h1>서울시 상수도 현장관리</h1>
     <div class="tag">현장 작업자 사용 매뉴얼</div>
@@ -77,8 +82,8 @@
 
   <div class="lead">
     이 안내서는 <b>현장 작업자</b>가 휴대폰으로 직접 따라 할 수 있게 만들었습니다.
-    완료 입력은 <b>가장 쉬운 「오늘 완료한 길이」 입력</b>을 먼저 설명하고, 끊기·완료체크는 그다음에 둡니다.
-    그림은 이해를 돕는 <span class="illus-note">예시 화면</span>이라 실제와 조금 다를 수 있어요.
+    완료 입력은 가장 쉬운 <b>「오늘 작업 길이」 입력</b>을 중심으로 설명합니다.
+    오른쪽 위 <b>📄 워드로 내보내기</b>를 누르면 이 매뉴얼을 워드(.doc) 파일로 저장할 수 있어요.
   </div>
 
   <nav class="toc">
@@ -86,19 +91,21 @@
     <ol>
       <li><a href="#s1">프로그램 접속하기</a></li>
       <li><a href="#s2">첫 화면 살펴보기</a></li>
-      <li><a href="#s3">오늘 작업배치 확인</a></li>
-      <li><a href="#s4">내 공사 찾기 (검색)</a></li>
-      <li><a href="#s5">지도에서 라인 고르기</a></li>
-      <li><a href="#s6">라인 정보 창 열기</a></li>
-      <li><a href="#s7">오늘 작업자 먼저 정하기</a></li>
-      <li><a href="#s8">완료 입력 ❶ 길이 입력 (기본·추천)</a></li>
-      <li><a href="#s9">완료 취소 (부분·전체)</a></li>
-      <li><a href="#s10">완료 입력 ❷ 지도에서 끊고 체크 (특수)</a></li>
-      <li><a href="#s11">측량완료 표시하기</a></li>
-      <li><a href="#s12">보류(중지)·특이사항</a></li>
-      <li><a href="#s13">오늘 실적 보기</a></li>
-      <li><a href="#s14">현황 달력 보기</a></li>
-      <li><a href="#s15">내 위치·지도 전환</a></li>
+      <li><a href="#s3">연도 선택 · 전체 보기</a></li>
+      <li><a href="#s4">오늘 작업배치 (어제·오늘·내일)</a></li>
+      <li><a href="#s5">내 공사 찾기 (검색)</a></li>
+      <li><a href="#s6">지도에서 라인 고르기</a></li>
+      <li><a href="#s7">라인 정보 창 열기</a></li>
+      <li><a href="#s8">오늘 작업자 정하기 (대표 자동)</a></li>
+      <li><a href="#s9">완료 입력 ❶ 길이 입력 (기본·추천)</a></li>
+      <li><a href="#s10">완료 취소 (부분·전체)</a></li>
+      <li><a href="#s11">완료 입력 ❷ 지도에서 끊고 체크 (특수)</a></li>
+      <li><a href="#s12">측량요청 · 긴급 (공사 완료 시)</a></li>
+      <li><a href="#s13">측량완료 표시</a></li>
+      <li><a href="#s14">현황판 (공사중·측량요청·측량완료)</a></li>
+      <li><a href="#s15">보류(중지)·특이사항</a></li>
+      <li><a href="#s16">실적 · 현황 달력</a></li>
+      <li><a href="#s17">내 위치 · 지도전환 · 로드뷰</a></li>
       <li><a href="#faq">문제가 생기면 (FAQ)</a></li>
     </ol>
   </nav>
@@ -110,311 +117,180 @@
     <p><span class="key b">landsurvey2026.github.io/waterworks-map</span></p>
     <p class="sub">접속 비밀번호</p>
     <p><span class="key">!2026</span> 입력 후 <span class="key b">들어가기</span> (한 번 넣으면 그 휴대폰은 기억합니다).</p>
-    <div class="shot">
-      <svg viewBox="0 0 320 150" xmlns="http://www.w3.org/2000/svg">
-        <rect width="320" height="150" fill="#1b2a3d"/>
-        <rect x="78" y="20" width="164" height="110" rx="16" fill="#111a28"/>
-        <text x="160" y="46" text-anchor="middle" font-size="20">💧</text>
-        <text x="160" y="68" text-anchor="middle" font-family="Jua" font-size="11" fill="#e6edf3">접속 비밀번호 입력</text>
-        <rect x="98" y="78" width="124" height="24" rx="8" fill="#0b1320" stroke="#2b3f59"/>
-        <text x="160" y="94" text-anchor="middle" font-size="12" fill="#7da2c9" letter-spacing="2">● ● ● ● ●</text>
-        <rect x="98" y="106" width="124" height="22" rx="8" fill="#1f6feb"/>
-        <text x="160" y="121" text-anchor="middle" font-weight="700" font-size="11" fill="#fff">들어가기</text>
-      </svg>
-    </div>
-    <div class="note warn"><span class="ic">⚠️</span><div>다운로드된 파일을 "<b>네이버웨일에서 열기</b>"로 열면 안 됩니다. 꼭 <b>위 인터넷 주소</b>로 접속하세요.</div></div>
+    <div class="note warn"><span class="ic">⚠️</span><div>다운로드된 파일을 직접 열면 일부 기능이 안 됩니다. 꼭 <b>위 인터넷 주소</b>로 접속하세요. (화면 왼쪽 위 작은 글씨로 버전(build)이 표시됩니다.)</div></div>
   </section>
 
   <section class="step" id="s2">
     <div class="step-h"><div class="num">2</div><h3>첫 화면 살펴보기</h3></div>
-    <p>접속하면 지도에 우리 공사 라인들이 색깔로 표시됩니다. 화면 맨 위에 버튼들이 있어요.</p>
-    <div class="shot">
-      <svg viewBox="0 0 320 150" xmlns="http://www.w3.org/2000/svg">
-        <rect width="320" height="150" fill="#0c2236"/>
-        <text x="12" y="22" font-family="Jua" font-size="12" fill="#fff">서울시 상수도 현장관리</text>
-        <rect x="12" y="32" width="36" height="20" rx="6" fill="#1f6feb"/><text x="30" y="46" text-anchor="middle" font-size="10" fill="#fff">전체</text>
-        <rect x="52" y="32" width="36" height="20" rx="6" fill="#22304a"/><text x="70" y="46" text-anchor="middle" font-size="10" fill="#c7d6e8">강동</text>
-        <rect x="92" y="32" width="36" height="20" rx="6" fill="#22304a"/><text x="110" y="46" text-anchor="middle" font-size="10" fill="#c7d6e8">동부</text>
-        <rect x="12" y="58" width="44" height="20" rx="6" fill="#22304a"/><text x="34" y="72" text-anchor="middle" font-size="10" fill="#cfe0f2">검색</text>
-        <rect x="60" y="58" width="44" height="20" rx="6" fill="#22304a"/><text x="82" y="72" text-anchor="middle" font-size="10" fill="#cfe0f2">현황</text>
-        <rect x="108" y="58" width="44" height="20" rx="6" fill="#22304a"/><text x="130" y="72" text-anchor="middle" font-size="10" fill="#cfe0f2">배치</text>
-        <rect x="156" y="58" width="44" height="20" rx="6" fill="#22304a"/><text x="178" y="72" text-anchor="middle" font-size="10" fill="#cfe0f2">실적</text>
-        <rect x="204" y="58" width="58" height="20" rx="6" fill="#22304a"/><text x="233" y="72" text-anchor="middle" font-size="10" fill="#cfe0f2">📖 매뉴얼</text>
-        <rect x="0" y="92" width="320" height="58" fill="#dceaf5"/>
-        <path d="M30 120 L110 108 L180 130" stroke="#f59e0b" stroke-width="5" fill="none" stroke-linecap="round"/>
-        <path d="M150 140 L230 126 L290 142" stroke="#34d399" stroke-width="5" fill="none" stroke-linecap="round"/>
-      </svg>
-    </div>
+    <p>접속하면 지도에 공사 라인이 색깔로 표시됩니다. 화면 맨 위 버튼들을 알아두세요.</p>
     <ul class="mini">
-      <li><span class="b">전체 / 강동 / 동부</span> — 사업소별로 골라 보기</li>
+      <li><span class="b">전체 / 강동 / 동부</span> — 사업소별 보기</li>
+      <li><span class="b">26년 ▾</span> — 연도 선택(누르면 목록이 펼쳐짐)</li>
       <li><span class="b">검색</span> — 지시번호·공사명·소장으로 찾기</li>
       <li><span class="b">현황</span> — 날짜별 작업 현황(달력)</li>
-      <li><span class="b">배치</span> — 오늘 작업배치(누가 어디)</li>
-      <li><span class="b">실적</span> — 오늘 완료한 물량</li>
+      <li><span class="b">배치</span> — 작업배치(어제·오늘·내일)</li>
+      <li><span class="b">실적</span> — 오늘 완료 물량</li>
+      <li><span class="b pur">📋 현황판</span> — 공사중·측량요청·측량완료 한눈에</li>
       <li><span class="b">📖 매뉴얼</span> — 이 사용설명서</li>
     </ul>
-    <p class="sub">라인 색 = 진행 상태: <span style="color:#f59e0b;font-weight:700">주황(미시공)</span> · <span style="color:#16a34a;font-weight:700">초록(완료)</span> · <span style="color:#2563eb;font-weight:700">파랑(측량완료)</span> · <span style="color:#e11d48;font-weight:700">빨강(보류)</span></p>
-    <div class="note tip"><span class="ic">🔍</span><div>지도는 손가락 두 개로 <b>아주 크게 확대</b>할 수 있어요. 짧은 구간을 다룰 땐 확대하면 편합니다.</div></div>
+    <p class="sub">라인 색: <span style="color:#f59e0b;font-weight:700">주황(미시공)</span> · <span style="color:#16a34a;font-weight:700">초록(완료)</span> · <span style="color:#2563eb;font-weight:700">파랑(측량완료)</span> · <span style="color:#e11d48;font-weight:700">빨강(보류)</span>. 구 경계: <span style="color:#22d3ee;font-weight:700">강동(하늘색)</span> · <span style="color:#4f46e5;font-weight:700">동부(남색)</span>.</p>
   </section>
 
   <section class="step" id="s3">
-    <div class="step-h"><div class="num">3</div><h3>오늘 작업배치 확인</h3></div>
-    <p>프로그램을 켜면 <b>오늘 작업배치</b>가 자동 팝업으로 뜹니다. 사업소별 지시번호·주야·작업자·소장과 누수대응 당직을 볼 수 있어요. 닫은 뒤 다시 보려면 위 <span class="key g">배치</span> 버튼을 누르세요.</p>
-    <div class="shot">
-      <svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
-        <rect width="320" height="180" fill="#1b2a3d"/>
-        <rect x="40" y="14" width="240" height="152" rx="14" fill="#fff"/>
-        <rect x="40" y="14" width="240" height="34" rx="14" fill="#0d9488"/><rect x="40" y="34" width="240" height="14" fill="#0d9488"/>
-        <text x="54" y="36" font-family="Jua" font-size="12" fill="#fff">👷 오늘 작업배치 · 6/8 (월)</text>
-        <text x="54" y="68" font-size="10.5" font-weight="700" fill="#0d9488">동부수도사업소</text>
-        <rect x="54" y="74" width="212" height="22" rx="7" fill="#fff" stroke="#e5e7eb"/>
-        <text x="62" y="89" font-family="monospace" font-size="10" font-weight="700" fill="#0f172a">118</text>
-        <rect x="86" y="78" width="22" height="13" rx="6" fill="#fef3c7"/><text x="97" y="88" text-anchor="middle" font-size="8" fill="#92400e">주</text>
-        <text x="116" y="89" font-size="10" fill="#0f172a">이재은</text><text x="200" y="89" font-size="8.5" fill="#64748b">소장 송기종</text>
-        <text x="54" y="116" font-size="10.5" font-weight="700" fill="#0d9488">강동수도사업소</text>
-        <rect x="54" y="122" width="212" height="22" rx="7" fill="#fff" stroke="#e5e7eb"/>
-        <text x="62" y="137" font-family="monospace" font-size="10" font-weight="700" fill="#0f172a">66</text>
-        <text x="92" y="137" font-size="10" fill="#0f172a">김시중</text><text x="200" y="137" font-size="8.5" fill="#64748b">소장 양한마루</text>
-        <rect x="54" y="150" width="212" height="12" rx="6" fill="#fef2f2"/><text x="60" y="159" font-size="9" font-weight="700" fill="#991b1b">🚨 누수대응 당직 · 김성호</text>
-      </svg>
-    </div>
+    <div class="step-h"><div class="num">3</div><h3>연도 선택 · 전체 보기</h3></div>
+    <p>상단 <span class="key b">26년 ▾</span> 버튼을 누르면 연도 목록(전체·23~28년·연도없음)이 펼쳐집니다. 프로그램은 켜질 때 <b>올해(26년)</b> 가 자동 선택돼요.</p>
+    <p>지도 오른쪽 아래 <span class="key">전체</span> 버튼을 누르면 모든 라인이 한눈에 보이게 화면이 맞춰집니다. 프로그램을 다시 켜면 <b>마지막으로 보던 위치</b>로 열립니다.</p>
   </section>
 
   <section class="step" id="s4">
-    <div class="step-h"><div class="num">4</div><h3>내 공사 찾기 (검색)</h3></div>
-    <p>위 <span class="key g">검색</span>을 누르고 <b>지시번호·공사명·주소·소장·연락처</b> 중 아무거나 입력하면 목록이 나옵니다. 목록을 누르면 그 공사로 지도가 이동해요.</p>
-    <div class="shot">
-      <svg viewBox="0 0 320 150" xmlns="http://www.w3.org/2000/svg">
-        <rect width="320" height="150" fill="#f4f9fe"/>
-        <rect x="20" y="16" width="234" height="32" rx="9" fill="#fff" stroke="#cdddee"/>
-        <text x="32" y="36" font-size="11.5" fill="#9fb3c6">지시번호·공사명·주소·소장 검색</text>
-        <rect x="262" y="16" width="38" height="32" rx="9" fill="#1f6feb"/><text x="281" y="36" text-anchor="middle" font-size="10" fill="#fff">취소</text>
-        <rect x="20" y="56" width="280" height="36" rx="9" fill="#fff" stroke="#e3edf6"/>
-        <circle cx="38" cy="74" r="5" fill="#f59e0b"/><text x="52" y="71" font-family="monospace" font-size="11" font-weight="700" fill="#0f172a">강동/66</text>
-        <text x="52" y="86" font-size="9.5" fill="#64748b">천호대로 관로 · 김시중</text>
-        <rect x="20" y="98" width="280" height="36" rx="9" fill="#fff" stroke="#e3edf6"/>
-        <circle cx="38" cy="116" r="5" fill="#34d399"/><text x="52" y="113" font-family="monospace" font-size="11" font-weight="700" fill="#0f172a">동부/118</text>
-        <text x="52" y="128" font-size="9.5" fill="#64748b">성수동 누수정비 · 이재은</text>
-      </svg>
-    </div>
+    <div class="step-h"><div class="num">4</div><h3>오늘 작업배치 (어제·오늘·내일)</h3></div>
+    <p>프로그램을 켜면 <b>작업배치</b>가 자동으로 뜹니다. <b>어제·오늘·내일</b> 세 날짜를 함께 보여주고 <b>오늘</b>이 초록색으로 강조돼요. 사업소별 지시번호·주야·작업자·소장과 누수대응 당직을 봅니다. 다시 보려면 위 <span class="key g">배치</span> 버튼을 누르세요.</p>
   </section>
 
   <section class="step" id="s5">
-    <div class="step-h"><div class="num">5</div><h3>지도에서 라인 고르기</h3></div>
-    <p>지도에서 공사 라인을 손가락으로 <b>탭</b>하면 선택됩니다. 라인이 <b>여러 개 겹친 곳</b>을 누르면 목록이 떠요. 항목에 손가락을 대면 그 라인이 <span class="b">파란색으로 미리보기</span>되니, 맞는지 보고 누르면 됩니다.</p>
-    <div class="shot">
-      <svg viewBox="0 0 320 170" xmlns="http://www.w3.org/2000/svg">
-        <rect width="320" height="170" fill="#dceaf5"/>
-        <path d="M40 80 L150 64 L260 92" stroke="#2563eb" stroke-width="7" fill="none" stroke-linecap="round" opacity=".9"/>
-        <path d="M44 92 L150 76 L260 104" stroke="#f59e0b" stroke-width="5" fill="none" stroke-linecap="round"/>
-        <circle cx="150" cy="70" r="15" fill="none" stroke="#1f6feb" stroke-width="2.5" stroke-dasharray="4 4"/>
-        <rect x="120" y="88" width="170" height="74" rx="11" fill="#fff" stroke="#e5e7eb"/>
-        <rect x="120" y="88" width="170" height="22" rx="11" fill="#0f172a"/><rect x="120" y="100" width="170" height="10" fill="#0f172a"/>
-        <text x="131" y="103" font-size="9.5" font-weight="700" fill="#fff">겹친 라인 2개 · 선택</text>
-        <circle cx="133" cy="126" r="4.5" fill="#2563eb"/><text x="144" y="130" font-family="monospace" font-size="10.5" font-weight="700" fill="#0f172a">강동/109</text>
-        <circle cx="133" cy="150" r="4.5" fill="#f59e0b"/><text x="144" y="154" font-family="monospace" font-size="10.5" font-weight="700" fill="#0f172a">강동/66</text>
-      </svg>
-    </div>
+    <div class="step-h"><div class="num">5</div><h3>내 공사 찾기 (검색)</h3></div>
+    <p>위 <span class="key g">검색</span>을 누르고 <b>지시번호·공사명·주소·소장·연락처</b> 중 아무거나 입력하면 목록이 나옵니다. 목록을 누르면 그 공사로 지도가 이동해요.</p>
   </section>
 
   <section class="step" id="s6">
-    <div class="step-h"><div class="num">6</div><h3>라인 정보 창 열기</h3></div>
-    <p>라인을 고르면 화면 아래에 정보 창이 열립니다. 휴대폰에서는 아래에 <span class="key g">정보 보기 ▴</span> 띠가 나타나니 위로 올리면 펼쳐져요. 이 창에서 모든 작업을 합니다.</p>
-    <div class="shot">
-      <svg viewBox="0 0 320 220" xmlns="http://www.w3.org/2000/svg">
-        <rect width="320" height="220" fill="#f8fbfe"/>
-        <rect x="14" y="14" width="36" height="20" rx="6" fill="#1f6feb"/><text x="32" y="28" text-anchor="middle" font-size="10" fill="#fff">강동</text>
-        <text x="58" y="29" font-family="Jua" font-size="15" fill="#0f172a">강동/66</text>
-        <rect x="240" y="13" width="66" height="22" rx="11" fill="#fff3da"/><text x="273" y="28" text-anchor="middle" font-size="10" fill="#9a6a12">미시공</text>
-        <text x="14" y="50" font-size="11" fill="#64748b">천호대로 관로 정비 · 소장 양한마루</text>
-        <rect x="14" y="58" width="292" height="22" rx="7" fill="#eef5ff" stroke="#cfe0f6"/>
-        <text x="24" y="73" font-size="10.5" fill="#5b7a98">시공 연장 <tspan font-weight="800" fill="#0f172a">36</tspan> / 94 m · 38%</text>
-        <rect x="14" y="86" width="292" height="28" rx="9" fill="#eef5ff" stroke="#cfe0f6"/>
-        <text x="24" y="104" font-size="11" fill="#5b7a98">오늘 작업자</text><text x="120" y="104" font-size="11" font-weight="700" fill="#0f172a">김시중</text><text x="296" y="104" text-anchor="end" font-size="11" font-weight="700" fill="#1f6feb">선택 ▾</text>
-        <rect x="14" y="120" width="292" height="50" rx="11" fill="#ecfdf5" stroke="#a7e3cb"/>
-        <text x="24" y="138" font-size="11" font-weight="800" fill="#0c6b5d">오늘 작업 길이 입력</text>
-        <rect x="24" y="144" width="150" height="20" rx="6" fill="#fff" stroke="#b6dfce"/><text x="166" y="158" text-anchor="end" font-size="10" fill="#94a3b8">예: 30</text>
-        <rect x="182" y="144" width="58" height="20" rx="6" fill="#0d9488"/><text x="211" y="158" text-anchor="middle" font-size="10" font-weight="700" fill="#fff">완료 추가</text>
-        <rect x="246" y="144" width="58" height="20" rx="6" fill="#fff" stroke="#e6b3b8"/><text x="275" y="158" text-anchor="middle" font-size="10" font-weight="700" fill="#b23b46">완료 취소</text>
-        <rect x="14" y="178" width="142" height="26" rx="8" fill="#fff" stroke="#f1b4b8"/><text x="85" y="195" text-anchor="middle" font-size="11" font-weight="700" fill="#d23b48">✂ 끊기</text>
-        <rect x="164" y="178" width="142" height="26" rx="8" fill="#0d9488"/><text x="235" y="195" text-anchor="middle" font-size="11" font-weight="700" fill="#fff">✓ 완료체크</text>
-      </svg>
-    </div>
-    <p class="sub">정보 창 순서: 지시번호·상태 → 진행률 → <b>오늘 작업자</b> → <b class="t">오늘 작업 길이 입력</b>(초록 박스) → 끊기/완료체크 → 구간 목록 → 특이사항 → 보류.</p>
+    <div class="step-h"><div class="num">6</div><h3>지도에서 라인 고르기</h3></div>
+    <p>지도에서 라인을 손가락으로 <b>탭</b>하면 선택됩니다(라인 위에서 커서가 손 모양으로 바뀜). 여러 개 <b>겹친 곳</b>을 누르면 목록이 떠요. 항목에 손가락을 대면 그 라인이 <span class="b">파란색으로 미리보기</span>되니 확인하고 고르면 됩니다.</p>
+    <div class="note tip"><span class="ic">🔍</span><div>지도는 아주 크게 확대됩니다. 짧은 구간을 다룰 땐 두 손가락으로 확대하세요.</div></div>
   </section>
 
   <section class="step" id="s7">
-    <div class="step-h"><div class="num">7</div><h3>오늘 작업자 먼저 정하기</h3></div>
-    <p>완료를 입력하기 <b>전에</b> 오늘 작업한 사람을 먼저 정합니다. 그래야 "누가 했는지"가 기록돼요.</p>
+    <div class="step-h"><div class="num">7</div><h3>라인 정보 창 열기</h3></div>
+    <p>라인을 고르면 화면 아래 정보 창이 열립니다(휴대폰은 아래 <span class="key g">정보 보기 ▴</span> 띠를 위로 올림). 정보 창 순서: 지시번호·상태 → 진행률 → <b>오늘 작업자</b> → <b class="t">오늘 작업 길이 입력</b> → 끊기/완료체크 → 구간 목록 → 특이사항 → 보류 → 측량.</p>
+  </section>
+
+  <section class="step" id="s8">
+    <div class="step-h"><div class="num">8</div><h3>오늘 작업자 정하기 (대표 자동)</h3></div>
+    <p>완료 입력 <b>전에</b> 오늘 작업한 사람을 정합니다.</p>
     <ul class="do">
-      <li>정보 창에서 <span class="key b">오늘 작업자 … 선택 ▾</span> 칸을 누릅니다.</li>
-      <li><span class="key">오늘 작업자 선택</span> 창에서 대표 작업자와 보조 인원을 고릅니다(여러 명 가능).</li>
+      <li><span class="key b">오늘 작업자 … 선택 ▾</span>를 누릅니다.</li>
+      <li>작업한 사람을 <b>체크</b>합니다(여러 명 가능). <b>맨 처음 체크한 사람이 자동으로 대표</b>가 됩니다.</li>
       <li><span class="key b">확인</span>을 누릅니다.</li>
     </ul>
-    <div class="note"><span class="ic">📝</span><div>작업자가 목록에 없으면 관리자에게 명단 추가를 요청하세요. 안 고르면 "미지정"으로 저장됩니다.</div></div>
+    <div class="note tip"><span class="ic">💡</span><div>대표를 따로 고를 필요 없어요. 먼저 체크한 사람이 대표, 나머지는 보조입니다. 바꾸려면 모두 해제하고 다시 고르면 돼요.</div></div>
   </section>
 
-  <!-- 8 길이 입력 (기본) -->
-  <section class="step hero" id="s8">
-    <div class="step-h"><div class="num tealnum">8</div><h3>완료 입력 ❶ 길이 입력<span class="badge-best">가장 쉬움</span></h3></div>
-    <p>오늘 한 만큼 <b>길이(m)만 입력</b>하면 됩니다. 프로그램이 <b>이미 완료된 지점에서 이어서</b> 자동으로 처리해요. "어디서부터" "몇 m 지점" 같은 건 신경 쓰지 않아도 됩니다.</p>
+  <section class="step hero" id="s9">
+    <div class="step-h"><div class="num tealnum">9</div><h3>완료 입력 ❶ 길이 입력<span class="badge-best">가장 쉬움</span></h3></div>
+    <p>오늘 한 만큼 <b>길이(m)만 입력</b>하면 됩니다. 프로그램이 <b>이미 완료된 지점에서 이어서</b> 자동 처리해요. "어디서부터" "몇 m 지점" 같은 건 신경 안 써도 됩니다.</p>
     <ul class="do teal">
-      <li>위 <a href="#s7">⑦</a>처럼 <b>오늘 작업자</b>를 먼저 정합니다.</li>
-      <li>초록색 <b>「오늘 작업 길이 입력」</b> 칸에 오늘 시공한 길이를 숫자로 넣습니다. (예: <b>30</b>)</li>
-      <li><span class="key t">완료 추가</span>를 누릅니다. → 완료된 지점에서 이어서 30m가 <span style="color:#16a34a;font-weight:700">초록색</span>으로 완료됩니다.</li>
-      <li>다음 날 또 작업하면, 같은 방법으로 그날 한 길이만 넣으면 이어서 쌓입니다.</li>
+      <li><a href="#s8">⑧</a>처럼 <b>오늘 작업자</b>를 먼저 정합니다.</li>
+      <li>초록색 <b>「오늘 작업 길이 입력」</b> 칸에 오늘 시공한 길이를 넣습니다. (예: <b>30</b>)</li>
+      <li><span class="key t">완료 추가</span>를 누릅니다 → 완료된 지점에서 이어서 30m가 <span style="color:#16a34a;font-weight:700">초록색</span>으로 완료됩니다.</li>
+      <li>다음 날도 같은 방법으로 그날 한 길이만 넣으면 이어서 쌓입니다.</li>
     </ul>
-    <div class="shot">
-      <svg viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg">
-        <rect width="320" height="200" fill="#f4f9fe"/>
-        <!-- 라인: 36 완료 + 30 추가 -->
-        <rect x="20" y="22" width="280" height="14" rx="7" fill="#fde9c8"/>
-        <rect x="20" y="22" width="107" height="14" rx="7" fill="#34d399"/>
-        <rect x="127" y="22" width="89" height="14" rx="7" fill="#86efac"/>
-        <text x="20" y="52" font-size="10" fill="#16a34a">완료 36m</text>
-        <text x="150" y="52" font-size="10" fill="#15803d">+오늘 30m</text>
-        <text x="270" y="52" font-size="10" fill="#b45309">남음</text>
-        <!-- 입력 박스 -->
-        <rect x="20" y="72" width="280" height="86" rx="13" fill="#ecfdf5" stroke="#a7e3cb"/>
-        <text x="34" y="96" font-size="12.5" font-weight="800" fill="#0c6b5d">오늘 작업 길이 입력</text>
-        <rect x="34" y="106" width="150" height="34" rx="9" fill="#fff" stroke="#b6dfce"/><text x="176" y="129" text-anchor="end" font-size="17" font-weight="700" fill="#0f172a">30</text>
-        <rect x="192" y="106" width="64" height="34" rx="9" fill="#0d9488"/><text x="224" y="128" text-anchor="middle" font-size="12" font-weight="800" fill="#fff">완료 추가</text>
-        <rect x="262" y="106" width="38" height="34" rx="9" fill="#fff" stroke="#e6b3b8"/><text x="281" y="124" text-anchor="middle" font-size="9" font-weight="700" fill="#b23b46">완료</text><text x="281" y="134" text-anchor="middle" font-size="9" font-weight="700" fill="#b23b46">취소</text>
-        <text x="34" y="152" font-size="10.5" fill="#6b9e90">현재 완료 36m · 잔여 58m</text>
-        <rect x="86" y="170" width="148" height="22" rx="8" fill="#0f172a"/><text x="160" y="185" text-anchor="middle" font-size="10.5" font-weight="700" fill="#fff">이어서 +30m 완료 (66 / 94m)</text>
-      </svg>
-    </div>
-    <div class="note tip"><span class="ic">💡</span><div>남은 길이보다 큰 숫자를 넣어도 <b>끝에서 자동으로 멈춥니다</b>(넘치지 않아요). 라인이 어느 방향이든 완료된 부분 옆에 알맞게 이어 붙습니다.</div></div>
-    <div class="note warn"><span class="ic">⚠️</span><div>실제 시공한 만큼만 넣으세요. 입력한 길이가 그날 <b>실적·통계</b>에 그대로 반영됩니다. (자동 저장되어 다른 사람 화면에도 바로 보여요.)</div></div>
+    <div class="note tip"><span class="ic">💡</span><div>남은 길이보다 큰 숫자를 넣어도 <b>끝에서 자동으로 멈춥니다</b>. 라인이 어느 방향이든 완료된 부분 옆에 알맞게 이어 붙어요.</div></div>
+    <div class="note warn"><span class="ic">⚠️</span><div>실제 시공한 만큼만 넣으세요. 입력값이 그날 <b>실적·통계</b>에 그대로 반영됩니다(자동 저장).</div></div>
   </section>
 
-  <!-- 9 취소 -->
-  <section class="step" id="s9">
-    <div class="step-h"><div class="num tealnum">9</div><h3>완료 취소 (부분·전체)</h3></div>
-    <p>잘못 입력했을 때 되돌리는 방법이에요. 상황에 따라 세 가지가 있습니다.</p>
-    <ul class="mini">
-      <li><b>길이로 부분 취소</b> — 초록 박스에 되돌릴 길이를 넣고 <span class="key rose">완료 취소</span>를 누르면, <b>마지막 완료지점에서 그만큼</b> 미시공으로 돌아갑니다. (예: 66m → "10" 취소 → 56m)</li>
-      <li><b>구간 하나만 취소</b> — <span class="key t">✓ 완료체크</span>를 켜고, 완료(초록)된 그 구간을 <b>다시 탭</b>하면 해제됩니다.</li>
-      <li><b>이 라인 전체 취소</b> — <span class="key g">↺ 이 라인 완료 전체 취소</span>를 누르고, 문구가 바뀌면 <b>한 번 더</b> 누르면 모두 지워집니다(실수 방지로 두 번).</li>
-    </ul>
-    <div class="shot">
-      <svg viewBox="0 0 320 120" xmlns="http://www.w3.org/2000/svg">
-        <rect width="320" height="120" fill="#f4f9fe"/>
-        <rect x="20" y="20" width="280" height="50" rx="12" fill="#ecfdf5" stroke="#a7e3cb"/>
-        <rect x="34" y="32" width="120" height="26" rx="8" fill="#fff" stroke="#b6dfce"/><text x="146" y="49" text-anchor="end" font-size="14" font-weight="700" fill="#0f172a">10</text>
-        <rect x="162" y="32" width="58" height="26" rx="8" fill="#0d9488"/><text x="191" y="49" text-anchor="middle" font-size="10.5" font-weight="800" fill="#fff">완료 추가</text>
-        <rect x="228" y="32" width="58" height="26" rx="8" fill="#fff" stroke="#e6b3b8"/><text x="257" y="49" text-anchor="middle" font-size="10.5" font-weight="800" fill="#b23b46">완료 취소</text>
-        <rect x="20" y="82" width="280" height="24" rx="8" fill="#fff" stroke="#dbe6f0"/><text x="160" y="98" text-anchor="middle" font-size="11" font-weight="700" fill="#475569">↺ 이 라인 완료 전체 취소</text>
-      </svg>
-    </div>
-  </section>
-
-  <!-- 10 지도 끊기 (특수) -->
   <section class="step" id="s10">
-    <div class="step-h"><div class="num">10</div><h3>완료 입력 ❷ 지도에서 끊고 체크 (특수)</h3></div>
-    <p>라인의 <b>중간 특정 구간</b>만 완료하는 등 특수한 경우엔 지도에서 직접 처리합니다. 평소엔 <a href="#s8">❶ 길이 입력</a>이 더 쉬워요.</p>
-    <p class="sub">먼저 끊기 — 완료할 구간을 나눕니다.</p>
-    <ul class="do">
-      <li><span class="key rose">✂ 끊기</span>를 누릅니다(켜지면 빨강).</li>
-      <li>지도에서 <b>라인 위 끊을 지점</b>을 탭하면 "○m 지점 끊김" + <b>흰 동그라미</b>가 생깁니다.</li>
-      <li>짧아서 손가락으로 어려우면, 나타나는 <span class="key rose">끊을 위치 [__] m · 여기 끊기</span> 칸에 숫자를 넣어 정확히 끊습니다.</li>
+    <div class="step-h"><div class="num tealnum">10</div><h3>완료 취소 (부분·전체)</h3></div>
+    <ul class="mini">
+      <li><b>길이로 부분 취소</b> — 초록 박스에 되돌릴 길이를 넣고 <span class="key rose">완료 취소</span> → 마지막 완료지점에서 그만큼 미시공으로.</li>
+      <li><b>구간 하나만 취소</b> — <span class="key t">✓ 완료체크</span>를 켜고 완료(초록)된 구간을 <b>다시 탭</b>.</li>
+      <li><b>이 라인 전체 취소</b> — <span class="key g">↺ 이 라인 완료 전체 취소</span> → 문구가 바뀌면 <b>한 번 더</b> 누름.</li>
     </ul>
-    <p class="sub">그다음 완료체크 — 끊은 구간을 완료로.</p>
-    <ul class="do">
-      <li><span class="key t">✓ 완료체크</span>를 누릅니다(작업자 없으면 선택창이 먼저 떠요).</li>
-      <li>아래 <b>구간 목록</b>에서 완료한 구간을 <b>탭</b>하면 초록색 완료가 됩니다. (지도에서 그 구간을 탭해도 됩니다.)</li>
-    </ul>
-    <div class="shot">
-      <svg viewBox="0 0 320 150" xmlns="http://www.w3.org/2000/svg">
-        <rect width="320" height="150" fill="#dceaf5"/>
-        <path d="M40 50 L280 40" stroke="#f59e0b" stroke-width="7" fill="none" stroke-linecap="round"/>
-        <circle cx="160" cy="45" r="8" fill="#fff" stroke="#0d9488" stroke-width="4"/>
-        <text x="120" y="30" font-size="10.5" font-weight="700" fill="#0d6b5d">← 끊은 지점</text>
-        <rect x="20" y="78" width="150" height="28" rx="9" fill="#e11d48"/><text x="95" y="97" text-anchor="middle" font-size="12" font-weight="700" fill="#fff">✂ 끊기 (켜짐)</text>
-        <rect x="180" y="78" width="120" height="28" rx="9" fill="#fff5f5" stroke="#f3c8cc"/><text x="240" y="97" text-anchor="middle" font-size="10" font-weight="700" fill="#b23b46">끊을 위치 [__] m</text>
-        <rect x="20" y="114" width="280" height="24" rx="8" fill="#0d9488"/><text x="160" y="130" text-anchor="middle" font-size="11" font-weight="700" fill="#fff">✓ 완료체크 → 구간 탭하면 완료</text>
-      </svg>
-    </div>
-    <div class="note tip"><span class="ic">🔍</span><div>짧은 구간은 지도를 <b>크게 확대</b>하거나 "끊을 위치"에 <b>숫자로 입력</b>하면 정확합니다.</div></div>
+    <div class="note tip"><span class="ic">💡</span><div>완료를 100% 미만으로 되돌리면 측량요청·긴급 기록도 함께 지워져, 다시 완료하면 측량요청 안내가 새로 뜹니다.</div></div>
   </section>
 
   <section class="step" id="s11">
-    <div class="step-h"><div class="num">11</div><h3>측량완료 표시하기</h3></div>
-    <p>공사가 <b>100% 완료</b>되면 정보 창 아래에 <span class="key b">📐 측량완료</span> 버튼이 생깁니다. 측량까지 끝났으면 눌러 표시하세요. 라인이 <span style="color:#2563eb;font-weight:700">파란색</span>으로 바뀝니다.</p>
-    <ul class="mini">
-      <li>아직 100%가 아니면 "공사 완료(100%) 후 측량완료를 체크할 수 있습니다" 안내가 나옵니다.</li>
-      <li>잘못 눌렀으면 <span class="key b">측량완료 취소</span>로 되돌립니다.</li>
+    <div class="step-h"><div class="num">11</div><h3>완료 입력 ❷ 지도에서 끊고 체크 (특수)</h3></div>
+    <p>라인 <b>중간 특정 구간</b>만 완료하는 등 특수한 경우에 씁니다. 평소엔 <a href="#s9">❶ 길이 입력</a>이 더 쉬워요.</p>
+    <ul class="do">
+      <li><span class="key rose">✂ 끊기</span>를 누르고, 지도에서 끊을 지점을 탭(또는 <b>끊을 위치 [__] m</b> 칸에 숫자 입력)하면 흰 동그라미로 구간이 나뉩니다.</li>
+      <li><span class="key t">✓ 완료체크</span>를 누르고, 구간 목록에서 완료한 구간을 탭하면 초록색 완료가 됩니다.</li>
     </ul>
+    <p class="sub">라인 전체를 한 번에 끝낼 땐 <span class="key green">✓ 나머지 전체 완료</span>를 누릅니다.</p>
   </section>
 
   <section class="step" id="s12">
-    <div class="step-h"><div class="num">12</div><h3>보류(중지)·특이사항</h3></div>
-    <p><b>특이사항</b>(민원·누수·중단 등)은 정보 창의 입력칸에 적고 <span class="key b">기록</span>을 누르면 날짜·작성자와 함께 저장돼요. 목록의 <b>✕</b>로 지웁니다.</p>
-    <p>공사를 멈춰야 하면 <span class="key rose">⏸ 보류(중지·취소)</span>를 누르고 <b>보류 사유</b>를 적습니다. 라인이 <span style="color:#e11d48;font-weight:700">빨간색</span>으로 바뀌어요. 다시 시작할 땐 <span class="key">▶ 보류 해제</span>를 누릅니다.</p>
-    <div class="shot">
-      <svg viewBox="0 0 320 150" xmlns="http://www.w3.org/2000/svg">
-        <rect width="320" height="150" fill="#f4f9fe"/>
-        <text x="16" y="26" font-size="11" font-weight="700" fill="#475569">일일 특이사항</text>
-        <rect x="16" y="34" width="218" height="28" rx="8" fill="#fff" stroke="#cdddee"/><text x="28" y="52" font-size="10.5" fill="#9fb3c6">민원·누수·중단 등 입력</text>
-        <rect x="242" y="34" width="62" height="28" rx="8" fill="#1f6feb"/><text x="273" y="52" text-anchor="middle" font-size="11" font-weight="700" fill="#fff">기록</text>
-        <rect x="16" y="74" width="288" height="26" rx="8" fill="#fff" stroke="#e3edf6"/><text x="28" y="91" font-size="10" fill="#475569">6/8 · 김시중 — 도로 점용 민원으로 오전 중단 ✕</text>
-        <rect x="16" y="110" width="180" height="28" rx="9" fill="#fff0f0" stroke="#f6c9c9"/><text x="106" y="128" text-anchor="middle" font-size="11" font-weight="700" fill="#c0392b">⏸ 보류(중지·취소)</text>
-      </svg>
-    </div>
+    <div class="step-h"><div class="num purnum">12</div><h3>측량요청 · 긴급 (공사 완료 시)</h3></div>
+    <p>공사가 <b>100% 완료</b>되면 자동으로 <b>측량요청</b> 상태가 되고, 그 순간 "측량요청으로 전환 · 긴급한가요?" 창이 뜹니다.</p>
+    <ul class="do">
+      <li>측량이 급하지 않으면 <span class="key g">일반 요청</span>을 누릅니다.</li>
+      <li>급하면 <b>긴급 사유를 입력</b>하고 <span class="key rose">🔴 긴급 요청</span>을 누릅니다. <b>사유는 필수</b>예요 — 안 적으면 긴급요청이 안 됩니다.</li>
+    </ul>
+    <div class="note"><span class="ic">📝</span><div>측량요청은 그 공사를 100% 완료시킨 <b>대표 작업자</b>가 "요청자"로 기록됩니다.</div></div>
   </section>
 
   <section class="step" id="s13">
-    <div class="step-h"><div class="num">13</div><h3>오늘 실적 보기</h3></div>
-    <p>위 <span class="key g">실적</span> 버튼을 누르면 <b>오늘 완료한 물량</b>이 작업자별로 정리되어 나옵니다. 누가 어느 지시번호를 얼마나 했는지와 전체 합계를 봅니다.</p>
-    <div class="shot">
-      <svg viewBox="0 0 320 150" xmlns="http://www.w3.org/2000/svg">
-        <rect width="320" height="150" fill="#1b2a3d"/>
-        <rect x="40" y="12" width="240" height="126" rx="14" fill="#fff"/>
-        <rect x="40" y="12" width="240" height="32" rx="14" fill="#1f6feb"/><rect x="40" y="30" width="240" height="14" fill="#1f6feb"/>
-        <text x="54" y="33" font-family="Jua" font-size="12" fill="#fff">📊 오늘 실적 · 6/8 (월)</text>
-        <text x="54" y="66" font-size="12" font-weight="800" fill="#1f6feb">김시중</text><text x="266" y="66" text-anchor="end" font-size="12" font-weight="800" fill="#0f172a">120 m</text>
-        <text x="62" y="82" font-size="9.5" fill="#475569">강동 66</text><text x="266" y="82" text-anchor="end" font-size="9.5" fill="#475569">120 m</text>
-        <text x="54" y="104" font-size="12" font-weight="800" fill="#1f6feb">박인규</text><text x="266" y="104" text-anchor="end" font-size="12" font-weight="800" fill="#0f172a">80 m</text>
-        <rect x="54" y="114" width="212" height="20" rx="8" fill="#eff6ff" stroke="#bfdbfe"/><text x="160" y="128" text-anchor="middle" font-size="10.5" font-weight="700" fill="#1e3a8a">총 2건 · 2명 · 200 m</text>
-      </svg>
-    </div>
+    <div class="step-h"><div class="num">13</div><h3>측량완료 표시</h3></div>
+    <p>측량까지 끝나면 정보 창의 <span class="key b">📐 측량완료</span>를 누릅니다. 라인이 <span style="color:#2563eb;font-weight:700">파란색</span>으로 바뀌어요.</p>
+    <div class="note warn"><span class="ic">⚠️</span><div>공사가 <b>100% 완료되기 전</b>에는 측량완료 버튼이 <b>흐리게 비활성</b>되어 눌리지 않습니다. 먼저 공사를 완료하세요.</div></div>
   </section>
 
   <section class="step" id="s14">
-    <div class="step-h"><div class="num">14</div><h3>현황 달력 보기</h3></div>
-    <p>위 <span class="key g">현황</span>을 누르면 달력이 나옵니다. 날짜를 누르면 그날 작업 내용이 보이고, <b>작업자 이름(📍)</b>을 누르면 그 사람이 그날 완료한 라인으로 지도가 이동해 강조됩니다.</p>
-    <div class="shot">
-      <svg viewBox="0 0 320 150" xmlns="http://www.w3.org/2000/svg">
-        <rect width="320" height="150" fill="#f4f9fe"/>
-        <text x="16" y="24" font-size="11" font-weight="700" fill="#0f172a">2026년 6월</text>
-        <rect x="16" y="32" width="34" height="26" rx="6" fill="#fff" stroke="#e3edf6"/><text x="33" y="49" text-anchor="middle" font-size="10" fill="#33506b">7</text>
-        <rect x="54" y="32" width="34" height="26" rx="6" fill="#1f6feb"/><text x="71" y="49" text-anchor="middle" font-size="10" font-weight="700" fill="#fff">8</text>
-        <rect x="92" y="32" width="34" height="26" rx="6" fill="#fff" stroke="#e3edf6"/><text x="109" y="49" text-anchor="middle" font-size="10" fill="#33506b">9</text>
-        <rect x="16" y="70" width="288" height="26" rx="8" fill="#fff" stroke="#e3edf6"/>
-        <text x="28" y="87" font-size="10.5" fill="#1f6feb">📍 김시중</text><text x="160" y="87" font-size="10" fill="#475569">강동/66</text><text x="292" y="87" text-anchor="end" font-size="10" font-weight="700" fill="#0f172a">120 m</text>
-        <rect x="16" y="102" width="288" height="26" rx="8" fill="#fff" stroke="#e3edf6"/>
-        <text x="28" y="119" font-size="10.5" fill="#1f6feb">📍 박인규</text><text x="160" y="119" font-size="10" fill="#475569">동부/61</text><text x="292" y="119" text-anchor="end" font-size="10" font-weight="700" fill="#0f172a">80 m</text>
-      </svg>
-    </div>
+    <div class="step-h"><div class="num purnum">14</div><h3>현황판 (공사중·측량요청·측량완료)</h3></div>
+    <p>위 <span class="key pur">📋 현황판</span>을 누르면 지시번호가 상태별로 정리됩니다. 탭은 <b>공사중 / 측량요청 / 측량완료</b> 세 가지(각 건수 표시). 지시번호를 누르면 그 라인으로 지도가 이동해요.</p>
+    <ul class="mini">
+      <li><b>측량요청</b> 탭에는 "(N일경과)"가 표시됩니다 — 마지막 작업일로부터의 경과일이에요.</li>
+      <li><b>요청자</b>(완료시킨 대표 작업자)가 초록색으로 같이 보입니다.</li>
+      <li><b>긴급</b> 건은 빨간 배경 + 왼쪽 굵은 빨간 띠 + 🔴긴급으로 강조되고, 맨 위로 정렬됩니다. 사유도 함께 보여요.</li>
+    </ul>
   </section>
 
   <section class="step" id="s15">
-    <div class="step-h"><div class="num">15</div><h3>내 위치·지도 전환</h3></div>
-    <p>오른쪽 버튼으로 <span class="key g">지도</span>(일반) / <span class="key g">위성</span>(항공사진) / <span class="key g">경계</span>(구 경계)를 바꿉니다. <span class="key b">📍</span> 버튼을 누르면 <b>내 현재 위치</b>가 파란 점으로 표시돼요(위치 권한 허용 필요). 지도는 아주 크게 확대됩니다.</p>
+    <div class="step-h"><div class="num">15</div><h3>보류(중지)·특이사항</h3></div>
+    <p><b>특이사항</b>(민원·누수·중단 등)은 입력칸에 적고 <span class="key b">기록</span> → 날짜·작성자와 함께 저장(✕로 삭제). 공사를 멈출 땐 <span class="key rose">⏸ 보류(중지·취소)</span> + 사유 입력 → 라인이 <span style="color:#e11d48;font-weight:700">빨강</span>으로. 재개는 <span class="key">▶ 보류 해제</span>.</p>
+  </section>
+
+  <section class="step" id="s16">
+    <div class="step-h"><div class="num">16</div><h3>실적 · 현황 달력</h3></div>
+    <p><span class="key g">실적</span> — 오늘 완료한 물량을 작업자별로 정리(누가 어느 지시번호를 얼마나, 전체 합계).</p>
+    <p><span class="key g">현황</span> — 달력에서 날짜를 누르면 그날 작업 내용이 보이고, <b>작업자 이름(📍)</b>을 누르면 그 사람이 그날 완료한 라인으로 지도가 이동해 강조됩니다.</p>
+  </section>
+
+  <section class="step" id="s17">
+    <div class="step-h"><div class="num">17</div><h3>내 위치 · 지도전환 · 로드뷰</h3></div>
+    <p>오른쪽 버튼으로 <span class="key g">지도</span>/<span class="key g">위성</span>/<span class="key g">경계</span>를 바꿉니다. <span class="key b">📍</span>는 내 현재 위치(권한 허용 필요).</p>
+    <p>지도 빈 곳을 <b>두 번 클릭(더블탭)</b> 하면 그 지점 주소가 뜨고, <span class="key" style="background:#fae100;color:#3c1e1e">🛣️ 카카오맵 로드뷰로 열기</span> 버튼으로 실제 거리 모습을 볼 수 있어요.</p>
   </section>
 
   <div class="divider"><span>❓ 문제가 생기면</span></div>
   <div id="faq">
-    <div class="faq"><p class="q">길이를 넣었는데 갑자기 100%가 됐어요.</p><p class="a">예전 버전의 문제였고 지금은 고쳐졌습니다. 그 라인을 <b>↺ 전체 취소</b>(두 번 탭)로 비운 뒤, <b>완료 추가</b>로 다시 넣어보세요. 이제 완료된 부분 옆에 알맞게 이어 붙습니다.</p></div>
-    <div class="faq"><p class="q">완료를 너무 많이 입력했어요.</p><p class="a">초록 박스에 줄일 길이를 넣고 <b>완료 취소</b>를 누르면 그만큼 되돌아갑니다.</p></div>
-    <div class="faq"><p class="q">완료체크를 눌렀는데 구간이 안 바뀌어요.</p><p class="a"><b>✓ 완료체크</b>가 켜졌는지(초록) 확인하세요. 꺼진 상태에서 구간을 누르면 안내문이 뜹니다.</p></div>
-    <div class="faq"><p class="q">짧은 구간을 끊기 어려워요.</p><p class="a">지도를 <b>크게 확대</b>하거나, 끊기 모드의 <b>「끊을 위치 [__] m」</b> 칸에 숫자로 입력하세요.</p></div>
-    <div class="faq"><p class="q">측량완료 버튼이 안 보여요.</p><p class="a">공사가 <b>100% 완료</b>되어야 나타납니다. 남은 구간을 먼저 완료하세요.</p></div>
-    <div class="faq"><p class="q">화면이 이상하거나 내 위치가 안 잡혀요.</p><p class="a">화면을 아래로 당겨 <b>새로고침</b>하세요. 위치는 휴대폰 <b>권한 허용</b>이 필요하고 실내·지하에서는 부정확할 수 있어요.</p></div>
+    <div class="faq"><p class="q">긴급요청이 안 돼요.</p><p class="a">긴급요청은 <b>사유 입력이 필수</b>예요. 사유를 적고 "🔴 긴급 요청"을 누르세요. 이미 100%인 건은 현황판 측량요청 탭에서 변경할 수 있어요.</p></div>
+    <div class="faq"><p class="q">측량완료가 안 눌려요.</p><p class="a">공사가 <b>100% 완료</b>되어야 눌립니다. 남은 구간을 먼저 완료하세요.</p></div>
+    <div class="faq"><p class="q">길이를 넣었는데 완료가 이상해요.</p><p class="a"><b>↺ 전체 취소</b>(두 번 탭)로 비운 뒤 다시 <b>완료 추가</b> 하세요. 완료된 부분 옆에 알맞게 이어 붙습니다.</p></div>
+    <div class="faq"><p class="q">화면이 옛날 그대로예요.</p><p class="a">화면을 아래로 당겨 새로고침하거나, 왼쪽 위 버전(build) 숫자를 확인하세요. 다르면 새로고침이 필요해요.</p></div>
+    <div class="faq"><p class="q">내 위치(📍)가 안 잡혀요.</p><p class="a">휴대폰 위치 권한을 <b>허용</b>하세요. 실내·지하에서는 부정확할 수 있어요.</p></div>
   </div>
 
-  <a class="backtop" href="#">▲ 맨 위로</a>
+  <a class="backtop" href="#docTop">▲ 맨 위로</a>
   <div class="foot">서울시 상수도 현장관리 · 실시간 현장관리 시스템<div class="credit">made by Seo Young Min</div></div>
 </div>
+
+<script>
+function exportWord(){
+  // 본문 HTML을 워드(.doc)로 저장 — 버튼/도구막대는 제외
+  var content=document.querySelector('.wrap').cloneNode(true);
+  var tb=content.querySelector('.toolbar'); if(tb)tb.remove();
+  var bt=content.querySelector('a.backtop'); if(bt)bt.remove();
+  var css='body{font-family:"Malgun Gothic",sans-serif;color:#0c2236;line-height:1.6;font-size:11pt}'
+    +'h1{font-size:20pt;margin:0 0 4px}.cover{text-align:center;padding:16px;background:#1f6feb;color:#fff;border-radius:10px}'
+    +'.cover .tag{font-size:11pt}.cover .pill,.cover .drop{display:none}'
+    +'.step{border:1px solid #d4e3f1;border-radius:10px;padding:12px 14px;margin:12px 0}'
+    +'.step-h{margin-bottom:4px}.num{display:inline-block;background:#1f6feb;color:#fff;font-weight:800;border-radius:6px;padding:1px 9px;margin-right:8px}'
+    +'.step-h h3{display:inline;font-size:14pt}'
+    +'.key{background:#0c2236;color:#fff;font-weight:700;padding:1px 6px;border-radius:4px;font-size:9pt}'
+    +'.key.b{background:#1f6feb}.key.t{background:#0d9488}.key.g{background:#475569}.key.rose{background:#e11d48}.key.green{background:#15803d}.key.pur{background:#7c3aed}'
+    +'.badge-best{background:#0d9488;color:#fff;font-size:8pt;padding:1px 7px;border-radius:9px;margin-left:6px}'
+    +'.note{background:#fff8ec;border:1px solid #f6e0b3;border-radius:8px;padding:8px 10px;margin:8px 0;font-size:10pt}'
+    +'.note.warn{background:#fef1f1;border-color:#f6c9c9}.note.tip{background:#eafaf6;border-color:#b6e6da}.note .ic{margin-right:6px}'
+    +'.toc{border:1px solid #d4e3f1;border-radius:8px;padding:10px 14px}.toc a{display:block;color:#0c2236;text-decoration:none;padding:3px 0}'
+    +'.do,.mini{margin:8px 0;padding-left:20px}.do li,.mini li{margin:4px 0}'
+    +'.faq{border:1px solid #d4e3f1;border-radius:8px;padding:10px 12px;margin:8px 0}.faq .q{font-weight:700}'
+    +'.divider span{font-weight:800;color:#5a7a98}.lead{background:#f4f9fe;border:1px solid #d4e3f1;border-radius:8px;padding:12px}'
+    +'.sub{color:#3a5a78;font-size:10pt}.foot{text-align:center;color:#7c93a8;font-size:9pt;margin-top:20px}.shot,svg{display:none}';
+  var html='<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><title>서울시 상수도 현장관리 매뉴얼</title><style>'+css+'</style></head><body>'+content.innerHTML+'</body></html>';
+  var blob=new Blob(['\\ufeff',html],{type:'application/msword'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');a.href=url;a.download='상수도_현장관리_매뉴얼.doc';document.body.appendChild(a);a.click();
+  setTimeout(function(){document.body.removeChild(a);URL.revokeObjectURL(url);},500);
+}
+</script>
 </body>
 </html>

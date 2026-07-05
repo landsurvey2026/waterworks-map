@@ -8,38 +8,37 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <style>
-  :root{--ink:#0c2236;--ink2:#3a5a78;--blue:#1f6feb;--teal:#0d9488;--sky:#38bdf8;--line:#d4e3f1;--shadow:0 10px 30px rgba(20,70,120,.12);}
+  :root{--ink:#0c2236;--ink2:#3a5a78;--blue:#1f6feb;--teal:#0d9488;--sky:#38bdf8;--pur:#7c3aed;--line:#d4e3f1;--shadow:0 10px 30px rgba(20,70,120,.12);}
   *{box-sizing:border-box}
   html{scroll-behavior:smooth}
   body{margin:0;font-family:'Noto Sans KR',sans-serif;color:var(--ink);background:radial-gradient(1200px 600px at 50% -200px,#cfe8fb 0%,transparent 60%),linear-gradient(180deg,#eef6fd 0%,#e3f0fa 100%);line-height:1.65;-webkit-font-smoothing:antialiased;}
   .wrap{max-width:760px;margin:0 auto;padding:0 16px 80px}
-  .cover{text-align:center;padding:44px 22px 34px;margin:18px 0 8px;background:linear-gradient(160deg,#0e4c8a 0%,#1f6feb 55%,#2f8fd6 100%);border-radius:26px;color:#fff;box-shadow:var(--shadow);position:relative;overflow:hidden;}
-  .cover .drop{font-size:48px;line-height:1;filter:drop-shadow(0 6px 12px rgba(0,0,0,.2))}
-  .cover h1{font-family:'Jua',sans-serif;font-weight:400;font-size:29px;margin:10px 0 4px;letter-spacing:-.5px}
+  .cover{text-align:center;padding:40px 22px 30px;margin:18px 0 8px;background:linear-gradient(160deg,#0e4c8a 0%,#1f6feb 55%,#2f8fd6 100%);border-radius:26px;color:#fff;box-shadow:var(--shadow)}
+  .cover .drop{font-size:46px;line-height:1;filter:drop-shadow(0 6px 12px rgba(0,0,0,.2))}
+  .cover h1{font-family:'Jua',sans-serif;font-weight:400;font-size:28px;margin:10px 0 4px;letter-spacing:-.5px}
   .cover .tag{font-size:15px;opacity:.92;font-weight:500}
-  .cover .pill{display:inline-block;margin-top:16px;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.3);padding:8px 16px;border-radius:999px;font-size:13.5px;font-weight:700}
-  .toolbar{display:flex;justify-content:flex-end;gap:8px;margin:14px 0 0}
+  .tabbar{display:flex;gap:8px;margin:16px 0 4px;position:sticky;top:0;z-index:20;padding:10px 0;background:linear-gradient(180deg,#eef6fd 70%,rgba(238,246,253,0))}
+  .tabbtn{flex:1;border:1px solid var(--line);background:#fff;border-radius:13px;padding:13px 10px;font-family:'Jua',sans-serif;font-size:16px;color:#5a7a98;cursor:pointer;box-shadow:var(--shadow);transition:.15s}
+  .tabbtn.on{color:#fff}
+  .tabbtn.on.field{background:linear-gradient(135deg,#0d9488,#14b8a6);border-color:transparent}
+  .tabbtn.on.admin{background:linear-gradient(135deg,#7c3aed,#a855f7);border-color:transparent}
+  .toolbar{display:flex;justify-content:flex-end;margin:6px 0 0}
   .wordbtn{display:inline-flex;align-items:center;gap:8px;background:#2b579a;color:#fff;border:none;border-radius:11px;padding:11px 16px;font-family:'Noto Sans KR',sans-serif;font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 4px 12px rgba(43,87,154,.3)}
   .wordbtn:active{background:#1e3f70}
-  .lead{background:#fff;border:1px solid var(--line);border-radius:18px;padding:18px;margin:14px 0 16px;box-shadow:var(--shadow);font-size:14.5px;color:var(--ink2)}
+  .lead{background:#fff;border:1px solid var(--line);border-radius:18px;padding:16px 18px;margin:12px 0 16px;box-shadow:var(--shadow);font-size:14.5px;color:var(--ink2)}
   .lead b{color:var(--blue)}
-  .toc{background:#fff;border:1px solid var(--line);border-radius:18px;padding:16px 18px;margin:16px 0;box-shadow:var(--shadow)}
-  .toc h2{font-family:'Jua',sans-serif;font-weight:400;font-size:17px;margin:0 0 12px}
-  .toc ol{margin:0;padding:0;list-style:none;counter-reset:t}
-  .toc li{counter-increment:t}
-  .toc a{display:flex;align-items:center;gap:11px;padding:8px 6px;border-radius:10px;text-decoration:none;color:var(--ink);font-weight:500;font-size:14.5px}
-  .toc a:active{background:#eef6ff}
-  .toc a::before{content:counter(t);width:26px;height:26px;flex:none;border-radius:8px;background:#e7f0fd;color:var(--blue);font-weight:800;font-size:13px;display:grid;place-items:center}
-  .step{background:#fff;border:1px solid var(--line);border-radius:20px;padding:20px 18px 22px;margin:18px 0;box-shadow:var(--shadow);scroll-margin-top:14px}
+  .sect{display:none}
+  .sect.on{display:block}
+  .step{background:#fff;border:1px solid var(--line);border-radius:20px;padding:18px 18px 20px;margin:16px 0;box-shadow:var(--shadow);scroll-margin-top:70px}
   .step.hero{border:2px solid #8fd9c6}
   .step-h{display:flex;align-items:center;gap:12px;margin-bottom:6px}
-  .num{width:38px;height:38px;flex:none;border-radius:11px;background:linear-gradient(150deg,var(--blue),#3a8af0);color:#fff;font-family:'Jua',sans-serif;font-size:19px;display:grid;place-items:center}
+  .num{width:36px;height:36px;flex:none;border-radius:11px;background:linear-gradient(150deg,var(--blue),#3a8af0);color:#fff;font-family:'Jua',sans-serif;font-size:18px;display:grid;place-items:center}
   .num.tealnum{background:linear-gradient(150deg,#0d9488,#14b8a6)}
   .num.purnum{background:linear-gradient(150deg,#7c3aed,#a855f7)}
-  .step-h h3{font-family:'Jua',sans-serif;font-weight:400;font-size:20px;margin:0;letter-spacing:-.3px}
+  .step-h h3{font-family:'Jua',sans-serif;font-weight:400;font-size:19px;margin:0;letter-spacing:-.3px}
   .step p{margin:9px 0;font-size:14.5px;color:#26425c}
   .step .sub{color:var(--ink2);font-size:13.5px}
-  .b{color:var(--blue);font-weight:700}.t{color:var(--teal);font-weight:700}
+  .b{color:var(--blue);font-weight:700}.t{color:var(--teal);font-weight:700}.pu{color:var(--pur);font-weight:700}
   .badge-best{display:inline-block;background:#0d9488;color:#fff;font-size:11px;font-weight:800;padding:2px 9px;border-radius:999px;margin-left:7px;vertical-align:middle}
   .key{display:inline-block;background:#0c2236;color:#fff;font-weight:700;font-size:12.5px;padding:2px 9px;border-radius:7px;margin:0 1px;white-space:nowrap}
   .key.b{background:var(--blue)}.key.t{background:var(--teal)}.key.g{background:#475569}.key.rose{background:#e11d48}.key.green{background:#15803d}.key.pur{background:#7c3aed}
@@ -52,16 +51,16 @@
   .do li:last-child{border-bottom:none}
   .do li::before{content:counter(do);position:absolute;left:0;top:8px;width:24px;height:24px;border-radius:8px;background:#eaf2fe;color:var(--blue);font-weight:800;font-size:12.5px;display:grid;place-items:center}
   .do.teal li::before{background:#d5f3ec;color:#0d9488}
+  .do.pur li::before{background:#efe6fd;color:#7c3aed}
   .mini{margin:10px 0 0;padding:0;list-style:none}
   .mini li{position:relative;padding:6px 0 6px 26px;font-size:14px;color:#26425c}
   .mini li::before{content:"";position:absolute;left:6px;top:13px;width:8px;height:8px;border-radius:50%;background:var(--sky)}
   .faq{background:#fff;border:1px solid var(--line);border-radius:13px;padding:14px 16px;margin:10px 0;box-shadow:var(--shadow)}
   .faq .q{font-weight:700;font-size:14.5px;margin:0 0 5px}
   .faq .a{font-size:13.8px;color:var(--ink2);margin:0}
-  .divider{display:flex;align-items:center;gap:12px;margin:30px 2px 6px;color:var(--ink2)}
+  .divider{display:flex;align-items:center;gap:12px;margin:26px 2px 6px;color:var(--ink2)}
   .divider::before,.divider::after{content:"";height:1px;background:var(--line);flex:1}
   .divider span{font-family:'Jua',sans-serif;font-size:14px;color:#5a7a98}
-  a.backtop{display:block;text-align:center;color:var(--blue);font-weight:700;font-size:13px;text-decoration:none;margin-top:14px}
   .foot{text-align:center;color:#7c93a8;font-size:12.5px;margin-top:30px}
   .foot .credit{font-family:'Jua',sans-serif;color:#9ab2c6;margin-top:4px}
 </style>
@@ -69,226 +68,208 @@
 <body>
 <div class="wrap">
 
+  <div class="cover">
+    <div class="drop">💧</div>
+    <h1>서울시 상수도 현장관리</h1>
+    <div class="tag">사용 매뉴얼</div>
+  </div>
+
+  <div class="tabbar">
+    <button class="tabbtn field on" id="tabField" onclick="showTab('field')">👷 현장용</button>
+    <button class="tabbtn admin" id="tabAdmin" onclick="showTab('admin')">🖥️ 전산·관리자용</button>
+  </div>
   <div class="toolbar">
     <button class="wordbtn" id="wordBtn" onclick="exportWord()">📄 워드로 내보내기</button>
   </div>
 
-  <div class="cover" id="docTop">
-    <div class="drop">💧</div>
-    <h1>서울시 상수도 현장관리</h1>
-    <div class="tag">현장 작업자 사용 매뉴얼</div>
-    <div class="pill">📱 휴대폰으로 따라 하는 안내서</div>
+  <!-- ========================= 현장용 ========================= -->
+  <div class="sect on" id="sectField">
+    <div class="lead">
+      <b>현장 작업자용</b> 안내서입니다. 휴대폰으로 접속해 공사 진행상황을 입력·확인하는 방법을 순서대로 설명합니다.
+      현장 로그인에서는 관리자 기능(라인 수정·삭제·업로드 등)은 보이지 않습니다.
+    </div>
+
+    <div class="step" id="f1">
+      <div class="step-h"><div class="num">1</div><h3>접속과 로그인</h3></div>
+      <p>휴대폰 주소창에 <span class="key b">landsurvey2026.github.io/waterworks-map</span> 를 입력해 들어갑니다.</p>
+      <p><b>현장 비밀번호</b>(관리자에게 문의)를 넣고 들어가면 <b>현장</b> 모드로 열려요(왼쪽 위에 "현장" 표시). 한 번 넣으면 그 휴대폰은 기억합니다.</p>
+      <div class="note warn"><span class="ic">⚠️</span><div>다운로드한 파일이 아니라 꼭 <b>인터넷 주소</b>로 접속하세요. 화면 왼쪽 위 버전(build) 숫자로 최신인지 확인할 수 있어요.</div></div>
+    </div>
+
+    <div class="step" id="f2">
+      <div class="step-h"><div class="num">2</div><h3>화면 · 배치 · 검색</h3></div>
+      <ul class="mini">
+        <li>지도에 공사 라인이 색으로 표시돼요: <span style="color:#f59e0b;font-weight:700">주황(미시공)</span> · <span style="color:#16a34a;font-weight:700">초록(완료)</span> · <span style="color:#2563eb;font-weight:700">파랑(측량완료)</span> · <span style="color:#e11d48;font-weight:700">빨강(보류)</span>.</li>
+        <li>상단 <span class="key g">26년 ▾</span>로 연도를 고르고(켤 때 올해 자동), 오른쪽 아래 <span class="key">전체</span>로 전체 보기.</li>
+        <li>켜면 <b>작업배치</b>가 자동으로 떠요 — 어제·오늘·내일, 오늘 강조. 다시 보려면 <span class="key g">배치</span>.</li>
+        <li><span class="key g">검색</span>에 지시번호·공사명·소장을 넣어 찾기.</li>
+      </ul>
+    </div>
+
+    <div class="step" id="f3">
+      <div class="step-h"><div class="num">3</div><h3>주소로 이동</h3></div>
+      <p><span class="key g">검색</span>에 <b>"강동구 천호동 123"</b>처럼 주소를 넣고 엔터를 치거나 "📍 주소로 이동"을 누르면 그 위치로 지도가 이동합니다. 지도 빈 곳을 <b>두 번 클릭</b>하면 그 지점 주소와 카카오 로드뷰 버튼이 떠요.</p>
+    </div>
+
+    <div class="step" id="f4">
+      <div class="step-h"><div class="num">4</div><h3>라인 고르기 · 작업자 정하기</h3></div>
+      <p>지도에서 라인을 <b>탭</b>하면 정보 창이 열려요(겹친 곳은 목록에서 선택). 완료 입력 전에 <span class="key b">오늘 작업자 … 선택 ▾</span>에서 작업한 사람을 체크합니다. <b>맨 처음 체크한 사람이 대표</b>가 돼요(대표를 따로 고를 필요 없음).</p>
+    </div>
+
+    <div class="step hero" id="f5">
+      <div class="step-h"><div class="num tealnum">5</div><h3>완료 입력 ❶ 길이 입력<span class="badge-best">가장 쉬움</span></h3></div>
+      <p>초록색 <b>「오늘 작업 길이 입력」</b> 칸에 오늘 한 길이(m)를 넣고 <span class="key t">완료 추가</span>. 완료된 지점에서 <b>이어서</b> 자동으로 채워져요. 남은 길이보다 크게 넣어도 끝에서 자동으로 멈춥니다.</p>
+    </div>
+
+    <div class="step" id="f6">
+      <div class="step-h"><div class="num tealnum">6</div><h3>완료 취소 · 지도 끊기(특수)</h3></div>
+      <ul class="mini">
+        <li><b>부분 취소</b>: 초록 박스에 되돌릴 길이 + <span class="key rose">완료 취소</span>.</li>
+        <li><b>전체 취소</b>: <span class="key g">↺ 이 라인 완료 전체 취소</span>(두 번 탭).</li>
+        <li><b>특수</b>: 중간 구간만 완료할 땐 <span class="key rose">✂ 끊기</span>로 나누고 <span class="key t">✓ 완료체크</span>로 그 구간을 탭.</li>
+      </ul>
+    </div>
+
+    <div class="step" id="f7">
+      <div class="step-h"><div class="num purnum">7</div><h3>측량요청 · 긴급 · 측량완료</h3></div>
+      <p>공사가 <b>100% 완료</b>되면 자동으로 "측량요청으로 전환 · 긴급?" 창이 떠요. 급하면 <b>사유를 입력하고</b> <span class="key rose">🔴 긴급 요청</span>(사유 필수), 아니면 <span class="key g">일반 요청</span>. 측량까지 끝나면 <span class="key b">📐 측량완료</span>를 누릅니다(100% 전엔 비활성).</p>
+    </div>
+
+    <div class="step" id="f8">
+      <div class="step-h"><div class="num">8</div><h3>날짜별 작업자 수정</h3></div>
+      <p>정보 창 아래 <b>일일 작업일보</b>에서 각 날짜의 <span class="key b">✎ 작업자</span>를 눌러, 그 날짜 작업자를 다시 고칠 수 있어요(미지정·오입력 정정). 빨간 "미지정"은 눈에 띄게 표시됩니다.</p>
+    </div>
+
+    <div class="step" id="f9">
+      <div class="step-h"><div class="num">9</div><h3>특이사항 · 보류</h3></div>
+      <p><b>특이사항</b>(민원·누수·중단)은 입력칸에 적고 <span class="key b">기록</span>. 공사를 멈출 땐 <span class="key rose">⏸ 보류(중지·취소)</span> + 사유. 재개는 <span class="key">▶ 보류 해제</span>.</p>
+    </div>
+
+    <div class="step" id="f10">
+      <div class="step-h"><div class="num purnum">10</div><h3>현황판 · 실적 · 현황</h3></div>
+      <p><span class="key pur">📋 현황판</span>: 공사중 / 측량요청 / 측량완료 / 준공도인수로 지시번호를 보여주고, 담당자(시공·요청·측량)와 경과일, 긴급(🔴)을 표시해요. <span class="key g">실적</span>은 오늘 완료 물량, <span class="key g">현황</span>은 날짜별 달력이에요.</p>
+    </div>
+
+    <div class="step" id="f11">
+      <div class="step-h"><div class="num">11</div><h3>내 위치 · 로그아웃</h3></div>
+      <p>오른쪽 <span class="key g">지도/위성/경계</span> 전환, <span class="key b">📍</span> 내 위치. 역할을 바꾸려면 상단 <span class="key g">🔓 로그아웃</span> → 비밀번호 창에서 다시 로그인하면 됩니다.</p>
+    </div>
+
+    <div class="divider"><span>❓ 현장 FAQ</span></div>
+    <div class="faq"><p class="q">긴급요청이 안 돼요.</p><p class="a">긴급은 <b>사유 입력이 필수</b>예요. 사유를 적고 "🔴 긴급 요청"을 누르세요.</p></div>
+    <div class="faq"><p class="q">측량완료가 안 눌려요.</p><p class="a">공사가 <b>100%</b>가 되어야 눌립니다.</p></div>
+    <div class="faq"><p class="q">"Failed to fetch"가 떠요.</p><p class="a">인터넷이 잠깐 끊긴 거예요. 대개 자동으로 복구되고, 화면이 열리면 문제없어요. 계속되면 새로고침하거나 휴대폰 데이터로 열어보세요.</p></div>
+    <div class="faq"><p class="q">관리자 기능이 안 보여요.</p><p class="a">현장 로그인에는 관리자 기능이 숨겨져 있어요. 관리자는 로그아웃 후 관리자 비밀번호로 로그인해야 합니다.</p></div>
   </div>
 
-  <div class="lead">
-    이 안내서는 <b>현장 작업자</b>가 휴대폰으로 직접 따라 할 수 있게 만들었습니다.
-    완료 입력은 가장 쉬운 <b>「오늘 작업 길이」 입력</b>을 중심으로 설명합니다.
-    오른쪽 위 <b>📄 워드로 내보내기</b>를 누르면 이 매뉴얼을 워드(.doc) 파일로 저장할 수 있어요.
+  <!-- ========================= 전산·관리자용 ========================= -->
+  <div class="sect" id="sectAdmin">
+    <div class="lead">
+      <b>전산·관리자용</b> 안내서입니다. 현장 기능에 더해 데이터 관리(업로드·수정·삭제·백업)와 설정을 다룹니다.
+      관리자 비밀번호(별도 안내 · 관리자만 보관)로 로그인하면 관리자 기능이 바로 열립니다.
+    </div>
+
+    <div class="step" id="a1">
+      <div class="step-h"><div class="num purnum">1</div><h3>관리자 로그인</h3></div>
+      <p>상단 <span class="key g">🔓 로그아웃</span> → 비밀번호 창에서 <span class="key pur">관리자 비밀번호</span>(별도 보관)를 입력하면 <b>전산·관리자</b> 모드로 열려요(왼쪽 위 표시). 이 모드에선 상단 <span class="key g">관리자</span> 버튼과 라인 수정·그리기가 모두 보입니다.</p>
+      <div class="note tip"><span class="ic">💡</span><div>관리자용 기기를 따로 두면 편해요. 현장 기기는 현장 비밀번호로만 로그인하게 하세요.</div></div>
+    </div>
+
+    <div class="step" id="a2">
+      <div class="step-h"><div class="num purnum">2</div><h3>비밀번호 변경</h3></div>
+      <p>상단 <span class="key g">관리자</span> → 맨 위 <span class="key pur">🔑 비밀번호 변경</span>에서 현장·관리자 비밀번호를 바꿉니다. 저장하면 <b>모든 기기에 적용</b>돼요(두 비밀번호는 서로 달라야 함). 변경 후 각 기기는 새 비밀번호로 다시 로그인합니다.</p>
+    </div>
+
+    <div class="step" id="a3">
+      <div class="step-h"><div class="num purnum">3</div><h3>DXF 업로드 (라인 등록)</h3></div>
+      <p>관리자 → <b>DXF 업로드</b>에서 도면(.dxf)을 올려 공사 라인을 등록합니다.</p>
+      <div class="note warn"><span class="ic">⚠️</span><div><b>병합(추가)</b>은 기존 완료기록을 유지한 채 새 라인만 더해요. <b>교체</b>는 기존을 지우고 새로 넣습니다. 업로드 전에 <b>백업</b>을 먼저 하세요.</div></div>
+    </div>
+
+    <div class="step" id="a4">
+      <div class="step-h"><div class="num purnum">4</div><h3>라인 정보 수정 · 삭제</h3></div>
+      <p>라인을 고르고 정보 창의 <span class="key b">수정</span>으로 지시번호·공사명·주소·소장·연락처·기간·주야·비고, <b>준공도 인수</b>·시스템로딩 여부를 편집합니다. 라인 삭제는 관리자 → <b>라인 관리/삭제</b>(사업소별·연도별·전체)에서 합니다.</p>
+      <div class="note tip"><span class="ic">💡</span><div>준공도 인수를 체크하면 현황판 <b>준공도인수</b> 탭으로 넘어갑니다.</div></div>
+    </div>
+
+    <div class="step" id="a5">
+      <div class="step-h"><div class="num purnum">5</div><h3>배치표 업로드</h3></div>
+      <p>관리자 → <b>작업배치표 업로드</b>에서 엑셀(.xlsx) 배치표를 올리면, 현장 앱을 켤 때 어제·오늘·내일 배치가 팝업으로 표시됩니다. "오늘 배치 미리보기"로 확인할 수 있어요.</p>
+      <div class="note"><span class="ic">📝</span><div>폴더에서 자동으로 최신 파일을 읽는 건 브라우저 보안상 불가능해요. 매번 파일을 직접 선택합니다.</div></div>
+    </div>
+
+    <div class="step" id="a6">
+      <div class="step-h"><div class="num purnum">6</div><h3>작업자 명단 관리</h3></div>
+      <p>관리자 → <b>작업자 명단</b>에서 이름과 사업소를 추가·삭제합니다. 여기 등록된 사람이 현장의 "오늘 작업자" 선택에 나타나요.</p>
+    </div>
+
+    <div class="step" id="a7">
+      <div class="step-h"><div class="num purnum">7</div><h3>통계 · 엑셀 내보내기</h3></div>
+      <p>관리자 → <b>통계</b>는 사업소별 진행률을 보여줍니다. <b>공사정보 엑셀 내보내기</b>로 공사정보를 .xlsx로 저장할 수 있어요.</p>
+    </div>
+
+    <div class="step" id="a8">
+      <div class="step-h"><div class="num purnum">8</div><h3>백업 · 복원</h3></div>
+      <p>관리자 → <b>데이터 백업/복원</b>에서 전체 데이터(라인·완료기록·작업자·배치)를 파일 하나(.json)로 저장하고, 그 파일로 되돌릴 수 있어요. <b>업로드·대량수정 전에는 꼭 백업</b>하세요.</p>
+    </div>
+
+    <div class="step" id="a9">
+      <div class="step-h"><div class="num purnum">9</div><h3>라인 그리기 · 선형 변형 · 공유</h3></div>
+      <p><b>+ 라인 그리기</b>로 지도에 직접 라인을 그리고, 라인 정보 창의 <span class="key b">✎ 선형 변형</span>으로 꼭짓점을 조정합니다. 관리자 → <b>현장 공유 링크</b>로 현장팀에게 주소를 전달할 수 있어요.</p>
+    </div>
+
+    <div class="divider"><span>❓ 관리자 FAQ</span></div>
+    <div class="faq"><p class="q">배경지도(VWorld)가 안 떠요.</p><p class="a">VWorld 키는 <b>landsurvey2026.github.io</b> 도메인에 묶여 있어요. 반드시 인터넷 주소로 열어야 하고, 다운로드 파일에선 안 뜹니다. 개발키는 3개월이라 만료 시 운영키로 교체가 필요해요.</p></div>
+    <div class="faq"><p class="q">업로드했는데 완료기록이 사라졌어요.</p><p class="a"><b>교체</b> 대신 <b>병합(추가)</b>으로 올리세요. 병합은 기존 완료기록을 유지합니다. 미리 백업해 두면 되돌릴 수 있어요.</p></div>
+    <div class="faq"><p class="q">비밀번호를 바꿨더니 로그인이 풀렸어요.</p><p class="a">정상이에요. 비밀번호를 바꾸면 각 기기는 새 비밀번호로 다시 로그인해야 합니다.</p></div>
+    <div class="faq"><p class="q">보안은 어느 정도인가요?</p><p class="a">코드 난독화 + 비밀번호 수준의 "가벼운 보안"이에요. 일반 운영엔 충분하지만, 강력한 잠금이 필요하면 별도 로그인 시스템이 필요합니다.</p></div>
   </div>
 
-  <nav class="toc">
-    <h2>📖 목차</h2>
-    <ol>
-      <li><a href="#s1">프로그램 접속하기</a></li>
-      <li><a href="#s2">첫 화면 살펴보기</a></li>
-      <li><a href="#s3">연도 선택 · 전체 보기</a></li>
-      <li><a href="#s4">오늘 작업배치 (어제·오늘·내일)</a></li>
-      <li><a href="#s5">내 공사 찾기 (검색)</a></li>
-      <li><a href="#s6">지도에서 라인 고르기</a></li>
-      <li><a href="#s7">라인 정보 창 열기</a></li>
-      <li><a href="#s8">오늘 작업자 정하기 (대표 자동)</a></li>
-      <li><a href="#s9">완료 입력 ❶ 길이 입력 (기본·추천)</a></li>
-      <li><a href="#s10">완료 취소 (부분·전체)</a></li>
-      <li><a href="#s11">완료 입력 ❷ 지도에서 끊고 체크 (특수)</a></li>
-      <li><a href="#s12">측량요청 · 긴급 (공사 완료 시)</a></li>
-      <li><a href="#s13">측량완료 표시</a></li>
-      <li><a href="#s14">현황판 (공사중·측량요청·측량완료)</a></li>
-      <li><a href="#s15">보류(중지)·특이사항</a></li>
-      <li><a href="#s16">실적 · 현황 달력</a></li>
-      <li><a href="#s17">내 위치 · 지도전환 · 로드뷰</a></li>
-      <li><a href="#faq">문제가 생기면 (FAQ)</a></li>
-    </ol>
-  </nav>
-
-  <section class="step" id="s1">
-    <div class="step-h"><div class="num">1</div><h3>프로그램 접속하기</h3></div>
-    <p>휴대폰 인터넷 주소창에 아래 주소를 입력해 들어갑니다.</p>
-    <p class="sub">접속 주소</p>
-    <p><span class="key b">landsurvey2026.github.io/waterworks-map</span></p>
-    <p class="sub">접속 비밀번호</p>
-    <p><span class="key">!2026</span> 입력 후 <span class="key b">들어가기</span> (한 번 넣으면 그 휴대폰은 기억합니다).</p>
-    <div class="note warn"><span class="ic">⚠️</span><div>다운로드된 파일을 직접 열면 일부 기능이 안 됩니다. 꼭 <b>위 인터넷 주소</b>로 접속하세요. (화면 왼쪽 위 작은 글씨로 버전(build)이 표시됩니다.)</div></div>
-  </section>
-
-  <section class="step" id="s2">
-    <div class="step-h"><div class="num">2</div><h3>첫 화면 살펴보기</h3></div>
-    <p>접속하면 지도에 공사 라인이 색깔로 표시됩니다. 화면 맨 위 버튼들을 알아두세요.</p>
-    <ul class="mini">
-      <li><span class="b">전체 / 강동 / 동부</span> — 사업소별 보기</li>
-      <li><span class="b">26년 ▾</span> — 연도 선택(누르면 목록이 펼쳐짐)</li>
-      <li><span class="b">검색</span> — 지시번호·공사명·소장으로 찾기</li>
-      <li><span class="b">현황</span> — 날짜별 작업 현황(달력)</li>
-      <li><span class="b">배치</span> — 작업배치(어제·오늘·내일)</li>
-      <li><span class="b">실적</span> — 오늘 완료 물량</li>
-      <li><span class="b pur">📋 현황판</span> — 공사중·측량요청·측량완료 한눈에</li>
-      <li><span class="b">📖 매뉴얼</span> — 이 사용설명서</li>
-    </ul>
-    <p class="sub">라인 색: <span style="color:#f59e0b;font-weight:700">주황(미시공)</span> · <span style="color:#16a34a;font-weight:700">초록(완료)</span> · <span style="color:#2563eb;font-weight:700">파랑(측량완료)</span> · <span style="color:#e11d48;font-weight:700">빨강(보류)</span>. 구 경계: <span style="color:#22d3ee;font-weight:700">강동(하늘색)</span> · <span style="color:#4f46e5;font-weight:700">동부(남색)</span>.</p>
-  </section>
-
-  <section class="step" id="s3">
-    <div class="step-h"><div class="num">3</div><h3>연도 선택 · 전체 보기</h3></div>
-    <p>상단 <span class="key b">26년 ▾</span> 버튼을 누르면 연도 목록(전체·23~28년·연도없음)이 펼쳐집니다. 프로그램은 켜질 때 <b>올해(26년)</b> 가 자동 선택돼요.</p>
-    <p>지도 오른쪽 아래 <span class="key">전체</span> 버튼을 누르면 모든 라인이 한눈에 보이게 화면이 맞춰집니다. 프로그램을 다시 켜면 <b>마지막으로 보던 위치</b>로 열립니다.</p>
-  </section>
-
-  <section class="step" id="s4">
-    <div class="step-h"><div class="num">4</div><h3>오늘 작업배치 (어제·오늘·내일)</h3></div>
-    <p>프로그램을 켜면 <b>작업배치</b>가 자동으로 뜹니다. <b>어제·오늘·내일</b> 세 날짜를 함께 보여주고 <b>오늘</b>이 초록색으로 강조돼요. 사업소별 지시번호·주야·작업자·소장과 누수대응 당직을 봅니다. 다시 보려면 위 <span class="key g">배치</span> 버튼을 누르세요.</p>
-  </section>
-
-  <section class="step" id="s5">
-    <div class="step-h"><div class="num">5</div><h3>내 공사 찾기 (검색)</h3></div>
-    <p>위 <span class="key g">검색</span>을 누르고 <b>지시번호·공사명·주소·소장·연락처</b> 중 아무거나 입력하면 목록이 나옵니다. 목록을 누르면 그 공사로 지도가 이동해요.</p>
-  </section>
-
-  <section class="step" id="s6">
-    <div class="step-h"><div class="num">6</div><h3>지도에서 라인 고르기</h3></div>
-    <p>지도에서 라인을 손가락으로 <b>탭</b>하면 선택됩니다(라인 위에서 커서가 손 모양으로 바뀜). 여러 개 <b>겹친 곳</b>을 누르면 목록이 떠요. 항목에 손가락을 대면 그 라인이 <span class="b">파란색으로 미리보기</span>되니 확인하고 고르면 됩니다.</p>
-    <div class="note tip"><span class="ic">🔍</span><div>지도는 아주 크게 확대됩니다. 짧은 구간을 다룰 땐 두 손가락으로 확대하세요.</div></div>
-  </section>
-
-  <section class="step" id="s7">
-    <div class="step-h"><div class="num">7</div><h3>라인 정보 창 열기</h3></div>
-    <p>라인을 고르면 화면 아래 정보 창이 열립니다(휴대폰은 아래 <span class="key g">정보 보기 ▴</span> 띠를 위로 올림). 정보 창 순서: 지시번호·상태 → 진행률 → <b>오늘 작업자</b> → <b class="t">오늘 작업 길이 입력</b> → 끊기/완료체크 → 구간 목록 → 특이사항 → 보류 → 측량.</p>
-  </section>
-
-  <section class="step" id="s8">
-    <div class="step-h"><div class="num">8</div><h3>오늘 작업자 정하기 (대표 자동)</h3></div>
-    <p>완료 입력 <b>전에</b> 오늘 작업한 사람을 정합니다.</p>
-    <ul class="do">
-      <li><span class="key b">오늘 작업자 … 선택 ▾</span>를 누릅니다.</li>
-      <li>작업한 사람을 <b>체크</b>합니다(여러 명 가능). <b>맨 처음 체크한 사람이 자동으로 대표</b>가 됩니다.</li>
-      <li><span class="key b">확인</span>을 누릅니다.</li>
-    </ul>
-    <div class="note tip"><span class="ic">💡</span><div>대표를 따로 고를 필요 없어요. 먼저 체크한 사람이 대표, 나머지는 보조입니다. 바꾸려면 모두 해제하고 다시 고르면 돼요.</div></div>
-  </section>
-
-  <section class="step hero" id="s9">
-    <div class="step-h"><div class="num tealnum">9</div><h3>완료 입력 ❶ 길이 입력<span class="badge-best">가장 쉬움</span></h3></div>
-    <p>오늘 한 만큼 <b>길이(m)만 입력</b>하면 됩니다. 프로그램이 <b>이미 완료된 지점에서 이어서</b> 자동 처리해요. "어디서부터" "몇 m 지점" 같은 건 신경 안 써도 됩니다.</p>
-    <ul class="do teal">
-      <li><a href="#s8">⑧</a>처럼 <b>오늘 작업자</b>를 먼저 정합니다.</li>
-      <li>초록색 <b>「오늘 작업 길이 입력」</b> 칸에 오늘 시공한 길이를 넣습니다. (예: <b>30</b>)</li>
-      <li><span class="key t">완료 추가</span>를 누릅니다 → 완료된 지점에서 이어서 30m가 <span style="color:#16a34a;font-weight:700">초록색</span>으로 완료됩니다.</li>
-      <li>다음 날도 같은 방법으로 그날 한 길이만 넣으면 이어서 쌓입니다.</li>
-    </ul>
-    <div class="note tip"><span class="ic">💡</span><div>남은 길이보다 큰 숫자를 넣어도 <b>끝에서 자동으로 멈춥니다</b>. 라인이 어느 방향이든 완료된 부분 옆에 알맞게 이어 붙어요.</div></div>
-    <div class="note warn"><span class="ic">⚠️</span><div>실제 시공한 만큼만 넣으세요. 입력값이 그날 <b>실적·통계</b>에 그대로 반영됩니다(자동 저장).</div></div>
-  </section>
-
-  <section class="step" id="s10">
-    <div class="step-h"><div class="num tealnum">10</div><h3>완료 취소 (부분·전체)</h3></div>
-    <ul class="mini">
-      <li><b>길이로 부분 취소</b> — 초록 박스에 되돌릴 길이를 넣고 <span class="key rose">완료 취소</span> → 마지막 완료지점에서 그만큼 미시공으로.</li>
-      <li><b>구간 하나만 취소</b> — <span class="key t">✓ 완료체크</span>를 켜고 완료(초록)된 구간을 <b>다시 탭</b>.</li>
-      <li><b>이 라인 전체 취소</b> — <span class="key g">↺ 이 라인 완료 전체 취소</span> → 문구가 바뀌면 <b>한 번 더</b> 누름.</li>
-    </ul>
-    <div class="note tip"><span class="ic">💡</span><div>완료를 100% 미만으로 되돌리면 측량요청·긴급 기록도 함께 지워져, 다시 완료하면 측량요청 안내가 새로 뜹니다.</div></div>
-  </section>
-
-  <section class="step" id="s11">
-    <div class="step-h"><div class="num">11</div><h3>완료 입력 ❷ 지도에서 끊고 체크 (특수)</h3></div>
-    <p>라인 <b>중간 특정 구간</b>만 완료하는 등 특수한 경우에 씁니다. 평소엔 <a href="#s9">❶ 길이 입력</a>이 더 쉬워요.</p>
-    <ul class="do">
-      <li><span class="key rose">✂ 끊기</span>를 누르고, 지도에서 끊을 지점을 탭(또는 <b>끊을 위치 [__] m</b> 칸에 숫자 입력)하면 흰 동그라미로 구간이 나뉩니다.</li>
-      <li><span class="key t">✓ 완료체크</span>를 누르고, 구간 목록에서 완료한 구간을 탭하면 초록색 완료가 됩니다.</li>
-    </ul>
-    <p class="sub">라인 전체를 한 번에 끝낼 땐 <span class="key green">✓ 나머지 전체 완료</span>를 누릅니다.</p>
-  </section>
-
-  <section class="step" id="s12">
-    <div class="step-h"><div class="num purnum">12</div><h3>측량요청 · 긴급 (공사 완료 시)</h3></div>
-    <p>공사가 <b>100% 완료</b>되면 자동으로 <b>측량요청</b> 상태가 되고, 그 순간 "측량요청으로 전환 · 긴급한가요?" 창이 뜹니다.</p>
-    <ul class="do">
-      <li>측량이 급하지 않으면 <span class="key g">일반 요청</span>을 누릅니다.</li>
-      <li>급하면 <b>긴급 사유를 입력</b>하고 <span class="key rose">🔴 긴급 요청</span>을 누릅니다. <b>사유는 필수</b>예요 — 안 적으면 긴급요청이 안 됩니다.</li>
-    </ul>
-    <div class="note"><span class="ic">📝</span><div>측량요청은 그 공사를 100% 완료시킨 <b>대표 작업자</b>가 "요청자"로 기록됩니다.</div></div>
-  </section>
-
-  <section class="step" id="s13">
-    <div class="step-h"><div class="num">13</div><h3>측량완료 표시</h3></div>
-    <p>측량까지 끝나면 정보 창의 <span class="key b">📐 측량완료</span>를 누릅니다. 라인이 <span style="color:#2563eb;font-weight:700">파란색</span>으로 바뀌어요.</p>
-    <div class="note warn"><span class="ic">⚠️</span><div>공사가 <b>100% 완료되기 전</b>에는 측량완료 버튼이 <b>흐리게 비활성</b>되어 눌리지 않습니다. 먼저 공사를 완료하세요.</div></div>
-  </section>
-
-  <section class="step" id="s14">
-    <div class="step-h"><div class="num purnum">14</div><h3>현황판 (공사중·측량요청·측량완료)</h3></div>
-    <p>위 <span class="key pur">📋 현황판</span>을 누르면 지시번호가 상태별로 정리됩니다. 탭은 <b>공사중 / 측량요청 / 측량완료</b> 세 가지(각 건수 표시). 지시번호를 누르면 그 라인으로 지도가 이동해요.</p>
-    <ul class="mini">
-      <li><b>측량요청</b> 탭에는 "(N일경과)"가 표시됩니다 — 마지막 작업일로부터의 경과일이에요.</li>
-      <li><b>요청자</b>(완료시킨 대표 작업자)가 초록색으로 같이 보입니다.</li>
-      <li><b>긴급</b> 건은 빨간 배경 + 왼쪽 굵은 빨간 띠 + 🔴긴급으로 강조되고, 맨 위로 정렬됩니다. 사유도 함께 보여요.</li>
-    </ul>
-  </section>
-
-  <section class="step" id="s15">
-    <div class="step-h"><div class="num">15</div><h3>보류(중지)·특이사항</h3></div>
-    <p><b>특이사항</b>(민원·누수·중단 등)은 입력칸에 적고 <span class="key b">기록</span> → 날짜·작성자와 함께 저장(✕로 삭제). 공사를 멈출 땐 <span class="key rose">⏸ 보류(중지·취소)</span> + 사유 입력 → 라인이 <span style="color:#e11d48;font-weight:700">빨강</span>으로. 재개는 <span class="key">▶ 보류 해제</span>.</p>
-  </section>
-
-  <section class="step" id="s16">
-    <div class="step-h"><div class="num">16</div><h3>실적 · 현황 달력</h3></div>
-    <p><span class="key g">실적</span> — 오늘 완료한 물량을 작업자별로 정리(누가 어느 지시번호를 얼마나, 전체 합계).</p>
-    <p><span class="key g">현황</span> — 달력에서 날짜를 누르면 그날 작업 내용이 보이고, <b>작업자 이름(📍)</b>을 누르면 그 사람이 그날 완료한 라인으로 지도가 이동해 강조됩니다.</p>
-  </section>
-
-  <section class="step" id="s17">
-    <div class="step-h"><div class="num">17</div><h3>내 위치 · 지도전환 · 로드뷰</h3></div>
-    <p>오른쪽 버튼으로 <span class="key g">지도</span>/<span class="key g">위성</span>/<span class="key g">경계</span>를 바꿉니다. <span class="key b">📍</span>는 내 현재 위치(권한 허용 필요).</p>
-    <p>지도 빈 곳을 <b>두 번 클릭(더블탭)</b> 하면 그 지점 주소가 뜨고, <span class="key" style="background:#fae100;color:#3c1e1e">🛣️ 카카오맵 로드뷰로 열기</span> 버튼으로 실제 거리 모습을 볼 수 있어요.</p>
-  </section>
-
-  <div class="divider"><span>❓ 문제가 생기면</span></div>
-  <div id="faq">
-    <div class="faq"><p class="q">긴급요청이 안 돼요.</p><p class="a">긴급요청은 <b>사유 입력이 필수</b>예요. 사유를 적고 "🔴 긴급 요청"을 누르세요. 이미 100%인 건은 현황판 측량요청 탭에서 변경할 수 있어요.</p></div>
-    <div class="faq"><p class="q">측량완료가 안 눌려요.</p><p class="a">공사가 <b>100% 완료</b>되어야 눌립니다. 남은 구간을 먼저 완료하세요.</p></div>
-    <div class="faq"><p class="q">길이를 넣었는데 완료가 이상해요.</p><p class="a"><b>↺ 전체 취소</b>(두 번 탭)로 비운 뒤 다시 <b>완료 추가</b> 하세요. 완료된 부분 옆에 알맞게 이어 붙습니다.</p></div>
-    <div class="faq"><p class="q">화면이 옛날 그대로예요.</p><p class="a">화면을 아래로 당겨 새로고침하거나, 왼쪽 위 버전(build) 숫자를 확인하세요. 다르면 새로고침이 필요해요.</p></div>
-    <div class="faq"><p class="q">내 위치(📍)가 안 잡혀요.</p><p class="a">휴대폰 위치 권한을 <b>허용</b>하세요. 실내·지하에서는 부정확할 수 있어요.</p></div>
-  </div>
-
-  <a class="backtop" href="#docTop">▲ 맨 위로</a>
   <div class="foot">서울시 상수도 현장관리 · 실시간 현장관리 시스템<div class="credit">made by Seo Young Min</div></div>
 </div>
 
 <script>
+function showTab(which){
+  var f=which==='field';
+  document.getElementById('sectField').classList.toggle('on',f);
+  document.getElementById('sectAdmin').classList.toggle('on',!f);
+  document.getElementById('tabField').classList.toggle('on',f);
+  document.getElementById('tabAdmin').classList.toggle('on',!f);
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+// 앱에서 역할에 맞게 열기: ?role=admin 이면 관리자 탭 먼저
+(function(){
+  try{
+    var p=new URLSearchParams(location.search).get('role');
+    if(p==='admin')showTab('admin');
+  }catch(e){}
+})();
+
 function exportWord(){
-  // 본문 HTML을 워드(.doc)로 저장 — 버튼/도구막대는 제외
-  var content=document.querySelector('.wrap').cloneNode(true);
-  var tb=content.querySelector('.toolbar'); if(tb)tb.remove();
-  var bt=content.querySelector('a.backtop'); if(bt)bt.remove();
+  var isField=document.getElementById('sectField').classList.contains('on');
+  var src=document.getElementById(isField?'sectField':'sectAdmin').cloneNode(true);
+  var title=isField?'상수도_현장관리_매뉴얼_현장용':'상수도_현장관리_매뉴얼_관리자용';
+  var heading=isField?'서울시 상수도 현장관리 · 현장용 매뉴얼':'서울시 상수도 현장관리 · 전산·관리자용 매뉴얼';
   var css='body{font-family:"Malgun Gothic",sans-serif;color:#0c2236;line-height:1.6;font-size:11pt}'
-    +'h1{font-size:20pt;margin:0 0 4px}.cover{text-align:center;padding:16px;background:#1f6feb;color:#fff;border-radius:10px}'
-    +'.cover .tag{font-size:11pt}.cover .pill,.cover .drop{display:none}'
+    +'h2{font-size:16pt;color:#1f6feb;border-bottom:2px solid #cfe0f6;padding-bottom:6px}'
     +'.step{border:1px solid #d4e3f1;border-radius:10px;padding:12px 14px;margin:12px 0}'
-    +'.step-h{margin-bottom:4px}.num{display:inline-block;background:#1f6feb;color:#fff;font-weight:800;border-radius:6px;padding:1px 9px;margin-right:8px}'
-    +'.step-h h3{display:inline;font-size:14pt}'
+    +'.num{display:inline-block;background:#1f6feb;color:#fff;font-weight:800;border-radius:6px;padding:1px 9px;margin-right:8px}'
+    +'.num.purnum{background:#7c3aed}.num.tealnum{background:#0d9488}'
+    +'.step-h h3{display:inline;font-size:13pt}'
     +'.key{background:#0c2236;color:#fff;font-weight:700;padding:1px 6px;border-radius:4px;font-size:9pt}'
     +'.key.b{background:#1f6feb}.key.t{background:#0d9488}.key.g{background:#475569}.key.rose{background:#e11d48}.key.green{background:#15803d}.key.pur{background:#7c3aed}'
     +'.badge-best{background:#0d9488;color:#fff;font-size:8pt;padding:1px 7px;border-radius:9px;margin-left:6px}'
     +'.note{background:#fff8ec;border:1px solid #f6e0b3;border-radius:8px;padding:8px 10px;margin:8px 0;font-size:10pt}'
     +'.note.warn{background:#fef1f1;border-color:#f6c9c9}.note.tip{background:#eafaf6;border-color:#b6e6da}.note .ic{margin-right:6px}'
-    +'.toc{border:1px solid #d4e3f1;border-radius:8px;padding:10px 14px}.toc a{display:block;color:#0c2236;text-decoration:none;padding:3px 0}'
     +'.do,.mini{margin:8px 0;padding-left:20px}.do li,.mini li{margin:4px 0}'
     +'.faq{border:1px solid #d4e3f1;border-radius:8px;padding:10px 12px;margin:8px 0}.faq .q{font-weight:700}'
-    +'.divider span{font-weight:800;color:#5a7a98}.lead{background:#f4f9fe;border:1px solid #d4e3f1;border-radius:8px;padding:12px}'
-    +'.sub{color:#3a5a78;font-size:10pt}.foot{text-align:center;color:#7c93a8;font-size:9pt;margin-top:20px}.shot,svg{display:none}';
-  var html='<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><title>서울시 상수도 현장관리 매뉴얼</title><style>'+css+'</style></head><body>'+content.innerHTML+'</body></html>';
-  var blob=new Blob(['\\ufeff',html],{type:'application/msword'});
+    +'.lead{background:#f4f9fe;border:1px solid #d4e3f1;border-radius:8px;padding:12px}'
+    +'.sub{color:#3a5a78;font-size:10pt}.divider span{font-weight:800;color:#5a7a98}'
+    +'.foot{text-align:center;color:#7c93a8;font-size:9pt;margin-top:20px}svg{display:none}';
+  var html='<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><title>'+heading+'</title><style>'+css+'</style></head><body><h2>'+heading+'</h2>'+src.innerHTML+'</body></html>';
+  var blob=new Blob(['\ufeff',html],{type:'application/msword'});
   var url=URL.createObjectURL(blob);
-  var a=document.createElement('a');a.href=url;a.download='상수도_현장관리_매뉴얼.doc';document.body.appendChild(a);a.click();
+  var a=document.createElement('a');a.href=url;a.download=title+'.doc';document.body.appendChild(a);a.click();
   setTimeout(function(){document.body.removeChild(a);URL.revokeObjectURL(url);},500);
 }
 </script>

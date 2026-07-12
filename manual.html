@@ -240,11 +240,16 @@ function showTab(which){
   document.getElementById('tabAdmin').classList.toggle('on',!f);
   window.scrollTo({top:0,behavior:'smooth'});
 }
-// 앱에서 역할에 맞게 열기: ?role=admin 이면 관리자 탭 먼저
+// 앱에서 역할/권한에 맞게 열기: ?view=field|admin|all (구버전 ?role=admin 호환)
 (function(){
   try{
-    var p=new URLSearchParams(location.search).get('role');
-    if(p==='admin')showTab('admin');
+    var q=new URLSearchParams(location.search);
+    var view=q.get('view');
+    if(!view){var r=q.get('role');view=(r==='admin')?'admin':'field';}
+    var tb=document.querySelector('.tabbar');
+    if(view==='field'){document.getElementById('tabAdmin').style.display='none';if(tb)tb.style.display='none';showTab('field');}
+    else if(view==='admin'){document.getElementById('tabField').style.display='none';if(tb)tb.style.display='none';showTab('admin');}
+    else{showTab('field');} // all: 둘 다 보임
   }catch(e){}
 })();
 

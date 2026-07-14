@@ -97,7 +97,7 @@
     <div class="step" id="f1">
       <div class="step-h"><div class="num">1</div><h3>접속과 로그인</h3></div>
       <p>휴대폰 주소창에 <span class="key b">landsurvey2026.github.io/waterworks-map</span> 를 입력해 들어갑니다.</p>
-      <p><b>현장 비밀번호</b>(관리자에게 문의)를 넣고 들어가면 <b>현장</b> 모드로 열려요(왼쪽 위에 "현장" 표시). 한 번 넣으면 그 휴대폰은 기억합니다.</p>
+      <p><b>이름을 고르거나 입력</b>하고, <b>현장 비밀번호</b>(관리자에게 문의)를 넣어 들어갑니다. 로그인하면 왼쪽 위에 "현장 · 내 이름"이 표시돼요. 이름에 따라 역할(현장/관리자)이 자동으로 정해집니다.</p><p>새 휴대폰·PC는 처음 접속할 때 현장 비밀번호로 <b>기기가 등록</b>돼요(현장은 휴대폰·PC 합쳐 <b>2대</b>까지). 다음부터도 이름과 현장 비밀번호로 들어옵니다. 기기가 꽉 차면 관리자에게 <b>기기 초기화</b>를 요청하세요.</p><div class="note tip"><span class="ic">💡</span><div>비밀번호는 <b>대소문자 구분 없이</b> 입력해도 됩니다. 관리자 비밀번호로는 현장 로그인이 안 돼요(현장 비밀번호만).</div></div>
       <div class="shot"><svg viewBox="0 0 320 150" xmlns="http://www.w3.org/2000/svg"><rect width="320" height="150" fill="#1b2a3d"/><rect x="78" y="18" width="164" height="114" rx="16" fill="#111a28"/><text x="160" y="46" text-anchor="middle" font-size="20">💧</text><text x="160" y="68" text-anchor="middle" font-family="Jua" font-size="11" fill="#e6edf3">접속 비밀번호를 입력하세요</text><rect x="98" y="78" width="124" height="24" rx="8" fill="#0b1320" stroke="#2b3f59"/><text x="160" y="94" text-anchor="middle" font-size="12" fill="#7da2c9" letter-spacing="2">● ● ● ● ●</text><rect x="98" y="106" width="124" height="22" rx="8" fill="#1f6feb"/><text x="160" y="121" text-anchor="middle" font-weight="700" font-size="11" fill="#fff">들어가기</text></svg></div><div class="illus-cap">로그인 화면 (예시)</div><div class="note warn"><span class="ic">⚠️</span><div>다운로드한 파일이 아니라 꼭 <b>인터넷 주소</b>로 접속하세요. 화면 왼쪽 위 버전(build) 숫자로 최신인지 확인할 수 있어요.</div></div>
     </div>
 
@@ -118,7 +118,7 @@
 
     <div class="step" id="f4">
       <div class="step-h"><div class="num">4</div><h3>라인 고르기 · 작업자 정하기</h3></div>
-      <p>지도에서 라인을 <b>탭</b>하면 정보 창이 열려요(겹친 곳은 목록에서 선택). 완료 입력 전에 <span class="key b">오늘 작업자 … 선택 ▾</span>에서 작업한 사람을 체크합니다. <b>맨 처음 체크한 사람이 대표</b>가 돼요(대표를 따로 고를 필요 없음).</p>
+      <p>지도에서 라인을 <b>탭</b>하면 정보 창이 열려요(겹친 곳은 목록에서 선택). 완료 입력 전에 <span class="key b">오늘 작업자 … 선택 ▾</span>에서 작업한 사람을 체크합니다. <b>맨 처음 체크한 사람이 대표</b>가 돼요(대표를 따로 고를 필요 없음). <b>로그인한 본인이 오늘 작업자로 자동 선택</b>돼 있으니, 혼자 했으면 그대로 완료만 입력하면 됩니다.</p>
     </div>
 
     <div class="step hero" id="f5">
@@ -132,6 +132,7 @@
         <li><b>부분 취소</b>: 초록 박스에 되돌릴 길이 + <span class="key rose">완료 취소</span>.</li>
         <li><b>전체 취소</b>: <span class="key g">↺ 이 라인 완료 전체 취소</span>(두 번 탭).</li>
         <li><b>특수</b>: 중간 구간만 완료할 땐 <span class="key rose">✂ 끊기</span>로 나누고 <span class="key t">✓ 완료체크</span>로 그 구간을 탭.</li>
+        <li><b>일부 구간 삭제</b>(관리자): <span class="key rose">✂ 구간 잘라 삭제</span> → 자를 지점을 탭 → 지도에 <b style="color:#f59e0b">주황</b>·<b style="color:#2563eb">파랑</b> 두 구간이 뜨면 <b>삭제할 쪽을 선택</b>. 그 부분만 지워지고 완료·일보도 남은 구간에 맞춰 정리돼요.</li>
       </ul>
     </div>
 
@@ -141,8 +142,14 @@
     </div>
 
     <div class="step" id="f8">
-      <div class="step-h"><div class="num">8</div><h3>날짜별 작업자 수정</h3></div>
-      <p>정보 창 아래 <b>일일 작업일보</b>에서 각 날짜의 <span class="key b">✎ 작업자</span>를 눌러, 그 날짜 작업자를 다시 고칠 수 있어요(미지정·오입력 정정). 빨간 "미지정"은 눈에 띄게 표시됩니다.</p>
+      <div class="step-h"><div class="num">8</div><h3>일일 작업일보 (이동·수정·삭제)</h3></div>
+      <p>정보 창 아래 <b>일일 작업일보</b>에 날짜별 기록이 쌓여요.</p>
+      <ul class="mini">
+        <li><b>줄을 누르면</b> 그 구간으로 지도가 이동하고, 라인 위에 <b>작업자·날짜</b>가 5초간 떠요(휴대폰은 정보창이 접혀 지도가 잘 보여요).</li>
+        <li><span class="key b">수정</span>: 그 기록의 <b>날짜·작업자(대표·보조)</b>를 고칩니다.</li>
+        <li><span class="key rose">삭제</span>: 그 기록을 지우면 <b>해당 구간 완료도 함께 취소</b>됩니다.</li>
+        <li>여러 사람이 작업한 라인은 선택하면 <b>사람별 색상</b>으로 구간이 5초간 표시돼요.</li>
+      </ul>
     </div>
 
     <div class="step" id="f9">
@@ -152,7 +159,7 @@
 
     <div class="step" id="f10">
       <div class="step-h"><div class="num purnum">10</div><h3>현황판 · 실적 · 현황</h3></div>
-      <p><span class="key pur">📋 현황판</span>: 공사중 / 측량요청 / 측량완료 / 준공도인수로 지시번호를 보여주고, 담당자(시공·요청·측량)와 경과일, 긴급(🔴)을 표시해요. <span class="key g">실적</span>은 오늘 완료 물량, <span class="key g">현황</span>은 날짜별 달력이에요.</p><div class="shot"><svg viewBox="0 0 320 175" xmlns="http://www.w3.org/2000/svg"><rect width="320" height="175" fill="#f4f9fe"/><rect x="16" y="14" width="288" height="30" rx="10" fill="#7c3aed"/><text x="30" y="34" font-family="Jua" font-size="13" fill="#fff">📋 공사 현황판</text><rect x="16" y="50" width="70" height="30" rx="8" fill="#f8fafc" stroke="#e2e8f0"/><text x="51" y="63" text-anchor="middle" font-size="9" fill="#475569">공사중</text><text x="51" y="75" text-anchor="middle" font-size="12" font-weight="800" fill="#0f172a">3</text><rect x="90" y="50" width="70" height="30" rx="8" fill="#7c3aed"/><text x="125" y="63" text-anchor="middle" font-size="9" fill="#fff">측량요청</text><text x="125" y="75" text-anchor="middle" font-size="12" font-weight="800" fill="#fff">2</text><rect x="164" y="50" width="70" height="30" rx="8" fill="#f8fafc" stroke="#e2e8f0"/><text x="199" y="63" text-anchor="middle" font-size="9" fill="#475569">측량완료</text><text x="199" y="75" text-anchor="middle" font-size="12" font-weight="800" fill="#0f172a">5</text><rect x="238" y="50" width="66" height="30" rx="8" fill="#f8fafc" stroke="#e2e8f0"/><text x="271" y="63" text-anchor="middle" font-size="8.5" fill="#475569">준공도인수</text><text x="271" y="75" text-anchor="middle" font-size="12" font-weight="800" fill="#0f172a">1</text><rect x="16" y="88" width="288" height="34" rx="10" fill="#fff1f2" stroke="#fecaca"/><rect x="16" y="88" width="5" height="34" fill="#dc2626"/><circle cx="34" cy="105" r="5" fill="#dc2626"/><text x="46" y="102" font-family="monospace" font-size="11" font-weight="800" fill="#b91c1c">강동/034</text><text x="46" y="115" font-size="8.5" fill="#0d9488">요청 노기상</text><rect x="214" y="96" width="42" height="18" rx="6" fill="#dc2626"/><text x="235" y="109" text-anchor="middle" font-size="9" font-weight="800" fill="#fff">🔴 긴급</text><rect x="262" y="96" width="34" height="18" rx="6" fill="#fee2e2"/><text x="279" y="109" text-anchor="middle" font-size="8.5" font-weight="700" fill="#b91c1c">5일</text><rect x="16" y="128" width="288" height="32" rx="10" fill="#fff" stroke="#e8eef5"/><circle cx="34" cy="144" r="5" fill="#7c3aed"/><text x="46" y="141" font-family="monospace" font-size="11" font-weight="800" fill="#0f172a">강동/066</text><text x="46" y="153" font-size="8.5" fill="#0d9488">요청 김시중</text><rect x="262" y="136" width="34" height="18" rx="6" fill="#fff7ed" stroke="#fed7aa"/><text x="279" y="149" text-anchor="middle" font-size="8.5" font-weight="700" fill="#b45309">1일</text></svg></div><div class="illus-cap">현황판 · 측량요청 탭 (예시)</div>
+      <p><span class="key pur">📋 현황판</span>: 공사중 / 측량요청 / 측량완료 / 준공도인수로 지시번호를 보여주고, 담당자(시공·요청·측량)와 경과일, 긴급(🔴)을 표시해요. <span class="key g">실적</span>은 <b>오늘·어제</b> 완료 물량을 함께 보여주고, <b>지시번호를 누르면 그 위치로 이동</b>해요. <span class="key g">현황</span>은 날짜별 달력(강동·동부 구분)이에요. 상단 <span class="key g">전체/강동/동부</span>와 <span class="key g">26년 ▾</span>로 사업소·연도를 골라 볼 수 있어요.</p><div class="shot"><svg viewBox="0 0 320 175" xmlns="http://www.w3.org/2000/svg"><rect width="320" height="175" fill="#f4f9fe"/><rect x="16" y="14" width="288" height="30" rx="10" fill="#7c3aed"/><text x="30" y="34" font-family="Jua" font-size="13" fill="#fff">📋 공사 현황판</text><rect x="16" y="50" width="70" height="30" rx="8" fill="#f8fafc" stroke="#e2e8f0"/><text x="51" y="63" text-anchor="middle" font-size="9" fill="#475569">공사중</text><text x="51" y="75" text-anchor="middle" font-size="12" font-weight="800" fill="#0f172a">3</text><rect x="90" y="50" width="70" height="30" rx="8" fill="#7c3aed"/><text x="125" y="63" text-anchor="middle" font-size="9" fill="#fff">측량요청</text><text x="125" y="75" text-anchor="middle" font-size="12" font-weight="800" fill="#fff">2</text><rect x="164" y="50" width="70" height="30" rx="8" fill="#f8fafc" stroke="#e2e8f0"/><text x="199" y="63" text-anchor="middle" font-size="9" fill="#475569">측량완료</text><text x="199" y="75" text-anchor="middle" font-size="12" font-weight="800" fill="#0f172a">5</text><rect x="238" y="50" width="66" height="30" rx="8" fill="#f8fafc" stroke="#e2e8f0"/><text x="271" y="63" text-anchor="middle" font-size="8.5" fill="#475569">준공도인수</text><text x="271" y="75" text-anchor="middle" font-size="12" font-weight="800" fill="#0f172a">1</text><rect x="16" y="88" width="288" height="34" rx="10" fill="#fff1f2" stroke="#fecaca"/><rect x="16" y="88" width="5" height="34" fill="#dc2626"/><circle cx="34" cy="105" r="5" fill="#dc2626"/><text x="46" y="102" font-family="monospace" font-size="11" font-weight="800" fill="#b91c1c">강동/034</text><text x="46" y="115" font-size="8.5" fill="#0d9488">요청 노기상</text><rect x="214" y="96" width="42" height="18" rx="6" fill="#dc2626"/><text x="235" y="109" text-anchor="middle" font-size="9" font-weight="800" fill="#fff">🔴 긴급</text><rect x="262" y="96" width="34" height="18" rx="6" fill="#fee2e2"/><text x="279" y="109" text-anchor="middle" font-size="8.5" font-weight="700" fill="#b91c1c">5일</text><rect x="16" y="128" width="288" height="32" rx="10" fill="#fff" stroke="#e8eef5"/><circle cx="34" cy="144" r="5" fill="#7c3aed"/><text x="46" y="141" font-family="monospace" font-size="11" font-weight="800" fill="#0f172a">강동/066</text><text x="46" y="153" font-size="8.5" fill="#0d9488">요청 김시중</text><rect x="262" y="136" width="34" height="18" rx="6" fill="#fff7ed" stroke="#fed7aa"/><text x="279" y="149" text-anchor="middle" font-size="8.5" font-weight="700" fill="#b45309">1일</text></svg></div><div class="illus-cap">현황판 · 측량요청 탭 (예시)</div>
     </div>
 
     <div class="step" id="f11">
@@ -182,7 +189,7 @@
 
     <div class="step" id="a2">
       <div class="step-h"><div class="num purnum">2</div><h3>비밀번호 변경</h3></div>
-      <p>상단 <span class="key g">관리자</span> → 맨 위 <span class="key pur">🔑 비밀번호 변경</span>에서 현장·관리자 비밀번호를 바꿉니다. 저장하면 <b>모든 기기에 적용</b>돼요(두 비밀번호는 서로 달라야 함). 변경 후 각 기기는 새 비밀번호로 다시 로그인합니다.</p><div class="shot"><svg viewBox="0 0 320 130" xmlns="http://www.w3.org/2000/svg"><rect width="320" height="130" fill="#0f141b"/><text x="20" y="30" font-family="Jua" font-size="12" fill="#e6edf3">🔑 비밀번호 변경</text><text x="20" y="52" font-size="10" fill="#9fb0c3">현장</text><rect x="70" y="40" width="230" height="24" rx="8" fill="#0d1117" stroke="#30363d"/><text x="82" y="56" font-size="10" fill="#5b6b7d">새 현장 비밀번호</text><text x="20" y="84" font-size="10" fill="#9fb0c3">관리자</text><rect x="70" y="72" width="230" height="24" rx="8" fill="#0d1117" stroke="#30363d"/><text x="82" y="88" font-size="10" fill="#5b6b7d">새 관리자 비밀번호</text><rect x="212" y="102" width="88" height="22" rx="8" fill="#1f6feb"/><text x="256" y="117" text-anchor="middle" font-size="10" font-weight="700" fill="#fff">비밀번호 저장</text></svg></div><div class="illus-cap">비밀번호 변경 (예시)</div>
+      <p>비밀번호는 <b>3종</b>이에요 — <b>현장</b>(작업자용)·<b>관리자</b>(전산·관리자용)·<b>개발자</b>. 상단 <span class="key g">관리자</span> → <span class="key pur">🔑 비밀번호 변경</span>에서 한 번에 한 개씩 바꿀 수 있어요(빈칸은 유지). 저장하면 모든 기기에 적용됩니다. <b>개발자 비밀번호는 서영민만</b> 바꿀 수 있어요. 모든 비밀번호는 대소문자를 구분하지 않습니다.</p><div class="note tip"><span class="ic">💡</span><div><b>기기 관리</b>: 관리자 → 작업자 명단에서 각 사람의 <b>역할 변경</b>과 <b>기기 초기화</b>(등록 기기 비우기)를 할 수 있어요. 현장은 2대까지 등록됩니다. <b>로그인 기록</b>(사람별·한국시간)은 서영민 계정에서 볼 수 있어요.</div></div><div class="shot"><svg viewBox="0 0 320 130" xmlns="http://www.w3.org/2000/svg"><rect width="320" height="130" fill="#0f141b"/><text x="20" y="30" font-family="Jua" font-size="12" fill="#e6edf3">🔑 비밀번호 변경</text><text x="20" y="52" font-size="10" fill="#9fb0c3">현장</text><rect x="70" y="40" width="230" height="24" rx="8" fill="#0d1117" stroke="#30363d"/><text x="82" y="56" font-size="10" fill="#5b6b7d">새 현장 비밀번호</text><text x="20" y="84" font-size="10" fill="#9fb0c3">관리자</text><rect x="70" y="72" width="230" height="24" rx="8" fill="#0d1117" stroke="#30363d"/><text x="82" y="88" font-size="10" fill="#5b6b7d">새 관리자 비밀번호</text><rect x="212" y="102" width="88" height="22" rx="8" fill="#1f6feb"/><text x="256" y="117" text-anchor="middle" font-size="10" font-weight="700" fill="#fff">비밀번호 저장</text></svg></div><div class="illus-cap">비밀번호 변경 (예시)</div>
     </div>
 
     <div class="step" id="a3">
@@ -210,7 +217,7 @@
 
     <div class="step" id="a7">
       <div class="step-h"><div class="num purnum">7</div><h3>통계 · 엑셀 내보내기</h3></div>
-      <p>관리자 → <b>통계</b>는 사업소별 진행률을 보여줍니다. <b>공사정보 엑셀 내보내기</b>로 공사정보를 .xlsx로 저장할 수 있어요.</p>
+      <p>상단 <span class="key pur">📊 통계</span> 버튼(관리자·개발자)에서 <b>연도별</b>·사업소별 진행률을 봅니다. <b>공사정보 엑셀 내보내기</b>로 .xlsx 저장도 돼요.</p><div class="note tip"><span class="ic">💡</span><div>상단 <span class="key pur">⚠ 미지정 찾기</span>로 <b>작업자 미지정</b>이거나 <b>측량 작업자가 없는</b> 지시건을 한 번에 찾아 눌러 이동·수정할 수 있어요(연도별). 라인 정보 창의 <b>완료구간→일보 채우기</b>는 완료됐는데 작업일보가 없는 구간에 일보를 만들어 줍니다(작업자 미지정으로 생성 후 수정).</div></div>
     </div>
 
     <div class="step" id="a8">

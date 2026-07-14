@@ -1,0 +1,65 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>서울시 상수도 현장관리 — 변경 이력</title>
+<style>
+:root{--sans:-apple-system,BlinkMacSystemFont,"Segoe UI","Malgun Gothic",sans-serif}
+*{box-sizing:border-box}body{font-family:var(--sans);margin:0;background:#0f141b;color:#e6edf3;line-height:1.6}
+.wrap{max-width:900px;margin:0 auto;padding:28px 18px 60px}
+h1{font-size:22px;margin:0 0 4px}.sub{color:#9fb0c3;font-size:13px;margin-bottom:22px}
+.leg{background:#161d28;border:1px solid #263042;border-radius:12px;padding:12px 14px;font-size:13px;color:#c7d3df;margin-bottom:22px}
+.grp{margin:26px 0 10px;font-size:16px;font-weight:800;color:#7dd3fc;border-bottom:1px solid #263042;padding-bottom:6px}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th,td{text-align:left;padding:9px 10px;border-bottom:1px solid #1f2630;vertical-align:top}
+th{color:#9fb0c3;font-size:12px;font-weight:700}
+td.b{white-space:nowrap;color:#a5b4fc;font-weight:700}
+.tag{display:inline-block;font-size:11px;font-weight:800;padding:1px 7px;border-radius:6px;margin-right:5px}
+.t-add{background:#064e3b;color:#6ee7b7}.t-fix{background:#7c2d12;color:#fdba74}.t-chg{background:#1e3a8a;color:#93c5fd}
+.foot{color:#5b6776;font-size:12px;margin-top:30px;text-align:center}
+</style></head><body><div class="wrap">
+<h1>서울시 상수도 현장관리 프로그램 — 변경 이력</h1>
+<div class="sub">작성: 2026-07-14 · 대상 빌드 build 91 ~ 139</div>
+<div class="leg"><b>표기</b> &nbsp; <span class="tag t-add">추가</span> 새 기능 &nbsp; <span class="tag t-fix">수정</span> 버그·문제 해결 &nbsp; <span class="tag t-chg">변경</span> 동작·정책 변경<br>build 번호는 화면 왼쪽 위에 표시됩니다. 새 파일을 올린 뒤 시크릿 창에서 build 번호로 반영을 확인하세요.</div>
+
+<div class="grp">로그인 · 권한 · 기기</div>
+<table><tr><th>build</th><th>구분</th><th>내용</th></tr>
+<tr><td class="b">102~123</td><td><span class="tag t-chg">변경</span></td><td>비밀번호 입력 방식 → <b>이름 선택/입력 방식</b>으로 전환. 이름에 따라 역할(현장·관리자·개발자) 자동 판별.</td></tr>
+<tr><td class="b">120</td><td><span class="tag t-add">추가</span></td><td>비밀번호 <b>3종 분리</b> — 현장(f2026)·관리자(!!2026)·개발자(admin2026). 개발자 비밀번호는 서영민만 변경 가능.</td></tr>
+<tr><td class="b">123</td><td><span class="tag t-fix">수정</span></td><td>현장은 현장 비밀번호만 통과(관리자·옛 !2026 거부). 비밀번호 <b>대소문자 구분 없음</b>. "관리자로 접속" 체크박스 제거.</td></tr>
+<tr><td class="b">124</td><td><span class="tag t-fix">수정</span></td><td>서버에 남아있던 옛 비밀번호가 반영되던 문제 → 최초 1회 <b>기본 비밀번호로 자동 초기화</b>.</td></tr>
+<tr><td class="b">108~116</td><td><span class="tag t-add">추가</span></td><td><b>기기 등록제</b> — 현장 2대·관리자 무제한(곽상흠 4대)·개발자 무제한. 관리자 화면에서 역할 변경·기기 초기화.</td></tr>
+<tr><td class="b">116~119</td><td><span class="tag t-add">추가</span></td><td>개발자 테스트 편의 — 개발자 기기 등록/개발자 비밀번호 접속 시 <b>기록·기기등록 제외</b>. 로그·기기 전체 삭제.</td></tr>
+<tr><td class="b">110~122</td><td><span class="tag t-add">추가</span></td><td><b>로그인 기록</b>(사람별, 한국시간) — 현장·곽상흠만 기록, 서영민만 열람. 개발자·기타 관리자는 기록 안 함.</td></tr>
+<tr><td class="b">114~121</td><td><span class="tag t-chg">변경</span></td><td>곽상흠 부장 — 관리자 패널·통계·개발자기기·로그인기록·로딩 알림에서 제외.</td></tr>
+</table>
+
+<div class="grp">현장 작업 기능</div>
+<table><tr><th>build</th><th>구분</th><th>내용</th></tr>
+<tr><td class="b">103</td><td><span class="tag t-add">추가</span></td><td>로그인한 사람이 <b>오늘 작업자 기본값</b>으로 자동 설정.</td></tr>
+<tr><td class="b">125</td><td><span class="tag t-fix">수정</span></td><td>라인 그린 직후 바로 보이도록(자동 이동·선택). "이 라인만 삭제"가 같은 지시번호 전체를 지우던 문제 → <b>선택한 라인만</b> 삭제.</td></tr>
+<tr><td class="b">128~130</td><td><span class="tag t-add">추가</span></td><td><b>구간 잘라 삭제</b> — 자를 지점 탭 → 주황/파랑 중 삭제할 쪽 선택. 완료·작업일보도 남은 구간에 맞춰 정리.</td></tr>
+<tr><td class="b">131~133</td><td><span class="tag t-add">추가</span></td><td>일일 작업일보 <b>수정(날짜·작업자)·삭제</b>. 줄 클릭 시 위치 이동.</td></tr>
+<tr><td class="b">133~134</td><td><span class="tag t-add">추가</span></td><td>끊어진 라인 선택 시 각 구간에 <b>작업자·날짜 표시(5초, 사람별 색상)</b>. 모바일에서 일보 클릭 시 정보창 자동 접힘.</td></tr>
+<tr><td class="b">135~136</td><td><span class="tag t-add">추가</span></td><td>완료됐지만 일보가 없는 구간을 채우는 <b>"완료구간→일보 채우기"</b>. 관리자용 <b>"미지정 찾기"</b>.</td></tr>
+</table>
+
+<div class="grp">현황 · 통계 · 실적 · 검색</div>
+<table><tr><th>build</th><th>구분</th><th>내용</th></tr>
+<tr><td class="b">104</td><td><span class="tag t-add">추가</span></td><td>현황판 <b>사업소 필터</b>(전체/강동/동부).</td></tr>
+<tr><td class="b">105~107</td><td><span class="tag t-add">추가</span></td><td>현황(달력) 날짜 선택 시 <b>강동·동부 좌우 박스</b>로 구분 표시.</td></tr>
+<tr><td class="b">115</td><td><span class="tag t-chg">변경</span></td><td>통계를 관리자 패널 밖 <b>상단 버튼</b>으로 분리(관리자·개발자만, 곽상흠 제외) + <b>연도별</b> 통계.</td></tr>
+<tr><td class="b">126</td><td><span class="tag t-chg">변경</span></td><td>우측 상단 완료율 → 선택 연도의 <b>측량완료 물량 기준</b>.</td></tr>
+<tr><td class="b">126,130</td><td><span class="tag t-add">추가</span></td><td>실적 <b>오늘·어제 함께</b> 표시 + 지시번호 클릭 이동.</td></tr>
+<tr><td class="b">130</td><td><span class="tag t-fix">수정</span></td><td>실적 "어제"가 이틀 전으로 나오던 <b>한국시간 계산 버그</b> 수정.</td></tr>
+<tr><td class="b">137~138</td><td><span class="tag t-add">추가</span></td><td>검색·미지정 찾기에 <b>연도 필터</b>(기본 26년).</td></tr>
+</table>
+
+<div class="grp">기타 · 문서</div>
+<table><tr><th>build</th><th>구분</th><th>내용</th></tr>
+<tr><td class="b">92~94</td><td><span class="tag t-add">추가</span></td><td>긴급 측량요청 사유 필수화. VWorld 배경지도·주소 검색.</td></tr>
+<tr><td class="b">111</td><td><span class="tag t-fix">수정</span></td><td>현황 창이 안 열리던 문제(닫는 태그 누락) 수정.</td></tr>
+<tr><td class="b">129</td><td><span class="tag t-chg">변경</span></td><td>앱 아이콘을 <b>서울시 상수도 물방울 아이콘</b>으로 교체.</td></tr>
+<tr><td class="b">139</td><td><span class="tag t-add">추가</span></td><td>접속 시 <b>업데이트 안내 팝업</b>(1회) + 본 변경 이력 문서.</td></tr>
+</table>
+
+<div class="foot">이 문서는 업데이트마다 위쪽에 새 build를 추가해 관리하세요. — 서울시 상수도 현장관리 프로그램</div>
+</div></body></html>

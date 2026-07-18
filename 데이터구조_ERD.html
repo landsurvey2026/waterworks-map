@@ -1,0 +1,313 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>서울시 상수도 현장관리 — 데이터 구조 (ERD)</title>
+<style>
+:root{--sans:-apple-system,BlinkMacSystemFont,"Segoe UI","Malgun Gothic",sans-serif;--mono:ui-monospace,Consolas,"D2Coding",monospace}
+*{box-sizing:border-box}
+body{font-family:var(--sans);margin:0;background:#0f141b;color:#e6edf3;line-height:1.6}
+.wrap{max-width:960px;margin:0 auto;padding:28px 18px 60px}
+h1{font-size:22px;margin:0 0 4px}
+.sub{color:#9fb0c3;font-size:13px;margin-bottom:20px}
+.box{background:#161d28;border:1px solid #263042;border-radius:12px;padding:14px 16px;font-size:13.5px;color:#c7d3df;margin-bottom:22px}
+.grp{margin:30px 0 10px;font-size:16px;font-weight:800;color:#7dd3fc;border-bottom:1px solid #263042;padding-bottom:6px}
+.ent{margin:22px 0 8px;font-size:14.5px;font-weight:800;color:#e6edf3}
+.ent code{font-family:var(--mono);font-size:13px;color:#a5b4fc;background:#1b2333;padding:2px 7px;border-radius:6px;margin-right:7px}
+.ent .kind{font-size:11.5px;font-weight:700;padding:2px 8px;border-radius:6px;margin-left:6px}
+.k-top{background:#064e3b;color:#6ee7b7}.k-in{background:#1e3a8a;color:#93c5fd}
+table{width:100%;border-collapse:collapse;font-size:13px;margin-bottom:6px}
+th,td{text-align:left;padding:7px 9px;border-bottom:1px solid #1f2630;vertical-align:top}
+th{color:#9fb0c3;font-size:11.5px;font-weight:700;background:#131a24}
+td.f{font-family:var(--mono);color:#a5b4fc;white-space:nowrap}
+td.t{color:#7d94ac;white-space:nowrap;font-size:12px}
+.pk{font-size:10px;font-weight:800;background:#78350f;color:#fde68a;padding:1px 5px;border-radius:5px;margin-left:5px}
+.fk{font-size:10px;font-weight:800;background:#0c4a6e;color:#bae6fd;padding:1px 5px;border-radius:5px;margin-left:5px}
+.diag{background:#f7fafc;border-radius:12px;padding:14px;overflow-x:auto;margin-bottom:8px}
+.cap{color:#7d94ac;font-size:12px;margin-bottom:22px}
+pre.code{background:#0b1119;border:1px solid #263042;border-radius:10px;padding:14px;overflow-x:auto;font-family:var(--mono);font-size:12px;color:#c7d3df;line-height:1.55}
+.warn{background:#2a1d16;border:1px solid #7c2d12;border-radius:10px;padding:12px 14px;font-size:13px;color:#fdba74;margin:14px 0}
+.foot{color:#5b6776;font-size:12px;margin-top:34px;text-align:center}
+button.wx{background:#2563eb;border:none;color:#fff;font-family:var(--sans);font-weight:700;font-size:13px;border-radius:9px;padding:9px 14px;cursor:pointer;margin-bottom:18px}
+</style></head><body><div class="wrap">
+<h1>서울시 상수도 현장관리 프로그램 — 데이터 구조 (ERD)</h1>
+<div class="sub">작성 2026-07-15 · build 145 기준 · Firebase Realtime Database</div>
+<button class="wx" onclick="exportWord()">📄 워드로 내보내기</button>
+
+<div class="box">
+<b>한눈에</b><br>
+저장소는 <b>파이어베이스 Realtime Database</b>(구글 클라우드)이며, SQL 데이터베이스가 아니라 <b>JSON을 그대로 담는 방식</b>입니다.
+표(테이블)와 조인이 없고, 브라우저가 웹 주소로 직접 읽고 씁니다(REST · GET/PUT/POST/DELETE).<br>
+경로는 <code style="font-family:var(--mono);color:#a5b4fc">/water/{이름}.json</code> 이며, 최상위 데이터는 <b>6개</b>입니다.
+</div>
+
+<div class="grp">관계도 (ERD)</div>
+<div class="diag">
+<pre class="mermaid">erDiagram
+  LINES ||--o{ DAILY : "일일 작업일보"
+  LINES ||--o{ SVYLOG : "측량 일보"
+  LINES ||--o{ ISSUES : "특이사항"
+  LINES }o--o| LINES : "다음 공사"
+  WORKERS ||--o{ DEVICES : "기기 등록"
+  WORKERS ||--o{ DAILY : "작업자"
+  WORKERS ||--o{ SVYLOG : "측량자"
+  WORKERS ||--o{ ISSUES : "작성자"
+  WORKERS ||--o{ LOGINS : "접속 기록"
+  WORKERS ||--o{ ROSTER : "배치"
+  LINES {
+    string no PK "지시번호"
+    string office PK "강동 또는 동부"
+    array coords PK "선형 좌표"
+    string name "공사명"
+    number lenM "전체 길이"
+    array cuts "공사 끊김"
+    array completed "공사완료 구간"
+    array svy "측량완료 구간"
+    array svyCuts "측량 끊김"
+    object survey "측량완료 여부"
+    boolean hold "보류"
+    boolean accepted "준공도인수"
+    boolean loaded "시스템로딩"
+    string nextNo FK "다음 공사"
+  }
+  DAILY {
+    string d "작업일"
+    number from "시작 m"
+    number to "끝 m"
+    number v "물량 m"
+    object by FK "대표 보조"
+  }
+  SVYLOG {
+    string d "측량일"
+    number from "시작 m"
+    number to "끝 m"
+    number v "물량 m"
+    object by FK "측량자"
+  }
+  ISSUES {
+    number id PK "생성 시각"
+    string d "발생일"
+    string by FK "작성자"
+    string t "내용"
+  }
+  WORKERS {
+    string name PK "이름"
+    string office "사업소"
+    string role "field admin dev"
+    array devices "등록 기기"
+  }
+  DEVICES {
+    string id PK "기기 고유번호"
+    string at "등록 일시"
+    string label "PC 또는 모바일"
+  }
+  LOGINS {
+    string key PK "자동 생성"
+    string name FK "이름"
+    string role "역할"
+    string at "접속 시각 KST"
+    string device FK "기기"
+  }
+  ROSTER {
+    object dates "날짜별 배치"
+    array duty "당직"
+  }
+  CONFIG {
+    string fieldPw "현장 비밀번호"
+    string adminPw "관리자 비밀번호"
+    string devPw "개발자 비밀번호"
+    string pwReset "초기화 표시"
+  }
+  DEVDEVICES {
+    string id PK "개발자 기기"
+  }</pre>
+</div>
+<div class="cap">실선 ●─&lt; 는 1:다 관계 · <b>PK</b> 식별 기준 · <b>FK</b> 다른 데이터를 가리킴(이름 문자열로 연결)</div>
+
+<div class="grp">최상위 데이터 6개</div>
+<table>
+<tr><th>경로</th><th>형태</th><th>내용</th></tr>
+<tr><td class="f">/water/lines.json</td><td class="t">배열</td><td>공사 라인 전체 — 좌표·완료구간·작업일보·측량·진행상태 (핵심)</td></tr>
+<tr><td class="f">/water/workers.json</td><td class="t">배열</td><td>작업자 명단 — 이름·사업소·역할·등록기기</td></tr>
+<tr><td class="f">/water/roster.json</td><td class="t">객체</td><td>배치표 — 날짜별 배치·당직</td></tr>
+<tr><td class="f">/water/logins.json</td><td class="t">객체(자동키)</td><td>로그인 기록 — 현장·곽상흠만 기록</td></tr>
+<tr><td class="f">/water/config.json</td><td class="t">객체</td><td>비밀번호 3종</td></tr>
+<tr><td class="f">/water/devdevices.json</td><td class="t">배열</td><td>개발자 테스트 기기 — 기록·기기등록 제외용</td></tr>
+</table>
+
+<div class="grp">상세 구조</div>
+
+<div class="ent"><code>lines[]</code> 공사 라인 <span class="kind k-top">최상위</span></div>
+<table>
+<tr><th style="width:150px">필드</th><th style="width:80px">형태</th><th>설명</th></tr>
+<tr><td class="f">no <span class="pk">PK</span></td><td class="t">문자열</td><td>공사지시번호 (예: 강동/089(26년)) — <b>단독으로는 라인을 특정하지 못함</b></td></tr>
+<tr><td class="f">office <span class="pk">PK</span></td><td class="t">문자열</td><td>사업소 — 강동 / 동부</td></tr>
+<tr><td class="f">coords <span class="pk">PK</span></td><td class="t">배열</td><td>선형 좌표 [[위도, 경도], …] — 같은 지시번호의 라인을 구분하는 기준</td></tr>
+<tr><td class="f">name</td><td class="t">문자열</td><td>공사명</td></tr>
+<tr><td class="f">lenM</td><td class="t">숫자</td><td>전체 길이(m) — 좌표에서 계산</td></tr>
+<tr><td class="f">addr / manager / phone</td><td class="t">문자열</td><td>주소 · 공사소장 · 연락처</td></tr>
+<tr><td class="f">startDate / endDate / shift</td><td class="t">문자열</td><td>시작일 · 종료일 · 주야</td></tr>
+<tr><td class="f">cuts</td><td class="t">배열</td><td>공사 끊김 지점 [40, 87, …] (m)</td></tr>
+<tr><td class="f">completed</td><td class="t">배열</td><td>공사완료 구간 [[0,275], [300,394]] (m)</td></tr>
+<tr><td class="f">daily</td><td class="t">배열</td><td>일일 작업일보 → 아래 표</td></tr>
+<tr><td class="f">svy</td><td class="t">배열</td><td>측량완료 구간 [[0,120]] (m) — 공사완료 구간 안에서만</td></tr>
+<tr><td class="f">svyCuts</td><td class="t">배열</td><td>측량 전용 끊김 (공사 끊김과 <b>별개</b>)</td></tr>
+<tr><td class="f">svyLog</td><td class="t">배열</td><td>측량 일보 → 아래 표</td></tr>
+<tr><td class="f">survey</td><td class="t">객체</td><td>{done, d, by[]} — 측량 100%면 자동으로 done=true</td></tr>
+<tr><td class="f">surveyReq</td><td class="t">객체</td><td>{urgent, reason, by} — 측량요청(긴급 시 사유 필수)</td></tr>
+<tr><td class="f">hold / holdReason</td><td class="t">불리언/문자열</td><td>보류 여부 · 사유</td></tr>
+<tr><td class="f">doneDate</td><td class="t">문자열</td><td>공사 100% 완료일</td></tr>
+<tr><td class="f">accepted / acceptDate</td><td class="t">불리언/문자열</td><td>준공도 인수 · 인수일</td></tr>
+<tr><td class="f">loaded / loadDate</td><td class="t">불리언/문자열</td><td>시스템로딩 · 로딩일 (인수 +14일이 마감)</td></tr>
+<tr><td class="f">issues</td><td class="t">배열</td><td>특이사항 → 아래 표</td></tr>
+<tr><td class="f">nextNo / nextOffice <span class="fk">FK</span></td><td class="t">문자열</td><td>다음 공사 지정 → 다른 lines 항목</td></tr>
+<tr><td class="f">verified / matchDist</td><td class="t">불리언/숫자</td><td>도면 자동매칭 확인 여부 · 오차(m)</td></tr>
+</table>
+
+<div class="ent"><code>lines[].daily[]</code> 일일 작업일보 <span class="kind k-in">라인 안에 내장</span></div>
+<table>
+<tr><th style="width:150px">필드</th><th style="width:80px">형태</th><th>설명</th></tr>
+<tr><td class="f">d</td><td class="t">문자열</td><td>작업일 (YYYY-MM-DD) — <b>실적·현황의 집계 기준</b></td></tr>
+<tr><td class="f">from / to</td><td class="t">숫자</td><td>구간 시작 · 끝 (m)</td></tr>
+<tr><td class="f">v</td><td class="t">숫자</td><td>물량 (m) = to − from</td></tr>
+<tr><td class="f">by <span class="fk">FK</span></td><td class="t">객체</td><td>{lead: 대표, helpers: [보조]} — workers.name 을 가리킴</td></tr>
+</table>
+
+<div class="ent"><code>lines[].svyLog[]</code> 측량 일보 <span class="kind k-in">라인 안에 내장</span></div>
+<table>
+<tr><th style="width:150px">필드</th><th style="width:80px">형태</th><th>설명</th></tr>
+<tr><td class="f">d</td><td class="t">문자열</td><td>측량일</td></tr>
+<tr><td class="f">from / to / v</td><td class="t">숫자</td><td>측량 구간 · 물량 (m)</td></tr>
+<tr><td class="f">by <span class="fk">FK</span></td><td class="t">객체</td><td>{lead: 측량자, helpers: [보조]}</td></tr>
+</table>
+
+<div class="ent"><code>lines[].issues[]</code> 특이사항 <span class="kind k-in">라인 안에 내장</span></div>
+<table>
+<tr><th style="width:150px">필드</th><th style="width:80px">형태</th><th>설명</th></tr>
+<tr><td class="f">id <span class="pk">PK</span></td><td class="t">숫자</td><td>생성 시각(밀리초)</td></tr>
+<tr><td class="f">d / by <span class="fk">FK</span> / t</td><td class="t">문자열</td><td>발생일 · 작성자 · 내용 (민원·누수·중단 등)</td></tr>
+</table>
+
+<div class="ent"><code>workers[]</code> 작업자 <span class="kind k-top">최상위</span></div>
+<table>
+<tr><th style="width:150px">필드</th><th style="width:80px">형태</th><th>설명</th></tr>
+<tr><td class="f">name <span class="pk">PK</span></td><td class="t">문자열</td><td>이름 — 모든 기록이 <b>이 이름으로 연결</b></td></tr>
+<tr><td class="f">office</td><td class="t">문자열</td><td>사업소</td></tr>
+<tr><td class="f">role</td><td class="t">문자열</td><td>field(현장) / admin(관리자) / dev(개발자)</td></tr>
+<tr><td class="f">devices</td><td class="t">배열</td><td>등록 기기 → 아래 표 (현장 2대 · 곽상흠 4대 · 관리자 무제한)</td></tr>
+</table>
+
+<div class="ent"><code>workers[].devices[]</code> 등록 기기 <span class="kind k-in">작업자 안에 내장</span></div>
+<table>
+<tr><th style="width:150px">필드</th><th style="width:80px">형태</th><th>설명</th></tr>
+<tr><td class="f">id <span class="pk">PK</span></td><td class="t">문자열</td><td>기기 고유번호 (기기-xxxx) — 브라우저에 저장</td></tr>
+<tr><td class="f">at / label</td><td class="t">문자열</td><td>등록 일시 · PC 또는 모바일</td></tr>
+</table>
+
+<div class="ent"><code>roster</code> 배치표 · <code>logins</code> 로그인 기록 · <code>config</code> 비밀번호 · <code>devdevices</code> 개발자 기기 <span class="kind k-top">최상위</span></div>
+<table>
+<tr><th style="width:150px">필드</th><th style="width:80px">형태</th><th>설명</th></tr>
+<tr><td class="f">roster.dates</td><td class="t">객체</td><td>날짜별 배치 내용</td></tr>
+<tr><td class="f">roster.duty</td><td class="t">배열</td><td>당직</td></tr>
+<tr><td class="f">logins[].name <span class="fk">FK</span></td><td class="t">문자열</td><td>접속한 사람 — 현장·곽상흠만 기록 (개발자·기타 관리자 제외)</td></tr>
+<tr><td class="f">logins[].role / at / device</td><td class="t">문자열</td><td>역할 · 접속 시각(KST) · 기기</td></tr>
+<tr><td class="f">config.fieldPw / adminPw / devPw</td><td class="t">문자열</td><td>현장 · 관리자 · 개발자 비밀번호 (대소문자 구분 없음)</td></tr>
+<tr><td class="f">config.pwReset</td><td class="t">문자열</td><td>초기화 표시(v124) — 옛 비밀번호 자동 정리용</td></tr>
+<tr><td class="f">devdevices[]</td><td class="t">배열</td><td>개발자 테스트 기기 ID — 기록·기기등록에서 제외</td></tr>
+</table>
+
+<div class="grp">관계 정리</div>
+<table>
+<tr><th style="width:210px">관계</th><th style="width:70px">형태</th><th>설명</th></tr>
+<tr><td class="f">lines → daily</td><td class="t">1 : 다</td><td>라인 안에 내장 — 라인을 읽으면 작업일보가 함께 따라옴</td></tr>
+<tr><td class="f">lines → svyLog</td><td class="t">1 : 다</td><td>라인 안에 내장 (측량 일보)</td></tr>
+<tr><td class="f">lines → issues</td><td class="t">1 : 다</td><td>라인 안에 내장 (특이사항)</td></tr>
+<tr><td class="f">lines → lines</td><td class="t">다 : 1</td><td>nextNo 로 다음 공사 지정 (자기 참조)</td></tr>
+<tr><td class="f">workers → devices</td><td class="t">1 : 다</td><td>작업자 안에 내장 (등록 기기)</td></tr>
+<tr><td class="f">workers → daily.by</td><td class="t">1 : 다</td><td><b>이름 문자열</b>로 연결 (강제 아님)</td></tr>
+<tr><td class="f">workers → svyLog.by</td><td class="t">1 : 다</td><td>이름 문자열로 연결</td></tr>
+<tr><td class="f">workers → logins</td><td class="t">1 : 다</td><td>이름 문자열로 연결</td></tr>
+</table>
+
+<div class="grp">꼭 알아둘 점</div>
+<div class="warn">
+<b>① 지시번호만으로 라인을 특정할 수 없습니다.</b><br>
+같은 공사지시번호에 라인(구간)이 여러 개일 수 있어, <b>지시번호 + 사업소 + 좌표</b>가 함께 있어야 한 라인이 정해집니다.
+실적은 지시번호로 <b>합산</b>하므로, 어떤 라인에서 나온 물량인지 따로 추적해야 합니다(build 143에서 반영).
+</div>
+<div class="warn">
+<b>② 작업자는 이름 문자열로 연결됩니다.</b><br>
+SQL의 외래키처럼 강제되지 않아, 작업자 이름을 바꾸면 과거 기록과 어긋날 수 있습니다.
+비어 있거나 "미지정"인 기록은 <b>⚠ 미지정 찾기</b>로 찾아 채웁니다.
+</div>
+<div class="warn">
+<b>③ 측량은 공사와 별개로 관리됩니다.</b><br>
+측량 구간(svy)·측량 끊김(svyCuts)은 공사 구간(completed)·공사 끊김(cuts)과 <b>완전히 분리</b>되어 있어,
+측량하려고 끊어도 공사 일자 구간이 틀어지지 않습니다.
+</div>
+<div class="warn">
+<b>④ 보안 규칙이 열려 있습니다.</b><br>
+현재 파이어베이스 규칙은 누구나 읽기·쓰기가 가능한 상태입니다. DB 주소를 알면 접근할 수 있으므로,
+필요 시 규칙 잠금을 검토하세요. (프로그램 난독화로 주소 노출은 어렵게 해둔 상태)
+</div>
+
+<div class="grp">실제 저장 예시</div>
+<pre class="code">// /water/lines.json 의 한 항목
+{
+  "no": "강동/089(26년)",
+  "office": "강동",
+  "name": "명일동 상수도 이설공사",
+  "lenM": 548,
+  "coords": [[37.5512, 127.1443], [37.5518, 127.1461], ...],
+  "cuts": [275, 394],
+  "completed": [[0, 394]],
+  "daily": [
+    { "d": "2026-07-13", "from": 275, "to": 394, "v": 119,
+      "by": { "lead": "김성호", "helpers": ["박인규"] } }
+  ],
+  "svy": [[0, 120]],
+  "svyCuts": [120],
+  "svyLog": [
+    { "d": "2026-07-15", "from": 0, "to": 120, "v": 120,
+      "by": { "lead": "서영민", "helpers": [] } }
+  ],
+  "survey": { "done": false },
+  "hold": false,
+  "accepted": false,
+  "loaded": false,
+  "issues": [
+    { "id": 1784069921749, "d": "2026-07-14", "by": "김성호", "t": "민원 발생 - 주차 문제" }
+  ]
+}
+
+// /water/workers.json 의 한 항목
+{
+  "name": "서영민",
+  "office": "강동",
+  "role": "dev",
+  "devices": [ { "id": "기기-a3f9", "at": "2026-07-01T02:11:00.000Z", "label": "PC" } ]
+}</pre>
+
+<div class="foot">서울시 상수도 현장관리 프로그램 · 데이터 구조 문서 — 구조가 바뀌면 이 문서도 함께 갱신하세요</div>
+</div>
+<script type="module">
+import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+mermaid.initialize({startOnLoad:true, theme:'default', er:{useMaxWidth:false}, themeVariables:{fontSize:'13px'}});
+</script>
+<script>
+function exportWord(){
+  var wrap=document.querySelector('.wrap').cloneNode(true);
+  var d=wrap.querySelector('.diag'); if(d)d.remove();
+  var b=wrap.querySelector('button.wx'); if(b)b.remove();
+  var css='<style>body{font-family:"Malgun Gothic",sans-serif;color:#111;line-height:1.6}'
+    +'h1{font-size:18pt}.grp{font-size:13pt;font-weight:bold;color:#1a56a0;margin:18pt 0 6pt;border-bottom:1px solid #ccc}'
+    +'.ent{font-size:11pt;font-weight:bold;margin:12pt 0 4pt}'
+    +'table{width:100%;border-collapse:collapse;font-size:9pt;margin-bottom:8pt}'
+    +'th,td{border:1px solid #bbb;padding:4pt;text-align:left;vertical-align:top}'
+    +'th{background:#eef2f7}.box,.warn{border:1px solid #bbb;background:#f7f9fc;padding:8pt;margin:8pt 0;font-size:9.5pt}'
+    +'pre.code{border:1px solid #bbb;background:#f5f5f5;padding:8pt;font-family:Consolas,monospace;font-size:8.5pt;white-space:pre-wrap}'
+    +'.pk,.fk,.kind{border:1px solid #999;padding:0 3pt;font-size:7.5pt}.cap,.sub,.foot{color:#555;font-size:9pt}</style>';
+  var html='<html xmlns:w="urn:schemas-microsoft-com:office:word"><head><meta charset="utf-8">'+css+'</head><body>'+wrap.innerHTML+'</body></html>';
+  var blob=new Blob(['\ufeff',html],{type:'application/msword'});
+  var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='상수도_데이터구조_ERD.doc';a.click();
+}
+</script>
+</body></html>
